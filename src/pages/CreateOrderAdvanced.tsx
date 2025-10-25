@@ -46,11 +46,11 @@ export default function CreateOrderAdvanced() {
   }, [formData.plaka])
 
   useEffect(() => {
-    // Form değiştiğinde analiz yap
-    if (formData.plaka && formData.gidisKm && formData.baslangicFiyati) {
+    // Form değiştiğinde analiz yap ve önerilen fiyatı otomatik doldur
+    if (formData.plaka && formData.gidisKm) {
       analyzeOrder()
     }
-  }, [formData.gidisKm, formData.donusKm, formData.returnLoadRate, formData.baslangicFiyati, formData.plaka])
+  }, [formData.gidisKm, formData.donusKm, formData.returnLoadRate, formData.plaka, formData.tahminiGun])
 
   const loadVehicles = async () => {
     try {
@@ -79,7 +79,7 @@ export default function CreateOrderAdvanced() {
   }
 
   const analyzeOrder = async () => {
-    if (!formData.gidisKm || !formData.baslangicFiyati) return
+    if (!formData.gidisKm) return
     
     try {
       setAnalyzing(true)
@@ -91,9 +91,17 @@ export default function CreateOrderAdvanced() {
         donusKm: Number(formData.donusKm) || 0,
         returnLoadRate: Number(formData.returnLoadRate) / 100,
         tahminiGun: Number(formData.tahminiGun) || 1,
-        ilkFiyat: Number(formData.baslangicFiyati),
+        ilkFiyat: Number(formData.baslangicFiyati) || 0,
       })
       setAnalysis(result)
+      
+      // Önerilen fiyatı otomatik doldur (sadece ilk hesaplamada veya boşsa)
+      if (!formData.baslangicFiyati || formData.baslangicFiyati === '0') {
+        setFormData(prev => ({
+          ...prev,
+          baslangicFiyati: result.fiyatKdvli.toFixed(2)
+        }))
+      }
     } catch (error) {
       console.error('Failed to analyze order:', error)
     } finally {
@@ -129,8 +137,8 @@ export default function CreateOrderAdvanced() {
     }
     
     if (!formData.baslangicFiyati.trim()) {
-      newErrors.baslangicFiyati = 'Başlangıç fiyatı zorunludur'
-    } else if (isNaN(Number(formData.baslangicFiyati)) || Number(formData.baslangicFiyati) < 0) {
+      newErrors.baslangicFiyati = 'Toplam ücret zorunludur'
+    } else if (isNaN(Number(formData.baslangicFiyati)) || Number(formData.baslangicFiyati) <= 0) {
       newErrors.baslangicFiyati = 'Geçerli bir fiyat giriniz'
     }
 
@@ -393,18 +401,37 @@ export default function CreateOrderAdvanced() {
                 rows={3}
               />
 
-              {/* Müşteri Fiyatı */}
-              <Input
-                label="Müşteriden Alınan Ücret (₺)"
-                name="baslangicFiyati"
-                type="number"
-                step="0.01"
-                value={formData.baslangicFiyati}
-                onChange={handleChange}
-                error={errors.baslangicFiyati}
-                placeholder="0.00"
-                required
-              />
+              {/* Toplam Ücret */}
+              <div className="space-y-2">
+                <Input
+                  label="Toplam Ücret (₺)"
+                  name="baslangicFiyati"
+                  type="number"
+                  step="0.01"
+                  value={formData.baslangicFiyati}
+                  onChange={handleChange}
+                  error={errors.baslangicFiyati}
+                  placeholder="Otomatik hesaplanacak..."
+                  required
+                />
+                {analysis && formData.baslangicFiyati && (
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg text-sm">
+                    <span className="text-gray-600">Önerilen Fiyat:</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold text-green-600">
+                        {formatCurrency(analysis.fiyatKdvli)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, baslangicFiyati: analysis.fiyatKdvli.toFixed(2) }))}
+                        className="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 text-xs"
+                      >
+                        Uygula
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Actions */}
               <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
@@ -570,24 +597,59 @@ export default function CreateOrderAdvanced() {
             </Card>
           )}
 
-          {/* Uyarılar */}
-          {analysis && analysis.karZarar < 0 && (
-            <Card className="bg-red-50 border border-red-200">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">Zarar Uyarısı!</h3>
-                  <p className="mt-1 text-xs text-red-700">
-                    Bu işte {formatCurrency(Math.abs(analysis.karZarar))} zarar ediyorsunuz.
-                    Önerilen fiyat: {formatCurrency(analysis.fiyatKdvli)}
-                  </p>
-                </div>
-              </div>
-            </Card>
+          {/* Uyarılar ve Öneriler */}
+          {analysis && (
+            <>
+              {analysis.karZarar < 0 ? (
+                <Card className="bg-red-50 border-2 border-red-300">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-6 w-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <h3 className="text-sm font-bold text-red-900">⚠️ ZARAR UYARISI!</h3>
+                      <p className="mt-1 text-sm text-red-800 font-medium">
+                        Bu işte {formatCurrency(Math.abs(analysis.karZarar))} zarar ediyorsunuz!
+                      </p>
+                      <p className="mt-2 text-xs text-red-700">
+                        💡 Önerilen fiyat: {formatCurrency(analysis.fiyatKdvli)}
+                      </p>
+                      <p className="mt-1 text-xs text-red-600">
+                        📊 Başabaş fiyat: {formatCurrency(analysis.onerilenMinFiyat)} (kar yok, sadece masraf + KDV)
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              ) : analysis.karZarar > 0 ? (
+                <Card className="bg-green-50 border-2 border-green-300">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-6 w-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-bold text-green-900">✅ KÂR VAR!</h3>
+                      <p className="mt-1 text-sm text-green-800 font-medium">
+                        Bu işte {formatCurrency(analysis.karZarar)} kar ediyorsunuz.
+                      </p>
+                      <p className="mt-1 text-xs text-green-700">
+                        Kar marjı: %{analysis.karZararYuzde.toFixed(1)}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              ) : (
+                <Card className="bg-yellow-50 border-2 border-yellow-300">
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-yellow-800">⚖️ Başabaş</p>
+                    <p className="text-xs text-yellow-700 mt-1">Ne kar ne zarar</p>
+                  </div>
+                </Card>
+              )}
+            </>
           )}
         </div>
       </div>
