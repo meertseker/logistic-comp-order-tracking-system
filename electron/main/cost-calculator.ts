@@ -56,8 +56,9 @@ export class CostCalculator {
   }
 
   // Km başına maliyet bileşenlerini hesapla
-  calculateCostBreakdown(): CostBreakdown {
-    const amortPerKm = this.params.aracDegeri / this.params.hedefToplamKm
+  calculateCostBreakdown(includeAmortisman: boolean = false): CostBreakdown {
+    // Amortisman genelde direkt maliyete dahil edilmez, opsiyonel
+    const amortPerKm = includeAmortisman ? this.params.aracDegeri / this.params.hedefToplamKm : 0
     const bakimPerKm = this.params.bakimMaliyet / this.params.bakimAralikKm
     const ekMasrafPerKm = this.params.ekMasrafPer1000 / 1000
     const benzinPerKm = this.params.benzinPerKm
@@ -81,8 +82,8 @@ export class CostCalculator {
   }
 
   // Tam kar/zarar analizi
-  analyzeProfitability(order: OrderCalculation): ProfitAnalysis {
-    const costBreakdown = this.calculateCostBreakdown()
+  analyzeProfitability(order: OrderCalculation, includeAmortisman: boolean = false): ProfitAnalysis {
+    const costBreakdown = this.calculateCostBreakdown(includeAmortisman)
     const etkinKm = this.calculateEffectiveKm(order.gidisKm, order.donusKm, order.returnLoadRate)
     
     // Toplam maliyet
@@ -121,8 +122,8 @@ export class CostCalculator {
   }
 
   // Önerilen fiyat hesapla
-  calculateRecommendedPrice(gidisKm: number, donusKm: number, returnLoadRate: number): number {
-    const costBreakdown = this.calculateCostBreakdown()
+  calculateRecommendedPrice(gidisKm: number, donusKm: number, returnLoadRate: number, includeAmortisman: boolean = false): number {
+    const costBreakdown = this.calculateCostBreakdown(includeAmortisman)
     const etkinKm = this.calculateEffectiveKm(gidisKm, donusKm, returnLoadRate)
     const toplamMaliyet = etkinKm * costBreakdown.toplamMaliyetPerKm
     const fiyatKarli = toplamMaliyet * (1 + this.params.karOrani)
@@ -131,8 +132,8 @@ export class CostCalculator {
   }
 
   // Başabaş noktası (minimum fiyat)
-  calculateBreakEvenPrice(gidisKm: number, donusKm: number, returnLoadRate: number): number {
-    const costBreakdown = this.calculateCostBreakdown()
+  calculateBreakEvenPrice(gidisKm: number, donusKm: number, returnLoadRate: number, includeAmortisman: boolean = false): number {
+    const costBreakdown = this.calculateCostBreakdown(includeAmortisman)
     const etkinKm = this.calculateEffectiveKm(gidisKm, donusKm, returnLoadRate)
     const toplamMaliyet = etkinKm * costBreakdown.toplamMaliyetPerKm
     const fiyatKdvli = toplamMaliyet * (1 + this.params.kdv)

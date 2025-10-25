@@ -107,6 +107,7 @@ const createTables = () => {
       gunluk_ort_km REAL DEFAULT 500,
       kar_orani REAL DEFAULT 0.45,
       kdv REAL DEFAULT 0.20,
+      include_amortisman INTEGER DEFAULT 0,
       aktif INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
