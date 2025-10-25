@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
+import Select from '../components/Select'
 import TextArea from '../components/TextArea'
 import { formatCurrency } from '../utils/formatters'
+import { PlusIcon } from '../components/Icons'
 
 export default function CreateOrderAdvanced() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
+  const [vehicles, setVehicles] = useState<any[]>([])
+  const [loadingVehicles, setLoadingVehicles] = useState(true)
   
   const [formData, setFormData] = useState({
     plaka: '',
@@ -29,20 +33,44 @@ export default function CreateOrderAdvanced() {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    // İlk yüklemede maliyet breakdown'ını getir
-    loadCostBreakdown()
+    // Araçları yükle
+    loadVehicles()
   }, [])
 
   useEffect(() => {
+    // Araç seçilince maliyet breakdown'ını yükle
+    if (formData.plaka) {
+      loadCostBreakdown()
+    }
+  }, [formData.plaka])
+
+  useEffect(() => {
     // Form değiştiğinde analiz yap
-    if (formData.gidisKm && formData.baslangicFiyati) {
+    if (formData.plaka && formData.gidisKm && formData.baslangicFiyati) {
       analyzeOrder()
     }
   }, [formData.gidisKm, formData.donusKm, formData.returnLoadRate, formData.baslangicFiyati, formData.plaka])
 
+  const loadVehicles = async () => {
+    try {
+      setLoadingVehicles(true)
+      const data = await window.electronAPI.db.getVehicles()
+      setVehicles(data)
+      
+      // Eğer tek araç varsa otomatik seç
+      if (data.length === 1) {
+        setFormData(prev => ({ ...prev, plaka: data[0].plaka }))
+      }
+    } catch (error) {
+      console.error('Failed to load vehicles:', error)
+    } finally {
+      setLoadingVehicles(false)
+    }
+  }
+
   const loadCostBreakdown = async () => {
     try {
-      const breakdown = await window.electronAPI.cost.getBreakdown(formData.plaka || '')
+      const breakdown = await window.electronAPI.cost.getBreakdown(formData.plaka)
       setCostBreakdown(breakdown)
     } catch (error) {
       console.error('Failed to load cost breakdown:', error)
@@ -84,7 +112,7 @@ export default function CreateOrderAdvanced() {
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.plaka.trim()) newErrors.plaka = 'Plaka zorunludur'
+    if (!formData.plaka) newErrors.plaka = 'Araç seçimi zorunludur'
     if (!formData.musteri.trim()) newErrors.musteri = 'Müşteri adı zorunludur'
     if (!formData.telefon.trim()) newErrors.telefon = 'Telefon numarası zorunludur'
     if (!formData.nereden.trim()) newErrors.nereden = 'Nereden bilgisi zorunludur'
@@ -169,16 +197,70 @@ export default function CreateOrderAdvanced() {
               {/* Araç ve Müşteri Bilgileri */}
               <div>
                 <h3 className="text-lg font-semibold mb-4">Araç ve Müşteri Bilgileri</h3>
+                
+                {/* Araç Seçimi */}
+                {loadingVehicles ? (
+                  <div className="text-center py-4">
+                    <p className="text-gray-500">Araçlar yükleniyor...</p>
+                  </div>
+                ) : vehicles.length === 0 ? (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3 flex-1">
+                        <h3 className="text-sm font-medium text-yellow-800">Henüz Araç Eklenmemiş</h3>
+                        <p className="mt-1 text-sm text-yellow-700">
+                          Sipariş oluşturmak için önce en az bir araç eklemelisiniz.
+                        </p>
+                        <div className="mt-3">
+                          <Link to="/vehicles">
+                            <Button size="sm">
+                              <PlusIcon className="w-4 h-4 mr-2" />
+                              Araç Ekle
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mb-4">
+                    <Select
+                      label="Araç Seçimi"
+                      name="plaka"
+                      value={formData.plaka}
+                      onChange={handleChange}
+                      error={errors.plaka}
+                      required
+                      options={[
+                        { value: '', label: 'Araç Seçiniz...' },
+                        ...vehicles.map(v => ({
+                          value: v.plaka,
+                          label: `${v.plaka} (${formatCurrency(
+                            v.arac_degeri / v.hedef_toplam_km + 
+                            v.bakim_maliyet / v.bakim_aralik_km + 
+                            v.ek_masraf_per_1000 / 1000 + 
+                            v.benzin_per_km + 
+                            v.gunluk_ucret / v.gunluk_ort_km
+                          )}/km)`
+                        }))
+                      ]}
+                    />
+                    {formData.plaka && costBreakdown && (
+                      <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          <span className="font-semibold">Seçili Araç Maliyeti:</span> {formatCurrency(costBreakdown.toplamMaliyetPerKm)}/km
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    label="Plaka"
-                    name="plaka"
-                    value={formData.plaka}
-                    onChange={handleChange}
-                    error={errors.plaka}
-                    placeholder="34 ABC 123"
-                    required
-                  />
                   <Input
                     label="Müşteri Adı"
                     name="musteri"
@@ -187,9 +269,8 @@ export default function CreateOrderAdvanced() {
                     error={errors.musteri}
                     placeholder="Ahmet Yılmaz"
                     required
+                    disabled={vehicles.length === 0}
                   />
-                </div>
-                <div className="mt-4">
                   <Input
                     label="Telefon Numarası"
                     name="telefon"
@@ -199,6 +280,7 @@ export default function CreateOrderAdvanced() {
                     error={errors.telefon}
                     placeholder="0532 123 45 67"
                     required
+                    disabled={vehicles.length === 0}
                   />
                 </div>
               </div>
@@ -301,7 +383,10 @@ export default function CreateOrderAdvanced() {
                 >
                   İptal
                 </Button>
-                <Button type="submit" disabled={loading || analyzing}>
+                <Button 
+                  type="submit" 
+                  disabled={loading || analyzing || vehicles.length === 0}
+                >
                   {loading ? 'Oluşturuluyor...' : 'Sipariş Oluştur'}
                 </Button>
               </div>
