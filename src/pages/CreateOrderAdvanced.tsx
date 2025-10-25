@@ -26,6 +26,7 @@ export default function CreateOrderAdvanced() {
     gidisKm: '',
     donusKm: '',
     returnLoadRate: '0', // 0-100
+    tahminiGun: '1',
   })
   
   const [analysis, setAnalysis] = useState<any>(null)
@@ -84,9 +85,12 @@ export default function CreateOrderAdvanced() {
       setAnalyzing(true)
       const result = await window.electronAPI.cost.analyze({
         plaka: formData.plaka,
+        nereden: formData.nereden,
+        nereye: formData.nereye,
         gidisKm: Number(formData.gidisKm),
         donusKm: Number(formData.donusKm) || 0,
         returnLoadRate: Number(formData.returnLoadRate) / 100,
+        tahminiGun: Number(formData.tahminiGun) || 1,
         ilkFiyat: Number(formData.baslangicFiyati),
       })
       setAnalysis(result)
@@ -149,14 +153,27 @@ export default function CreateOrderAdvanced() {
         nereye: formData.nereye.trim(),
         yukAciklamasi: formData.yukAciklamasi.trim(),
         baslangicFiyati: Number(formData.baslangicFiyati),
+        
+        // Mesafe bilgileri
         gidisKm: Number(formData.gidisKm),
         donusKm: Number(formData.donusKm) || 0,
         returnLoadRate: Number(formData.returnLoadRate) / 100,
-        // Analiz sonuçlarını da kaydet
         etkinKm: analysis?.etkinKm || 0,
+        tahminiGun: Number(formData.tahminiGun) || 1,
+        
+        // Detaylı maliyet bilgileri (profesyonel sistem)
+        yakitLitre: analysis?.costBreakdown?.yakitLitre || 0,
+        yakitMaliyet: analysis?.costBreakdown?.yakitMaliyet || 0,
+        surucuMaliyet: analysis?.costBreakdown?.surucuMaliyet || 0,
+        yemekMaliyet: analysis?.costBreakdown?.yemekMaliyet || 0,
+        hgsMaliyet: analysis?.costBreakdown?.hgsMaliyet || 0,
+        bakimMaliyet: analysis?.costBreakdown?.toplamBakimMaliyet || 0,
         toplamMaliyet: analysis?.toplamMaliyet || 0,
+        
+        // Fiyat analizi
         onerilenFiyat: analysis?.fiyatKdvli || 0,
         karZarar: analysis?.karZarar || 0,
+        karZararYuzde: analysis?.karZararYuzde || 0,
       })
 
       if (result.success) {
@@ -308,7 +325,7 @@ export default function CreateOrderAdvanced() {
                     required
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                   <Input
                     label="Gidiş Km"
                     name="gidisKm"
@@ -325,7 +342,17 @@ export default function CreateOrderAdvanced() {
                     type="number"
                     value={formData.donusKm}
                     onChange={handleChange}
-                    placeholder="450 (boş bırakılabilir)"
+                    placeholder="450"
+                  />
+                  <Input
+                    label="Tahmini Gün"
+                    name="tahminiGun"
+                    type="number"
+                    min="1"
+                    value={formData.tahminiGun}
+                    onChange={handleChange}
+                    helperText="Sürücü maliyeti için"
+                    required
                   />
                 </div>
               </div>
@@ -342,12 +369,18 @@ export default function CreateOrderAdvanced() {
                   value={formData.returnLoadRate}
                   onChange={handleSliderChange}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #ef4444 0%, #f59e0b ${formData.returnLoadRate}%, #22c55e ${formData.returnLoadRate}%, #22c55e 100%)`
+                  }}
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>Boş Dönüş (0%)</span>
                   <span>Yarı Dolu (%50)</span>
                   <span>Tam Dolu (%100)</span>
                 </div>
+                <p className="text-xs text-gray-600 mt-2">
+                  💡 Dönüşte yük bulunursa maliyet düşer. %100 dolu dönüş = dönüş km'si ücretsiz
+                </p>
               </div>
 
               {/* Yük Açıklaması */}
@@ -412,42 +445,69 @@ export default function CreateOrderAdvanced() {
             </Card>
           )}
 
-          {/* Maliyet Detayı */}
+          {/* Maliyet Detayı - PROFESYONEL */}
           {analysis && (
-            <Card title="Maliyet Analizi">
+            <Card title="Maliyet Analizi (Profesyonel)">
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Etkin Km:</span>
                   <span className="font-semibold">{analysis.etkinKm.toFixed(0)} km</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Toplam Maliyet:</span>
-                  <span className="font-semibold text-red-600">
-                    {formatCurrency(analysis.toplamMaliyet)}
-                  </span>
+                
+                {/* Maliyet Detayları */}
+                <div className="border-t pt-2 space-y-1">
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>⛽ Yakıt ({analysis.costBreakdown.yakitLitre?.toFixed(1)} lt):</span>
+                    <span className="font-medium">{formatCurrency(analysis.costBreakdown.yakitMaliyet)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>👤 Sürücü ({analysis.costBreakdown.surucuGun} gün):</span>
+                    <span className="font-medium">{formatCurrency(analysis.costBreakdown.surucuMaliyet)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>🍽️ Yemek:</span>
+                    <span className="font-medium">{formatCurrency(analysis.costBreakdown.yemekMaliyet)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>🛣️ HGS/Köprü:</span>
+                    <span className="font-medium">{formatCurrency(analysis.costBreakdown.hgsMaliyet)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>🔧 Bakım Toplam:</span>
+                    <span className="font-medium">{formatCurrency(analysis.costBreakdown.toplamBakimMaliyet)}</span>
+                  </div>
+                  <div className="ml-4 space-y-1 mt-1">
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>- Yağ:</span>
+                      <span>{formatCurrency(analysis.costBreakdown.yagMaliyet)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>- Lastik:</span>
+                      <span>{formatCurrency(analysis.costBreakdown.lastikMaliyet)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>- Bakım:</span>
+                      <span>{formatCurrency(analysis.costBreakdown.bakimMaliyet)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>- Onarım:</span>
+                      <span>{formatCurrency(analysis.costBreakdown.onarimMaliyet)}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="border-t pt-2">
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>• Amortisman:</span>
-                    <span>{formatCurrency(analysis.maliyetDetay.amortisman)}</span>
+                
+                <div className="border-t pt-2 bg-red-50 rounded p-2">
+                  <div className="flex justify-between text-sm font-semibold">
+                    <span className="text-red-800">Toplam Maliyet:</span>
+                    <span className="text-red-600">
+                      {formatCurrency(analysis.toplamMaliyet)}
+                    </span>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>• Yakıt:</span>
-                    <span>{formatCurrency(analysis.maliyetDetay.benzin)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>• Sürücü:</span>
-                    <span>{formatCurrency(analysis.maliyetDetay.surucu)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>• Bakım:</span>
-                    <span>{formatCurrency(analysis.maliyetDetay.bakim)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>• Ek Masraf:</span>
-                    <span>{formatCurrency(analysis.maliyetDetay.ekMasraf)}</span>
-                  </div>
+                  <p className="text-xs text-red-600 mt-1">
+                    ({formatCurrency(analysis.costBreakdown.maliyetPerKm)}/km)
+                  </p>
                 </div>
+                
                 <div className="border-t pt-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Önerilen Fiyat:</span>
@@ -459,40 +519,53 @@ export default function CreateOrderAdvanced() {
                     (Maliyet + %45 Kar + %20 KDV)
                   </p>
                 </div>
+                
+                <div className="border-t pt-2 bg-yellow-50 rounded p-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">Başabaş Fiyat:</span>
+                    <span className="font-medium">{formatCurrency(analysis.onerilenMinFiyat)}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    (Maliyet + %20 KDV - Kar yok)
+                  </p>
+                </div>
               </div>
             </Card>
           )}
 
-          {/* Km Başı Maliyet */}
+          {/* Km Başı Maliyet - Özet */}
           {costBreakdown && (
-            <Card title="Km Başı Maliyet">
+            <Card title="Km Başı Maliyet (Ortalama)">
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span>Amortisman:</span>
-                  <span>{formatCurrency(costBreakdown.amortPerKm)}/km</span>
+                  <span>⛽ Yakıt:</span>
+                  <span className="font-medium">{formatCurrency(costBreakdown.yakitPerKm || costBreakdown.benzinPerKm)}/km</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Yakıt:</span>
-                  <span>{formatCurrency(costBreakdown.benzinPerKm)}/km</span>
+                  <span>👤 Sürücü:</span>
+                  <span className="font-medium">{formatCurrency(costBreakdown.surucuPerKm || costBreakdown.driverPerKm)}/km</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Sürücü:</span>
-                  <span>{formatCurrency(costBreakdown.driverPerKm)}/km</span>
+                  <span>🍽️ Yemek:</span>
+                  <span className="font-medium">{formatCurrency(costBreakdown.yemekPerKm || 0)}/km</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Bakım:</span>
-                  <span>{formatCurrency(costBreakdown.bakimPerKm)}/km</span>
+                  <span>🔧 Bakım:</span>
+                  <span className="font-medium">{formatCurrency(costBreakdown.bakimPerKm)}/km</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Ek Masraf:</span>
-                  <span>{formatCurrency(costBreakdown.ekMasrafPerKm)}/km</span>
+                  <span>🛣️ HGS:</span>
+                  <span className="font-medium">{formatCurrency(costBreakdown.hgsPerKm)}/km</span>
                 </div>
-                <div className="border-t pt-2 flex justify-between font-semibold">
-                  <span>Toplam:</span>
+                <div className="border-t pt-2 flex justify-between font-bold">
+                  <span>TOPLAM:</span>
                   <span className="text-primary-600">
                     {formatCurrency(costBreakdown.toplamMaliyetPerKm)}/km
                   </span>
                 </div>
+                <p className="text-xs text-gray-500 mt-2 italic">
+                  * Gerçek maliyetler mesafeye göre değişir
+                </p>
               </div>
             </Card>
           )}

@@ -5,7 +5,7 @@ import Orders from './pages/Orders'
 import OrderDetail from './pages/OrderDetail'
 import CreateOrderAdvanced from './pages/CreateOrderAdvanced'
 import Reports from './pages/Reports'
-import Vehicles from './pages/Vehicles'
+import VehiclesProfessional from './pages/VehiclesProfessional'
 
 function App() {
   return (
@@ -17,7 +17,7 @@ function App() {
           <Route path="/orders/new" element={<CreateOrderAdvanced />} />
           <Route path="/orders/:id" element={<OrderDetail />} />
           <Route path="/reports" element={<Reports />} />
-          <Route path="/vehicles" element={<Vehicles />} />
+          <Route path="/vehicles" element={<VehiclesProfessional />} />
         </Routes>
       </Layout>
     </Router>

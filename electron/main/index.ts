@@ -1,7 +1,12 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import { initDatabase, getDB } from './database'
-import { CostCalculator, DEFAULT_VEHICLE_PARAMS, type VehicleParams } from './cost-calculator'
+import { 
+  ProfessionalCostCalculator, 
+  DEFAULT_PROFESSIONAL_PARAMS, 
+  type ProfessionalVehicleParams,
+  type RouteInfo
+} from './professional-cost-calculator'
 
 // __dirname is available in CommonJS (esbuild handles this)
 
@@ -106,8 +111,14 @@ ipcMain.handle('db:createOrder', async (_, orderData) => {
   const db = getDB()
   try {
     const stmt = db.prepare(`
-      INSERT INTO orders (plaka, musteri, telefon, nereden, nereye, yuk_aciklamasi, baslangic_fiyati, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      INSERT INTO orders (
+        plaka, musteri, telefon, nereden, nereye, yuk_aciklamasi, baslangic_fiyati,
+        gidis_km, donus_km, return_load_rate, etkin_km, tahmini_gun,
+        yakit_litre, yakit_maliyet, surucu_maliyet, yemek_maliyet, hgs_maliyet, bakim_maliyet,
+        toplam_maliyet, onerilen_fiyat, kar_zarar, kar_zarar_yuzde,
+        status, created_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `)
     
     const result = stmt.run(
@@ -118,6 +129,21 @@ ipcMain.handle('db:createOrder', async (_, orderData) => {
       orderData.nereye,
       orderData.yukAciklamasi,
       orderData.baslangicFiyati,
+      orderData.gidisKm || 0,
+      orderData.donusKm || 0,
+      orderData.returnLoadRate || 0,
+      orderData.etkinKm || 0,
+      orderData.tahminiGun || 1,
+      orderData.yakitLitre || 0,
+      orderData.yakitMaliyet || 0,
+      orderData.surucuMaliyet || 0,
+      orderData.yemekMaliyet || 0,
+      orderData.hgsMaliyet || 0,
+      orderData.bakimMaliyet || 0,
+      orderData.toplamMaliyet || 0,
+      orderData.onerilenFiyat || 0,
+      orderData.karZarar || 0,
+      orderData.karZararYuzde || 0,
       'Bekliyor'
     )
     
@@ -425,7 +451,7 @@ ipcMain.handle('app:getPath', async (_, name) => {
 
 // ==================== YENİ: ARAÇ ve MALİYET HESAPLAMALARI ====================
 
-// Araç bilgilerini getir veya varsayılan parametreleri döndür
+// Araç bilgilerini getir veya varsayılan parametreleri döndür (PROFESYONEL)
 ipcMain.handle('db:getVehicleParams', async (_, plaka) => {
   const db = getDB()
   try {
@@ -433,29 +459,33 @@ ipcMain.handle('db:getVehicleParams', async (_, plaka) => {
     
     if (vehicle) {
       return {
-        aracDegeri: vehicle.arac_degeri,
-        amortiSureYil: vehicle.amorti_sure_yil,
-        hedefToplamKm: vehicle.hedef_toplam_km,
-        bakimMaliyet: vehicle.bakim_maliyet,
-        bakimAralikKm: vehicle.bakim_aralik_km,
-        ekMasrafPer1000: vehicle.ek_masraf_per_1000,
-        benzinPerKm: vehicle.benzin_per_km,
+        yakitTuketimi: vehicle.yakit_tuketimi,
+        yakitFiyati: vehicle.yakit_fiyati,
         gunlukUcret: vehicle.gunluk_ucret,
         gunlukOrtKm: vehicle.gunluk_ort_km,
+        yemekGunluk: vehicle.yemek_gunluk,
+        yagDegisimMaliyet: vehicle.yag_maliyet,
+        yagDegisimAralik: vehicle.yag_aralik,
+        lastikMaliyet: vehicle.lastik_maliyet,
+        lastikOmur: vehicle.lastik_omur,
+        buyukBakimMaliyet: vehicle.buyuk_bakim_maliyet,
+        buyukBakimAralik: vehicle.buyuk_bakim_aralik,
+        ufakOnarimAylik: vehicle.ufak_onarim_aylik,
+        hgsPerKm: vehicle.hgs_per_km,
         karOrani: vehicle.kar_orani,
         kdv: vehicle.kdv,
-      } as VehicleParams
+      } as ProfessionalVehicleParams
     }
     
     // Araç yoksa varsayılan parametreleri döndür
-    return DEFAULT_VEHICLE_PARAMS
+    return DEFAULT_PROFESSIONAL_PARAMS
   } catch (error) {
     console.error('Error fetching vehicle params:', error)
-    return DEFAULT_VEHICLE_PARAMS
+    return DEFAULT_PROFESSIONAL_PARAMS
   }
 })
 
-// Araç kaydet/güncelle
+// Araç kaydet/güncelle (PROFESYONEL PARAMETRELER)
 ipcMain.handle('db:saveVehicle', async (_, vehicleData) => {
   const db = getDB()
   try {
@@ -465,31 +495,37 @@ ipcMain.handle('db:saveVehicle', async (_, vehicleData) => {
       // Güncelle
       db.prepare(`
         UPDATE vehicles SET
+          yakit_tuketimi = ?, yakit_fiyati = ?, gunluk_ucret = ?, gunluk_ort_km = ?,
+          yemek_gunluk = ?, yag_maliyet = ?, yag_aralik = ?, lastik_maliyet = ?,
+          lastik_omur = ?, buyuk_bakim_maliyet = ?, buyuk_bakim_aralik = ?,
+          ufak_onarim_aylik = ?, hgs_per_km = ?, kar_orani = ?, kdv = ?,
           arac_degeri = ?, amorti_sure_yil = ?, hedef_toplam_km = ?,
-          bakim_maliyet = ?, bakim_aralik_km = ?, ek_masraf_per_1000 = ?,
-          benzin_per_km = ?, gunluk_ucret = ?, gunluk_ort_km = ?,
-          kar_orani = ?, kdv = ?, updated_at = datetime('now')
+          updated_at = datetime('now')
         WHERE plaka = ?
       `).run(
-        vehicleData.aracDegeri, vehicleData.amortiSureYil, vehicleData.hedefToplamKm,
-        vehicleData.bakimMaliyet, vehicleData.bakimAralikKm, vehicleData.ekMasrafPer1000,
-        vehicleData.benzinPerKm, vehicleData.gunlukUcret, vehicleData.gunlukOrtKm,
-        vehicleData.karOrani, vehicleData.kdv, vehicleData.plaka
+        vehicleData.yakitTuketimi, vehicleData.yakitFiyati, vehicleData.gunlukUcret, vehicleData.gunlukOrtKm,
+        vehicleData.yemekGunluk, vehicleData.yagMaliyet, vehicleData.yagAralik, vehicleData.lastikMaliyet,
+        vehicleData.lastikOmur, vehicleData.buyukBakimMaliyet, vehicleData.buyukBakimAralik,
+        vehicleData.ufakOnarimAylik, vehicleData.hgsPerKm, vehicleData.karOrani, vehicleData.kdv,
+        vehicleData.aracDegeri || 2300000, vehicleData.amortiSureYil || 2, vehicleData.hedefToplamKm || 72000,
+        vehicleData.plaka
       )
     } else {
       // Yeni kayıt
       db.prepare(`
         INSERT INTO vehicles (
-          plaka, arac_degeri, amorti_sure_yil, hedef_toplam_km,
-          bakim_maliyet, bakim_aralik_km, ek_masraf_per_1000,
-          benzin_per_km, gunluk_ucret, gunluk_ort_km,
-          kar_orani, kdv
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          plaka, yakit_tuketimi, yakit_fiyati, gunluk_ucret, gunluk_ort_km,
+          yemek_gunluk, yag_maliyet, yag_aralik, lastik_maliyet,
+          lastik_omur, buyuk_bakim_maliyet, buyuk_bakim_aralik,
+          ufak_onarim_aylik, hgs_per_km, kar_orani, kdv,
+          arac_degeri, amorti_sure_yil, hedef_toplam_km
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
-        vehicleData.plaka, vehicleData.aracDegeri, vehicleData.amortiSureYil, vehicleData.hedefToplamKm,
-        vehicleData.bakimMaliyet, vehicleData.bakimAralikKm, vehicleData.ekMasrafPer1000,
-        vehicleData.benzinPerKm, vehicleData.gunlukUcret, vehicleData.gunlukOrtKm,
-        vehicleData.karOrani, vehicleData.kdv
+        vehicleData.plaka, vehicleData.yakitTuketimi, vehicleData.yakitFiyati, vehicleData.gunlukUcret, vehicleData.gunlukOrtKm,
+        vehicleData.yemekGunluk, vehicleData.yagMaliyet, vehicleData.yagAralik, vehicleData.lastikMaliyet,
+        vehicleData.lastikOmur, vehicleData.buyukBakimMaliyet, vehicleData.buyukBakimAralik,
+        vehicleData.ufakOnarimAylik, vehicleData.hgsPerKm, vehicleData.karOrani, vehicleData.kdv,
+        vehicleData.aracDegeri || 2300000, vehicleData.amortiSureYil || 2, vehicleData.hedefToplamKm || 72000
       )
     }
     
@@ -511,39 +547,49 @@ ipcMain.handle('db:getVehicles', async () => {
   }
 })
 
-// Maliyet analizi yap
+// Maliyet analizi yap (PROFESYONEL)
 ipcMain.handle('cost:analyze', async (_, orderData) => {
   try {
     // Araç parametrelerini al
     const db = getDB()
-    let params: VehicleParams = DEFAULT_VEHICLE_PARAMS
+    let params: ProfessionalVehicleParams = DEFAULT_PROFESSIONAL_PARAMS
     
     if (orderData.plaka) {
       const vehicle = db.prepare('SELECT * FROM vehicles WHERE plaka = ? AND aktif = 1').get(orderData.plaka)
       if (vehicle) {
         params = {
-          aracDegeri: vehicle.arac_degeri,
-          amortiSureYil: vehicle.amorti_sure_yil,
-          hedefToplamKm: vehicle.hedef_toplam_km,
-          bakimMaliyet: vehicle.bakim_maliyet,
-          bakimAralikKm: vehicle.bakim_aralik_km,
-          ekMasrafPer1000: vehicle.ek_masraf_per_1000,
-          benzinPerKm: vehicle.benzin_per_km,
-          gunlukUcret: vehicle.gunluk_ucret,
-          gunlukOrtKm: vehicle.gunluk_ort_km,
-          karOrani: vehicle.kar_orani,
-          kdv: vehicle.kdv,
+          yakitTuketimi: vehicle.yakit_tuketimi || 25,
+          yakitFiyati: vehicle.yakit_fiyati || 40,
+          gunlukUcret: vehicle.gunluk_ucret || 1600,
+          gunlukOrtKm: vehicle.gunluk_ort_km || 500,
+          yemekGunluk: vehicle.yemek_gunluk || 150,
+          yagDegisimMaliyet: vehicle.yag_maliyet || 500,
+          yagDegisimAralik: vehicle.yag_aralik || 5000,
+          lastikMaliyet: vehicle.lastik_maliyet || 8000,
+          lastikOmur: vehicle.lastik_omur || 50000,
+          buyukBakimMaliyet: vehicle.buyuk_bakim_maliyet || 3000,
+          buyukBakimAralik: vehicle.buyuk_bakim_aralik || 15000,
+          ufakOnarimAylik: vehicle.ufak_onarim_aylik || 200,
+          hgsPerKm: vehicle.hgs_per_km || 0.5,
+          sigorta: vehicle.sigorta_yillik || 12000,
+          mtv: vehicle.mtv_yillik || 5000,
+          karOrani: vehicle.kar_orani || 0.45,
+          kdv: vehicle.kdv || 0.20,
         }
       }
     }
     
-    const calculator = new CostCalculator(params)
-    const analysis = calculator.analyzeProfitability({
+    const calculator = new ProfessionalCostCalculator(params)
+    const route: RouteInfo = {
+      nereden: orderData.nereden || '',
+      nereye: orderData.nereye || '',
       gidisKm: orderData.gidisKm || 0,
       donusKm: orderData.donusKm || 0,
       returnLoadRate: orderData.returnLoadRate || 0,
-      ilkFiyat: orderData.ilkFiyat || 0,
-    })
+      tahminiGun: orderData.tahminiGun || Math.max(1, Math.ceil((orderData.gidisKm || 0) / (params.gunlukOrtKm || 500))),
+    }
+    
+    const analysis = calculator.analyzeDetailedCost(route, orderData.ilkFiyat || 0)
     
     return analysis
   } catch (error) {
@@ -552,78 +598,81 @@ ipcMain.handle('cost:analyze', async (_, orderData) => {
   }
 })
 
-// Önerilen fiyat hesapla
+// Önerilen fiyat hesapla (PROFESYONEL)
+// Not: Bu fonksiyon cost:analyze ile birleştirildi, ama geriye uyumluluk için kalıyor
 ipcMain.handle('cost:calculateRecommended', async (_, orderData) => {
   try {
-    const db = getDB()
-    let params: VehicleParams = DEFAULT_VEHICLE_PARAMS
-    
-    if (orderData.plaka) {
-      const vehicle = db.prepare('SELECT * FROM vehicles WHERE plaka = ? AND aktif = 1').get(orderData.plaka)
-      if (vehicle) {
-        params = {
-          aracDegeri: vehicle.arac_degeri,
-          amortiSureYil: vehicle.amorti_sure_yil,
-          hedefToplamKm: vehicle.hedef_toplam_km,
-          bakimMaliyet: vehicle.bakim_maliyet,
-          bakimAralikKm: vehicle.bakim_aralik_km,
-          ekMasrafPer1000: vehicle.ek_masraf_per_1000,
-          benzinPerKm: vehicle.benzin_per_km,
-          gunlukUcret: vehicle.gunluk_ucret,
-          gunlukOrtKm: vehicle.gunluk_ort_km,
-          karOrani: vehicle.kar_orani,
-          kdv: vehicle.kdv,
-        }
-      }
+    // cost:analyze kullan ve sadece önerilen fiyatları döndür
+    const analysis = await ipcMain.emit('cost:analyze', {}, orderData)
+    return {
+      recommended: analysis.fiyatKdvli || 0,
+      breakEven: analysis.onerilenMinFiyat || 0
     }
-    
-    const calculator = new CostCalculator(params)
-    const recommended = calculator.calculateRecommendedPrice(
-      orderData.gidisKm || 0,
-      orderData.donusKm || 0,
-      orderData.returnLoadRate || 0
-    )
-    
-    const breakEven = calculator.calculateBreakEvenPrice(
-      orderData.gidisKm || 0,
-      orderData.donusKm || 0,
-      orderData.returnLoadRate || 0
-    )
-    
-    return { recommended, breakEven }
   } catch (error) {
     console.error('Error calculating recommended price:', error)
     throw error
   }
 })
 
-// Km başı maliyet detayını getir
+// Km başı maliyet detayını getir (basit özet)
 ipcMain.handle('cost:getBreakdown', async (_, plaka) => {
   try {
     const db = getDB()
-    let params: VehicleParams = DEFAULT_VEHICLE_PARAMS
+    let params: ProfessionalVehicleParams = DEFAULT_PROFESSIONAL_PARAMS
     
     if (plaka) {
       const vehicle = db.prepare('SELECT * FROM vehicles WHERE plaka = ? AND aktif = 1').get(plaka)
       if (vehicle) {
         params = {
-          aracDegeri: vehicle.arac_degeri,
-          amortiSureYil: vehicle.amorti_sure_yil,
-          hedefToplamKm: vehicle.hedef_toplam_km,
-          bakimMaliyet: vehicle.bakim_maliyet,
-          bakimAralikKm: vehicle.bakim_aralik_km,
-          ekMasrafPer1000: vehicle.ek_masraf_per_1000,
-          benzinPerKm: vehicle.benzin_per_km,
-          gunlukUcret: vehicle.gunluk_ucret,
-          gunlukOrtKm: vehicle.gunluk_ort_km,
-          karOrani: vehicle.kar_orani,
-          kdv: vehicle.kdv,
+          yakitTuketimi: vehicle.yakit_tuketimi || 25,
+          yakitFiyati: vehicle.yakit_fiyati || 40,
+          gunlukUcret: vehicle.gunluk_ucret || 1600,
+          gunlukOrtKm: vehicle.gunluk_ort_km || 500,
+          yemekGunluk: vehicle.yemek_gunluk || 150,
+          yagDegisimMaliyet: vehicle.yag_maliyet || 500,
+          yagDegisimAralik: vehicle.yag_aralik || 5000,
+          lastikMaliyet: vehicle.lastik_maliyet || 8000,
+          lastikOmur: vehicle.lastik_omur || 50000,
+          buyukBakimMaliyet: vehicle.buyuk_bakim_maliyet || 3000,
+          buyukBakimAralik: vehicle.buyuk_bakim_aralik || 15000,
+          ufakOnarimAylik: vehicle.ufak_onarim_aylik || 200,
+          hgsPerKm: vehicle.hgs_per_km || 0.5,
+          sigorta: vehicle.sigorta_yillik || 12000,
+          mtv: vehicle.mtv_yillik || 5000,
+          karOrani: vehicle.kar_orani || 0.45,
+          kdv: vehicle.kdv || 0.20,
         }
       }
     }
     
-    const calculator = new CostCalculator(params)
-    return calculator.calculateCostBreakdown()
+    const calculator = new ProfessionalCostCalculator(params)
+    
+    // Basit özet için 100 km varsayıyoruz
+    const fuel = calculator.calculateFuelCost(100)
+    const driver = calculator.calculateDriverCost(100)
+    const maintenance = calculator.calculateMaintenanceCost(100, 1)
+    
+    const yakitPerKm = fuel.maliyet / 100
+    const surucuPerKm = driver.ucret / 100
+    const yemekPerKm = driver.yemek / 100
+    const bakimPerKm = maintenance.toplam / 100
+    const hgsPerKm = params.hgsPerKm
+    
+    const toplamPerKm = yakitPerKm + surucuPerKm + yemekPerKm + bakimPerKm + hgsPerKm
+    
+    return {
+      yakitPerKm,
+      surucuPerKm,
+      yemekPerKm,
+      bakimPerKm,
+      hgsPerKm,
+      toplamMaliyetPerKm: toplamPerKm,
+      // Eski format uyumluluk
+      benzinPerKm: yakitPerKm,
+      driverPerKm: surucuPerKm,
+      ekMasrafPerKm: yemekPerKm + hgsPerKm,
+      amortPerKm: 0,
+    }
   } catch (error) {
     console.error('Error getting cost breakdown:', error)
     throw error
