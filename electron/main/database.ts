@@ -30,7 +30,7 @@ export const initDatabase = () => {
 const createTables = () => {
   if (!db) return
   
-  // Orders table (geliştirilmiş - km bilgileri eklendi)
+  // Orders table (geliştirilmiş - detaylı maliyet bilgileri)
   db.exec(`
     CREATE TABLE IF NOT EXISTS orders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,13 +41,28 @@ const createTables = () => {
       nereye TEXT NOT NULL,
       yuk_aciklamasi TEXT,
       baslangic_fiyati REAL NOT NULL,
+      
+      -- Mesafe bilgileri
       gidis_km REAL DEFAULT 0,
       donus_km REAL DEFAULT 0,
       return_load_rate REAL DEFAULT 0,
       etkin_km REAL DEFAULT 0,
+      tahmini_gun INTEGER DEFAULT 1,
+      
+      -- Maliyet detayları
+      yakit_litre REAL DEFAULT 0,
+      yakit_maliyet REAL DEFAULT 0,
+      surucu_maliyet REAL DEFAULT 0,
+      yemek_maliyet REAL DEFAULT 0,
+      hgs_maliyet REAL DEFAULT 0,
+      bakim_maliyet REAL DEFAULT 0,
       toplam_maliyet REAL DEFAULT 0,
+      
+      -- Fiyat analizi
       onerilen_fiyat REAL DEFAULT 0,
       kar_zarar REAL DEFAULT 0,
+      kar_zarar_yuzde REAL DEFAULT 0,
+      
       status TEXT DEFAULT 'Bekliyor',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -91,23 +106,44 @@ const createTables = () => {
     )
   `)
   
-  // Vehicles table (araç bilgileri)
+  // Vehicles table (araç bilgileri - PROFESYONEL)
   db.exec(`
     CREATE TABLE IF NOT EXISTS vehicles (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       plaka TEXT UNIQUE NOT NULL,
+      
+      -- Yakıt (lt/100km bazlı)
+      yakit_tuketimi REAL DEFAULT 25,
+      yakit_fiyati REAL DEFAULT 40,
+      
+      -- Sürücü
+      gunluk_ucret REAL DEFAULT 1600,
+      gunluk_ort_km REAL DEFAULT 500,
+      yemek_gunluk REAL DEFAULT 150,
+      
+      -- Bakım/Onarım (detaylı)
+      yag_maliyet REAL DEFAULT 500,
+      yag_aralik REAL DEFAULT 5000,
+      lastik_maliyet REAL DEFAULT 8000,
+      lastik_omur REAL DEFAULT 50000,
+      buyuk_bakim_maliyet REAL DEFAULT 3000,
+      buyuk_bakim_aralik REAL DEFAULT 15000,
+      ufak_onarim_aylik REAL DEFAULT 200,
+      
+      -- HGS
+      hgs_per_km REAL DEFAULT 0.50,
+      
+      -- Fiyatlandırma
+      kar_orani REAL DEFAULT 0.45,
+      kdv REAL DEFAULT 0.20,
+      
+      -- Eski alanlar (opsiyonel/backward compatibility)
       arac_degeri REAL DEFAULT 2300000,
       amorti_sure_yil REAL DEFAULT 2,
       hedef_toplam_km REAL DEFAULT 72000,
-      bakim_maliyet REAL DEFAULT 15000,
-      bakim_aralik_km REAL DEFAULT 15000,
-      ek_masraf_per_1000 REAL DEFAULT 1000,
-      benzin_per_km REAL DEFAULT 7.5,
-      gunluk_ucret REAL DEFAULT 1600,
-      gunluk_ort_km REAL DEFAULT 500,
-      kar_orani REAL DEFAULT 0.45,
-      kdv REAL DEFAULT 0.20,
-      include_amortisman INTEGER DEFAULT 0,
+      sigorta_yillik REAL DEFAULT 12000,
+      mtv_yillik REAL DEFAULT 5000,
+      
       aktif INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
