@@ -14,6 +14,7 @@ interface LayoutProps {
 const navigation = [
   { name: 'Ana Sayfa', href: '/', icon: HomeIcon },
   { name: 'Siparişler', href: '/orders', icon: TruckIcon },
+  { name: 'Araçlar', href: '/vehicles', icon: TruckIcon },
   { name: 'Raporlar', href: '/reports', icon: DocumentTextIcon },
 ]
 

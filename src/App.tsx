@@ -3,8 +3,9 @@ import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Orders from './pages/Orders'
 import OrderDetail from './pages/OrderDetail'
-import CreateOrder from './pages/CreateOrder'
+import CreateOrderAdvanced from './pages/CreateOrderAdvanced'
 import Reports from './pages/Reports'
+import Vehicles from './pages/Vehicles'
 
 function App() {
   return (
@@ -13,9 +14,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/orders" element={<Orders />} />
-          <Route path="/orders/new" element={<CreateOrder />} />
+          <Route path="/orders/new" element={<CreateOrderAdvanced />} />
           <Route path="/orders/:id" element={<OrderDetail />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/vehicles" element={<Vehicles />} />
         </Routes>
       </Layout>
     </Router>

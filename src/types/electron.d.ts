@@ -17,6 +17,16 @@ export interface ElectronAPI {
     
     getMonthlyReport: (year: number, month: number) => Promise<any>
     getDashboardStats: () => Promise<any>
+    
+    getVehicleParams: (plaka: string) => Promise<any>
+    saveVehicle: (vehicleData: any) => Promise<{ success: boolean }>
+    getVehicles: () => Promise<any[]>
+  }
+  
+  cost: {
+    analyze: (orderData: any) => Promise<any>
+    calculateRecommended: (orderData: any) => Promise<{ recommended: number; breakEven: number }>
+    getBreakdown: (plaka: string) => Promise<any>
   }
   
   fs: {
