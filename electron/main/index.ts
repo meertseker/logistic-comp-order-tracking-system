@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'path'
 import { initDatabase, getDB } from './database'
+import { CostCalculator, DEFAULT_VEHICLE_PARAMS, type VehicleParams } from './cost-calculator'
 
 // __dirname is available in CommonJS (esbuild handles this)
 
@@ -420,5 +421,212 @@ ipcMain.handle('fs:deleteFile', async (_, filePath) => {
 
 ipcMain.handle('app:getPath', async (_, name) => {
   return app.getPath(name as any)
+})
+
+// ==================== YENİ: ARAÇ ve MALİYET HESAPLAMALARI ====================
+
+// Araç bilgilerini getir veya varsayılan parametreleri döndür
+ipcMain.handle('db:getVehicleParams', async (_, plaka) => {
+  const db = getDB()
+  try {
+    const vehicle = db.prepare('SELECT * FROM vehicles WHERE plaka = ? AND aktif = 1').get(plaka)
+    
+    if (vehicle) {
+      return {
+        aracDegeri: vehicle.arac_degeri,
+        amortiSureYil: vehicle.amorti_sure_yil,
+        hedefToplamKm: vehicle.hedef_toplam_km,
+        bakimMaliyet: vehicle.bakim_maliyet,
+        bakimAralikKm: vehicle.bakim_aralik_km,
+        ekMasrafPer1000: vehicle.ek_masraf_per_1000,
+        benzinPerKm: vehicle.benzin_per_km,
+        gunlukUcret: vehicle.gunluk_ucret,
+        gunlukOrtKm: vehicle.gunluk_ort_km,
+        karOrani: vehicle.kar_orani,
+        kdv: vehicle.kdv,
+      } as VehicleParams
+    }
+    
+    // Araç yoksa varsayılan parametreleri döndür
+    return DEFAULT_VEHICLE_PARAMS
+  } catch (error) {
+    console.error('Error fetching vehicle params:', error)
+    return DEFAULT_VEHICLE_PARAMS
+  }
+})
+
+// Araç kaydet/güncelle
+ipcMain.handle('db:saveVehicle', async (_, vehicleData) => {
+  const db = getDB()
+  try {
+    const existing = db.prepare('SELECT id FROM vehicles WHERE plaka = ?').get(vehicleData.plaka)
+    
+    if (existing) {
+      // Güncelle
+      db.prepare(`
+        UPDATE vehicles SET
+          arac_degeri = ?, amorti_sure_yil = ?, hedef_toplam_km = ?,
+          bakim_maliyet = ?, bakim_aralik_km = ?, ek_masraf_per_1000 = ?,
+          benzin_per_km = ?, gunluk_ucret = ?, gunluk_ort_km = ?,
+          kar_orani = ?, kdv = ?, updated_at = datetime('now')
+        WHERE plaka = ?
+      `).run(
+        vehicleData.aracDegeri, vehicleData.amortiSureYil, vehicleData.hedefToplamKm,
+        vehicleData.bakimMaliyet, vehicleData.bakimAralikKm, vehicleData.ekMasrafPer1000,
+        vehicleData.benzinPerKm, vehicleData.gunlukUcret, vehicleData.gunlukOrtKm,
+        vehicleData.karOrani, vehicleData.kdv, vehicleData.plaka
+      )
+    } else {
+      // Yeni kayıt
+      db.prepare(`
+        INSERT INTO vehicles (
+          plaka, arac_degeri, amorti_sure_yil, hedef_toplam_km,
+          bakim_maliyet, bakim_aralik_km, ek_masraf_per_1000,
+          benzin_per_km, gunluk_ucret, gunluk_ort_km,
+          kar_orani, kdv
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        vehicleData.plaka, vehicleData.aracDegeri, vehicleData.amortiSureYil, vehicleData.hedefToplamKm,
+        vehicleData.bakimMaliyet, vehicleData.bakimAralikKm, vehicleData.ekMasrafPer1000,
+        vehicleData.benzinPerKm, vehicleData.gunlukUcret, vehicleData.gunlukOrtKm,
+        vehicleData.karOrani, vehicleData.kdv
+      )
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error saving vehicle:', error)
+    throw error
+  }
+})
+
+// Tüm araçları getir
+ipcMain.handle('db:getVehicles', async () => {
+  const db = getDB()
+  try {
+    return db.prepare('SELECT * FROM vehicles WHERE aktif = 1 ORDER BY plaka').all()
+  } catch (error) {
+    console.error('Error fetching vehicles:', error)
+    throw error
+  }
+})
+
+// Maliyet analizi yap
+ipcMain.handle('cost:analyze', async (_, orderData) => {
+  try {
+    // Araç parametrelerini al
+    const db = getDB()
+    let params: VehicleParams = DEFAULT_VEHICLE_PARAMS
+    
+    if (orderData.plaka) {
+      const vehicle = db.prepare('SELECT * FROM vehicles WHERE plaka = ? AND aktif = 1').get(orderData.plaka)
+      if (vehicle) {
+        params = {
+          aracDegeri: vehicle.arac_degeri,
+          amortiSureYil: vehicle.amorti_sure_yil,
+          hedefToplamKm: vehicle.hedef_toplam_km,
+          bakimMaliyet: vehicle.bakim_maliyet,
+          bakimAralikKm: vehicle.bakim_aralik_km,
+          ekMasrafPer1000: vehicle.ek_masraf_per_1000,
+          benzinPerKm: vehicle.benzin_per_km,
+          gunlukUcret: vehicle.gunluk_ucret,
+          gunlukOrtKm: vehicle.gunluk_ort_km,
+          karOrani: vehicle.kar_orani,
+          kdv: vehicle.kdv,
+        }
+      }
+    }
+    
+    const calculator = new CostCalculator(params)
+    const analysis = calculator.analyzeProfitability({
+      gidisKm: orderData.gidisKm || 0,
+      donusKm: orderData.donusKm || 0,
+      returnLoadRate: orderData.returnLoadRate || 0,
+      ilkFiyat: orderData.ilkFiyat || 0,
+    })
+    
+    return analysis
+  } catch (error) {
+    console.error('Error analyzing cost:', error)
+    throw error
+  }
+})
+
+// Önerilen fiyat hesapla
+ipcMain.handle('cost:calculateRecommended', async (_, orderData) => {
+  try {
+    const db = getDB()
+    let params: VehicleParams = DEFAULT_VEHICLE_PARAMS
+    
+    if (orderData.plaka) {
+      const vehicle = db.prepare('SELECT * FROM vehicles WHERE plaka = ? AND aktif = 1').get(orderData.plaka)
+      if (vehicle) {
+        params = {
+          aracDegeri: vehicle.arac_degeri,
+          amortiSureYil: vehicle.amorti_sure_yil,
+          hedefToplamKm: vehicle.hedef_toplam_km,
+          bakimMaliyet: vehicle.bakim_maliyet,
+          bakimAralikKm: vehicle.bakim_aralik_km,
+          ekMasrafPer1000: vehicle.ek_masraf_per_1000,
+          benzinPerKm: vehicle.benzin_per_km,
+          gunlukUcret: vehicle.gunluk_ucret,
+          gunlukOrtKm: vehicle.gunluk_ort_km,
+          karOrani: vehicle.kar_orani,
+          kdv: vehicle.kdv,
+        }
+      }
+    }
+    
+    const calculator = new CostCalculator(params)
+    const recommended = calculator.calculateRecommendedPrice(
+      orderData.gidisKm || 0,
+      orderData.donusKm || 0,
+      orderData.returnLoadRate || 0
+    )
+    
+    const breakEven = calculator.calculateBreakEvenPrice(
+      orderData.gidisKm || 0,
+      orderData.donusKm || 0,
+      orderData.returnLoadRate || 0
+    )
+    
+    return { recommended, breakEven }
+  } catch (error) {
+    console.error('Error calculating recommended price:', error)
+    throw error
+  }
+})
+
+// Km başı maliyet detayını getir
+ipcMain.handle('cost:getBreakdown', async (_, plaka) => {
+  try {
+    const db = getDB()
+    let params: VehicleParams = DEFAULT_VEHICLE_PARAMS
+    
+    if (plaka) {
+      const vehicle = db.prepare('SELECT * FROM vehicles WHERE plaka = ? AND aktif = 1').get(plaka)
+      if (vehicle) {
+        params = {
+          aracDegeri: vehicle.arac_degeri,
+          amortiSureYil: vehicle.amorti_sure_yil,
+          hedefToplamKm: vehicle.hedef_toplam_km,
+          bakimMaliyet: vehicle.bakim_maliyet,
+          bakimAralikKm: vehicle.bakim_aralik_km,
+          ekMasrafPer1000: vehicle.ek_masraf_per_1000,
+          benzinPerKm: vehicle.benzin_per_km,
+          gunlukUcret: vehicle.gunluk_ucret,
+          gunlukOrtKm: vehicle.gunluk_ort_km,
+          karOrani: vehicle.kar_orani,
+          kdv: vehicle.kdv,
+        }
+      }
+    }
+    
+    const calculator = new CostCalculator(params)
+    return calculator.calculateCostBreakdown()
+  } catch (error) {
+    console.error('Error getting cost breakdown:', error)
+    throw error
+  }
 })
 

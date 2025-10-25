@@ -22,6 +22,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     
     getMonthlyReport: (year: number, month: number) => ipcRenderer.invoke('db:getMonthlyReport', year, month),
     getDashboardStats: () => ipcRenderer.invoke('db:getDashboardStats'),
+    
+    // Vehicle & Cost operations
+    getVehicleParams: (plaka: string) => ipcRenderer.invoke('db:getVehicleParams', plaka),
+    saveVehicle: (vehicleData: any) => ipcRenderer.invoke('db:saveVehicle', vehicleData),
+    getVehicles: () => ipcRenderer.invoke('db:getVehicles'),
+  },
+  
+  // Cost calculation operations
+  cost: {
+    analyze: (orderData: any) => ipcRenderer.invoke('cost:analyze', orderData),
+    calculateRecommended: (orderData: any) => ipcRenderer.invoke('cost:calculateRecommended', orderData),
+    getBreakdown: (plaka: string) => ipcRenderer.invoke('cost:getBreakdown', plaka),
   },
   
   // File system operations
