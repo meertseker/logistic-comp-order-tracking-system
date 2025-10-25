@@ -50,7 +50,7 @@ export default function CreateOrderAdvanced() {
     if (formData.plaka && formData.gidisKm) {
       analyzeOrder()
     }
-  }, [formData.gidisKm, formData.donusKm, formData.returnLoadRate, formData.plaka, formData.tahminiGun])
+  }, [formData.gidisKm, formData.donusKm, formData.returnLoadRate, formData.plaka, formData.tahminiGun, formData.baslangicFiyati, formData.nereden, formData.nereye])
 
   const loadVehicles = async () => {
     try {
