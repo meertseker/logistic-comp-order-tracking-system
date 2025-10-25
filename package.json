@@ -1,0 +1,68 @@
+{
+  "name": "seymen-transport",
+  "version": "1.0.0",
+  "description": "Offline Desktop Transportation Management System",
+  "main": "dist-electron/main/index.cjs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:renderer && npm run build:electron",
+    "build:renderer": "vite build",
+    "build:electron": "node scripts/build-electron.js",
+    "build:mac": "npm run build && electron-builder --mac",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && node scripts/watch-electron.js\"",
+    "rebuild": "electron-rebuild -f -w better-sqlite3"
+  },
+  "keywords": ["electron", "react", "vite", "sqlite", "transportation"],
+  "author": "Seymen Transport",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "better-sqlite3": "^9.2.0",
+    "date-fns": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/better-sqlite3": "^7.6.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.0",
+    "electron-rebuild": "^3.2.9",
+    "vite": "^5.0.0",
+    "typescript": "^5.3.0",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0",
+    "concurrently": "^8.2.0",
+    "wait-on": "^7.2.0",
+    "esbuild": "^0.19.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  },
+  "build": {
+    "appId": "com.seymen.transport",
+    "productName": "Seymen Transport",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.business",
+      "icon": "build/icon.icns"
+    }
+  }
+}
+
