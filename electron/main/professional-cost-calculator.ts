@@ -78,6 +78,15 @@ export interface ProfessionalProfitAnalysis {
   onerilenMinFiyat: number      // Başabaş + KDV
 }
 
+// Şehir isimlerini normalize et (case-insensitive matching)
+function normalizeCity(city: string): string {
+  if (!city) return ''
+  return city.trim()
+    .split(' ')
+    .map(word => word.charAt(0).toLocaleUpperCase('tr-TR') + word.slice(1).toLocaleLowerCase('tr-TR'))
+    .join(' ')
+}
+
 // Güzergah bazlı HGS/Köprü maliyetleri
 const ROUTE_TOLLS: Record<string, { hgs: number; kopru: number }> = {
   'İstanbul-Ankara': { hgs: 450, kopru: 150 },
@@ -88,6 +97,10 @@ const ROUTE_TOLLS: Record<string, { hgs: number; kopru: number }> = {
   'Bursa-İstanbul': { hgs: 120, kopru: 150 },
   'Ankara-İzmir': { hgs: 350, kopru: 0 },
   'İzmir-Ankara': { hgs: 350, kopru: 0 },
+  'İstanbul-Adana': { hgs: 580, kopru: 150 },
+  'Adana-İstanbul': { hgs: 580, kopru: 150 },
+  'Ankara-Adana': { hgs: 420, kopru: 0 },
+  'Adana-Ankara': { hgs: 420, kopru: 0 },
 }
 
 export class ProfessionalCostCalculator {
@@ -113,16 +126,19 @@ export class ProfessionalCostCalculator {
     return { gun, ucret, yemek }
   }
 
-  // HGS/Köprü maliyeti (güzergah bazlı)
+  // HGS/Köprü maliyeti (güzergah bazlı, case-insensitive)
   calculateTollCost(nereden: string, nereye: string, km: number): number {
-    const key = `${nereden}-${nereye}`
+    // Şehir isimlerini normalize et
+    const from = normalizeCity(nereden)
+    const to = normalizeCity(nereye)
+    const key = `${from}-${to}`
     const toll = ROUTE_TOLLS[key]
     
     if (toll) {
       return toll.hgs + toll.kopru
     }
     
-    // Bilinmeyen güzergah: tahmini
+    // Bilinmeyen güzergah: km bazlı tahmini
     return km * this.params.hgsPerKm
   }
 
