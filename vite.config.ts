@@ -13,6 +13,13 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Production'da console.log'ları kaldır
+        drop_debugger: true,
+      },
+    },
   },
   server: {
     port: 5173,
