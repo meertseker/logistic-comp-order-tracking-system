@@ -55,7 +55,8 @@ export default function Orders() {
   const calculateStatistics = () => {
     const toplamGelir = orders.reduce((sum, o) => sum + (o.baslangic_fiyati || 0), 0)
     const toplamMaliyet = orders.reduce((sum, o) => sum + (o.toplam_maliyet || 0), 0)
-    const toplamKar = orders.reduce((sum, o) => sum + (o.kar_zarar || 0), 0)
+    // Doğru hesap: Toplam Gelir - Toplam Maliyet
+    const toplamKar = toplamGelir - toplamMaliyet
     
     setStatistics({
       toplamGelir,
