@@ -16,6 +16,7 @@ const navigation = [
   { name: 'Siparişler', href: '/orders', icon: TruckIcon },
   { name: 'Araçlar', href: '/vehicles', icon: TruckIcon },
   { name: 'Raporlar', href: '/reports', icon: DocumentTextIcon },
+  { name: 'Grafikler', href: '/charts', icon: DocumentTextIcon },
 ]
 
 export default function Layout({ children }: LayoutProps) {

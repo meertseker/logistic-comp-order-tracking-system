@@ -7,8 +7,11 @@ import {
   type ProfessionalVehicleParams,
   type RouteInfo
 } from './professional-cost-calculator'
+import { BackupManager } from './backup'
 
 // __dirname is available in CommonJS (esbuild handles this)
+
+let backupManager: BackupManager | null = null
 
 let mainWindow: BrowserWindow | null = null
 
@@ -47,6 +50,11 @@ const createWindow = () => {
 app.whenReady().then(() => {
   // Initialize database
   initDatabase()
+  
+  // Initialize backup manager
+  const dbPath = path.join(app.getPath('userData'), 'transport.db')
+  backupManager = new BackupManager(dbPath)
+  backupManager.startAutoBackup()
   
   // Create window
   createWindow()
@@ -160,7 +168,12 @@ ipcMain.handle('db:updateOrder', async (_, id, orderData) => {
     const stmt = db.prepare(`
       UPDATE orders 
       SET plaka = ?, musteri = ?, telefon = ?, nereden = ?, nereye = ?, 
-          yuk_aciklamasi = ?, baslangic_fiyati = ?, updated_at = datetime('now')
+          yuk_aciklamasi = ?, baslangic_fiyati = ?,
+          gidis_km = ?, donus_km = ?, return_load_rate = ?, etkin_km = ?, tahmini_gun = ?,
+          yakit_litre = ?, yakit_maliyet = ?, surucu_maliyet = ?, yemek_maliyet = ?, 
+          hgs_maliyet = ?, bakim_maliyet = ?, toplam_maliyet = ?,
+          onerilen_fiyat = ?, kar_zarar = ?, kar_zarar_yuzde = ?, status = ?,
+          updated_at = datetime('now')
       WHERE id = ?
     `)
     
@@ -172,6 +185,22 @@ ipcMain.handle('db:updateOrder', async (_, id, orderData) => {
       orderData.nereye,
       orderData.yukAciklamasi,
       orderData.baslangicFiyati,
+      orderData.gidisKm || 0,
+      orderData.donusKm || 0,
+      orderData.returnLoadRate || 0,
+      orderData.etkinKm || 0,
+      orderData.tahminiGun || 1,
+      orderData.yakitLitre || 0,
+      orderData.yakitMaliyet || 0,
+      orderData.surucuMaliyet || 0,
+      orderData.yemekMaliyet || 0,
+      orderData.hgsMaliyet || 0,
+      orderData.bakimMaliyet || 0,
+      orderData.toplamMaliyet || 0,
+      orderData.onerilenFiyat || 0,
+      orderData.karZarar || 0,
+      orderData.karZararYuzde || 0,
+      orderData.status || 'Bekliyor',
       id
     )
     
@@ -466,6 +495,51 @@ ipcMain.handle('fs:deleteFile', async (_, filePath) => {
 
 ipcMain.handle('app:getPath', async (_, name) => {
   return app.getPath(name as any)
+})
+
+// ==================== BACKUP İŞLEMLERİ ====================
+
+ipcMain.handle('backup:create', async () => {
+  try {
+    if (!backupManager) throw new Error('Backup manager not initialized')
+    const backupPath = await backupManager.createBackup()
+    return { success: true, path: backupPath }
+  } catch (error) {
+    console.error('Error creating backup:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('backup:list', async () => {
+  try {
+    if (!backupManager) throw new Error('Backup manager not initialized')
+    return await backupManager.listBackups()
+  } catch (error) {
+    console.error('Error listing backups:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('backup:restore', async (_, backupPath) => {
+  try {
+    if (!backupManager) throw new Error('Backup manager not initialized')
+    await backupManager.restoreBackup(backupPath)
+    return { success: true }
+  } catch (error) {
+    console.error('Error restoring backup:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('backup:delete', async (_, backupPath) => {
+  try {
+    if (!backupManager) throw new Error('Backup manager not initialized')
+    await backupManager.deleteBackup(backupPath)
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting backup:', error)
+    throw error
+  }
 })
 
 // ==================== YENİ: ARAÇ ve MALİYET HESAPLAMALARI ====================

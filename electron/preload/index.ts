@@ -47,5 +47,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   app: {
     getPath: (name: string) => ipcRenderer.invoke('app:getPath', name),
   },
+  
+  // Backup operations
+  backup: {
+    create: () => ipcRenderer.invoke('backup:create'),
+    list: () => ipcRenderer.invoke('backup:list'),
+    restore: (backupPath: string) => ipcRenderer.invoke('backup:restore', backupPath),
+    delete: (backupPath: string) => ipcRenderer.invoke('backup:delete', backupPath),
+  },
 })
 

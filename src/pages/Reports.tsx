@@ -4,6 +4,8 @@ import Button from '../components/Button'
 import Select from '../components/Select'
 import { ChartBarIcon, TruckIcon, CurrencyDollarIcon } from '../components/Icons'
 import { formatCurrency, formatNumber } from '../utils/formatters'
+import { exportReportToExcel } from '../utils/excelExport'
+import { exportReportToPDF } from '../utils/pdfExport'
 
 export default function Reports() {
   const [year, setYear] = useState(new Date().getFullYear())
@@ -86,9 +88,17 @@ export default function Reports() {
           <p className="mt-1 text-gray-600">Aylık performans raporları</p>
         </div>
         {report && (
-          <Button onClick={exportToCSV}>
-            CSV İndir
-          </Button>
+          <div className="flex space-x-2">
+            <Button onClick={exportToCSV} variant="secondary" size="sm">
+              📄 CSV
+            </Button>
+            <Button onClick={() => exportReportToExcel(report, year, month)} variant="secondary" size="sm">
+              📊 Excel
+            </Button>
+            <Button onClick={() => exportReportToPDF(report, year, month)} size="sm">
+              📕 PDF
+            </Button>
+          </div>
         )}
       </div>
 

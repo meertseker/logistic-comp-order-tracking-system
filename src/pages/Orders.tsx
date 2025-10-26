@@ -4,8 +4,13 @@ import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import Select from '../components/Select'
+import AdvancedFilters from '../components/AdvancedFilters'
+import Pagination from '../components/Pagination'
 import { PlusIcon, MagnifyingGlassIcon, EyeIcon, TrashIcon } from '../components/Icons'
 import { formatCurrency, formatDate } from '../utils/formatters'
+import { exportOrdersToExcel } from '../utils/excelExport'
+
+const ITEMS_PER_PAGE = 50
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Tüm Durumlar' },
@@ -17,10 +22,14 @@ const STATUS_OPTIONS = [
 ]
 
 export default function Orders() {
-  const [orders, setOrders] = useState<any[]>([])
+  const [allOrders, setAllOrders] = useState<any[]>([]) // Tüm siparişler
+  const [orders, setOrders] = useState<any[]>([]) // Filtrelenmiş siparişler
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [advancedFilters, setAdvancedFilters] = useState<any>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedOrders, setSelectedOrders] = useState<number[]>([]) // Çoklu seçim
   const [statistics, setStatistics] = useState({
     toplamGelir: 0,
     toplamMaliyet: 0,
@@ -28,9 +37,20 @@ export default function Orders() {
     toplamSiparis: 0,
   })
 
+  // Pagination hesaplama
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE
+  const currentOrders = orders.slice(indexOfFirstItem, indexOfLastItem)
+
+  const isAllSelected = currentOrders.length > 0 && currentOrders.every(o => selectedOrders.includes(o.id))
+
   useEffect(() => {
     loadOrders()
   }, [statusFilter])
+
+  useEffect(() => {
+    applyFilters()
+  }, [allOrders, search, advancedFilters])
 
   useEffect(() => {
     calculateStatistics()
@@ -41,15 +61,63 @@ export default function Orders() {
       setLoading(true)
       const filters: any = {}
       if (statusFilter) filters.status = statusFilter
-      if (search) filters.search = search
       
       const data = await window.electronAPI.db.getOrders(filters)
-      setOrders(data)
+      setAllOrders(data)
     } catch (error) {
       console.error('Failed to load orders:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const applyFilters = () => {
+    let filtered = [...allOrders]
+
+    // Arama
+    if (search) {
+      const searchLower = search.toLowerCase()
+      filtered = filtered.filter(o => 
+        o.plaka?.toLowerCase().includes(searchLower) ||
+        o.musteri?.toLowerCase().includes(searchLower) ||
+        o.telefon?.includes(search)
+      )
+    }
+
+    // Gelişmiş filtreler
+    if (advancedFilters) {
+      // Tarih aralığı
+      if (advancedFilters.dateFrom) {
+        filtered = filtered.filter(o => new Date(o.created_at) >= new Date(advancedFilters.dateFrom))
+      }
+      if (advancedFilters.dateTo) {
+        const dateTo = new Date(advancedFilters.dateTo)
+        dateTo.setHours(23, 59, 59)
+        filtered = filtered.filter(o => new Date(o.created_at) <= dateTo)
+      }
+
+      // Fiyat aralığı
+      if (advancedFilters.priceMin) {
+        filtered = filtered.filter(o => o.baslangic_fiyati >= Number(advancedFilters.priceMin))
+      }
+      if (advancedFilters.priceMax) {
+        filtered = filtered.filter(o => o.baslangic_fiyati <= Number(advancedFilters.priceMax))
+      }
+
+      // Karlılık
+      if (advancedFilters.profitability) {
+        if (advancedFilters.profitability === 'profitable') {
+          filtered = filtered.filter(o => (o.kar_zarar || 0) > 100)
+        } else if (advancedFilters.profitability === 'loss') {
+          filtered = filtered.filter(o => (o.kar_zarar || 0) < -100)
+        } else if (advancedFilters.profitability === 'breakeven') {
+          filtered = filtered.filter(o => Math.abs(o.kar_zarar || 0) <= 100)
+        }
+      }
+    }
+
+    setOrders(filtered)
+    setCurrentPage(1) // Filtre değişince ilk sayfaya dön
   }
 
   const calculateStatistics = () => {
@@ -82,6 +150,56 @@ export default function Orders() {
     }
   }
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(currentOrders.map(o => o.id))
+    } else {
+      setSelectedOrders([])
+    }
+  }
+
+  const handleSelectOne = (id: number, checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(prev => [...prev, id])
+    } else {
+      setSelectedOrders(prev => prev.filter(orderId => orderId !== id))
+    }
+  }
+
+  const handleBulkStatusUpdate = async (newStatus: string) => {
+    if (selectedOrders.length === 0) return
+    if (!confirm(`${selectedOrders.length} siparişin durumunu "${newStatus}" olarak güncellemek istediğinizden emin misiniz?`)) return
+
+    try {
+      for (const orderId of selectedOrders) {
+        await window.electronAPI.db.updateOrderStatus(orderId, newStatus)
+      }
+      setSelectedOrders([])
+      loadOrders()
+      alert(`✅ ${selectedOrders.length} sipariş güncellendi`)
+    } catch (error) {
+      console.error('Failed to bulk update:', error)
+      alert('Toplu güncelleme başarısız')
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedOrders.length === 0) return
+    if (!confirm(`${selectedOrders.length} siparişi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`)) return
+
+    try {
+      for (const orderId of selectedOrders) {
+        await window.electronAPI.db.deleteOrder(orderId)
+      }
+      setSelectedOrders([])
+      loadOrders()
+      alert(`✅ ${selectedOrders.length} sipariş silindi`)
+    } catch (error) {
+      console.error('Failed to bulk delete:', error)
+      alert('Toplu silme başarısız')
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -90,12 +208,19 @@ export default function Orders() {
           <h1 className="text-3xl font-bold text-gray-900">Siparişler</h1>
           <p className="mt-1 text-gray-600">Tüm siparişlerinizi yönetin</p>
         </div>
-        <Link to="/orders/new">
-          <Button>
-            <PlusIcon className="w-5 h-5 mr-2" />
-            Yeni Sipariş
-          </Button>
-        </Link>
+        <div className="flex space-x-2">
+          {orders.length > 0 && (
+            <Button variant="secondary" onClick={() => exportOrdersToExcel(orders)}>
+              📊 Excel İndir
+            </Button>
+          )}
+          <Link to="/orders/new">
+            <Button>
+              <PlusIcon className="w-5 h-5 mr-2" />
+              Yeni Sipariş
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Finansal Özet */}
@@ -149,27 +274,69 @@ export default function Orders() {
 
       {/* Filters */}
       <Card>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2">
-            <div className="flex space-x-2">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
               <Input
                 placeholder="Plaka, müşteri adı veya telefon ara..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               />
-              <Button onClick={handleSearch}>
-                <MagnifyingGlassIcon className="w-5 h-5" />
-              </Button>
             </div>
+            <Select
+              options={STATUS_OPTIONS}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            />
           </div>
-          <Select
-            options={STATUS_OPTIONS}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+
+          {/* Gelişmiş Filtreler */}
+          <AdvancedFilters
+            onFilter={(f) => setAdvancedFilters(f)}
+            onReset={() => setAdvancedFilters(null)}
           />
         </div>
       </Card>
+
+      {/* Bulk Actions */}
+      {selectedOrders.length > 0 && (
+        <Card className="bg-primary-50 border-primary-200">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-primary-900">
+              {selectedOrders.length} sipariş seçildi
+            </p>
+            <div className="flex space-x-2">
+              <Select
+                options={[
+                  { value: '', label: 'Durum Değiştir...' },
+                  ...STATUS_OPTIONS.filter(s => s.value !== '')
+                ]}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleBulkStatusUpdate(e.target.value)
+                    e.target.value = '' // Reset
+                  }
+                }}
+              />
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleBulkDelete}
+              >
+                <TrashIcon className="w-4 h-4 mr-1" />
+                Sil ({selectedOrders.length})
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setSelectedOrders([])}
+              >
+                İptal
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Orders Table */}
       <Card>
@@ -183,6 +350,14 @@ export default function Orders() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      className="w-4 h-4 text-primary-600 rounded"
+                    />
+                  </th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">ID</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Plaka</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Müşteri</th>
@@ -195,8 +370,16 @@ export default function Orders() {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
-                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                {currentOrders.map((order) => (
+                  <tr key={order.id} className={`border-b border-gray-100 hover:bg-gray-50 ${selectedOrders.includes(order.id) ? 'bg-primary-50' : ''}`}>
+                    <td className="py-3 px-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.includes(order.id)}
+                        onChange={(e) => handleSelectOne(order.id, e.target.checked)}
+                        className="w-4 h-4 text-primary-600 rounded"
+                      />
+                    </td>
                     <td className="py-3 px-4 font-medium">#{order.id}</td>
                     <td className="py-3 px-4 font-medium">{order.plaka}</td>
                     <td className="py-3 px-4">{order.musteri}</td>
@@ -234,6 +417,14 @@ export default function Orders() {
                 ))}
               </tbody>
             </table>
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalItems={orders.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={setCurrentPage}
+            />
           </div>
         ) : (
           <div className="text-center py-12">

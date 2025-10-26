@@ -5,8 +5,10 @@ import Button from '../components/Button'
 import Input from '../components/Input'
 import Select from '../components/Select'
 import Modal from '../components/Modal'
+import StatusTimeline from '../components/StatusTimeline'
 import { TrashIcon, PlusIcon, ArrowUpTrayIcon, PencilIcon } from '../components/Icons'
 import { formatCurrency, formatDate } from '../utils/formatters'
+import { exportOrderToPDF } from '../utils/pdfExport'
 
 const STATUS_OPTIONS = [
   { value: 'Bekliyor', label: 'Bekliyor' },
@@ -215,10 +217,30 @@ export default function OrderDetail() {
           <h1 className="text-3xl font-bold text-gray-900">Sipariş #{order.id}</h1>
           <p className="mt-1 text-gray-600">{order.plaka} - {order.musteri}</p>
         </div>
-        <Link to="/orders">
-          <Button variant="secondary">Geri</Button>
-        </Link>
+        <div className="flex space-x-2">
+          <Button variant="secondary" onClick={() => exportOrderToPDF(order)}>
+            📄 PDF İndir
+          </Button>
+          <Link to={`/orders/${id}/edit`}>
+            <Button variant="secondary">
+              <PencilIcon className="w-4 h-4 mr-2" />
+              Düzenle
+            </Button>
+          </Link>
+          <Link to="/orders">
+            <Button variant="secondary">Geri</Button>
+          </Link>
+        </div>
       </div>
+
+      {/* Status Timeline */}
+      <Card title="📍 Sipariş Durumu">
+        <StatusTimeline
+          currentStatus={order.status}
+          createdAt={order.created_at}
+          updatedAt={order.updated_at}
+        />
+      </Card>
 
       {/* Order Info */}
       <Card title="Sipariş Bilgileri">
