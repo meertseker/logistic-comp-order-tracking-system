@@ -245,15 +245,21 @@ export default function CreateOrderFixed() {
   }
 
   const getProfitColor = (karZarar: number) => {
-    if (karZarar > 0) return 'text-green-600'
-    if (karZarar < 0) return 'text-red-600'
-    return 'text-gray-600'
+    if (karZarar > 100) return 'text-green-600'
+    if (karZarar < -100) return 'text-red-600'
+    return 'text-yellow-600' // Başabaş veya çok küçük fark
   }
 
   const getProfitBgColor = (karZarar: number) => {
-    if (karZarar > 0) return 'bg-green-50 border-green-200'
-    if (karZarar < 0) return 'bg-red-50 border-red-200'
-    return 'bg-gray-50 border-gray-200'
+    if (karZarar > 100) return 'bg-green-50 border-green-200'
+    if (karZarar < -100) return 'bg-red-50 border-red-200'
+    return 'bg-yellow-50 border-yellow-200' // Başabaş
+  }
+
+  const getProfitStatus = (karZarar: number) => {
+    if (karZarar > 100) return { icon: '✅', text: 'KÂR VAR', color: 'green' }
+    if (karZarar < -100) return { icon: '⚠️', text: 'ZARAR VAR', color: 'red' }
+    return { icon: '⚖️', text: 'BAŞABAŞ', color: 'yellow' }
   }
 
   return (
@@ -605,19 +611,34 @@ export default function CreateOrderFixed() {
           {analysis && formData.baslangicFiyati && (
             <Card className={`${getProfitBgColor(analysis.karZarar)} border-2`}>
               <div className="text-center">
-                <p className="text-xs font-medium text-gray-600 mb-1">KAR/ZARAR DURUMU</p>
+                <div className="mb-2">
+                  <span className="text-2xl">{getProfitStatus(analysis.karZarar).icon}</span>
+                </div>
+                <p className="text-xs font-medium text-gray-600 mb-2">
+                  {getProfitStatus(analysis.karZarar).text}
+                </p>
                 <p className={`text-4xl font-bold ${getProfitColor(analysis.karZarar)} mb-1`}>
                   {formatCurrency(analysis.karZarar)}
                 </p>
-                <p className={`text-sm ${getProfitColor(analysis.karZarar)}`}>
-                  {analysis.karZararYuzde > 0 ? '+' : ''}
-                  {analysis.karZararYuzde.toFixed(1)}%
-                </p>
-                <div className="mt-3 pt-3 border-t border-gray-300">
-                  <p className="text-xs text-gray-600">
-                    {analysis.karZarar >= 0 ? '✅ İş Kârlı' : '⚠️ İş Zararlı'}
+                {Math.abs(analysis.karZarar) > 10 && (
+                  <p className={`text-sm ${getProfitColor(analysis.karZarar)}`}>
+                    {analysis.karZararYuzde > 0 ? '+' : ''}
+                    {analysis.karZararYuzde.toFixed(1)}%
                   </p>
-                </div>
+                )}
+                {Math.abs(analysis.karZarar) <= 100 && (
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-700 font-medium">
+                      Girilen fiyat: {formatCurrency(analysis.musteriOdemesi)}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Önerilen: {formatCurrency(analysis.fiyatKdvli)}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Maliyet: {formatCurrency(analysis.toplamMaliyet)}
+                    </p>
+                  </div>
+                )}
               </div>
             </Card>
           )}
