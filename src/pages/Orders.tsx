@@ -21,10 +21,20 @@ export default function Orders() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [statistics, setStatistics] = useState({
+    toplamGelir: 0,
+    toplamMaliyet: 0,
+    toplamKar: 0,
+    toplamSiparis: 0,
+  })
 
   useEffect(() => {
     loadOrders()
   }, [statusFilter])
+
+  useEffect(() => {
+    calculateStatistics()
+  }, [orders])
 
   const loadOrders = async () => {
     try {
@@ -40,6 +50,19 @@ export default function Orders() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const calculateStatistics = () => {
+    const toplamGelir = orders.reduce((sum, o) => sum + (o.baslangic_fiyati || 0), 0)
+    const toplamMaliyet = orders.reduce((sum, o) => sum + (o.toplam_maliyet || 0), 0)
+    const toplamKar = orders.reduce((sum, o) => sum + (o.kar_zarar || 0), 0)
+    
+    setStatistics({
+      toplamGelir,
+      toplamMaliyet,
+      toplamKar,
+      toplamSiparis: orders.length,
+    })
   }
 
   const handleSearch = () => {
@@ -73,6 +96,55 @@ export default function Orders() {
           </Button>
         </Link>
       </div>
+
+      {/* Finansal Özet */}
+      {orders.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+            <div className="text-center">
+              <p className="text-xs font-medium text-blue-800">Toplam Gelir</p>
+              <p className="text-2xl font-bold text-blue-900 mt-1">
+                {formatCurrency(statistics.toplamGelir)}
+              </p>
+              <p className="text-xs text-blue-700 mt-1">{statistics.toplamSiparis} sipariş</p>
+            </div>
+          </Card>
+          <Card className="bg-gradient-to-br from-red-50 to-red-100">
+            <div className="text-center">
+              <p className="text-xs font-medium text-red-800">Toplam Maliyet</p>
+              <p className="text-2xl font-bold text-red-900 mt-1">
+                {formatCurrency(statistics.toplamMaliyet)}
+              </p>
+              <p className="text-xs text-red-700 mt-1">Tahmini gider</p>
+            </div>
+          </Card>
+          <Card className={`bg-gradient-to-br ${statistics.toplamKar >= 0 ? 'from-green-50 to-green-100' : 'from-orange-50 to-orange-100'}`}>
+            <div className="text-center">
+              <p className={`text-xs font-medium ${statistics.toplamKar >= 0 ? 'text-green-800' : 'text-orange-800'}`}>
+                Toplam Kar/Zarar
+              </p>
+              <p className={`text-2xl font-bold mt-1 ${statistics.toplamKar >= 0 ? 'text-green-900' : 'text-orange-900'}`}>
+                {formatCurrency(statistics.toplamKar)}
+              </p>
+              <p className={`text-xs mt-1 ${statistics.toplamKar >= 0 ? 'text-green-700' : 'text-orange-700'}`}>
+                {statistics.toplamKar >= 0 ? 'Kârlı' : 'Zararlı'}
+              </p>
+            </div>
+          </Card>
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
+            <div className="text-center">
+              <p className="text-xs font-medium text-purple-800">Kar Marjı</p>
+              <p className="text-2xl font-bold text-purple-900 mt-1">
+                {statistics.toplamGelir > 0 
+                  ? `%${((statistics.toplamKar / statistics.toplamGelir) * 100).toFixed(1)}`
+                  : '-%'
+                }
+              </p>
+              <p className="text-xs text-purple-700 mt-1">Ortalama</p>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Filters */}
       <Card>

@@ -90,30 +90,42 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Monthly Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Monthly Summary - Geliştirilmiş */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-green-50 to-green-100">
           <div>
-            <p className="text-sm font-medium text-green-800">Aylık Kazanç</p>
+            <p className="text-xs font-medium text-green-800">Bu Ay Gelir</p>
             <p className="text-2xl font-bold text-green-900 mt-2">
               {formatCurrency(stats?.monthlyEarnings || 0)}
             </p>
+            <p className="text-xs text-green-700 mt-1">Müşterilerden alınan</p>
           </div>
         </Card>
         <Card className="bg-gradient-to-br from-red-50 to-red-100">
           <div>
-            <p className="text-sm font-medium text-red-800">Aylık Masraf</p>
+            <p className="text-xs font-medium text-red-800">Bu Ay Gider (Ek)</p>
             <p className="text-2xl font-bold text-red-900 mt-2">
               {formatCurrency(stats?.monthlyExpenses || 0)}
             </p>
+            <p className="text-xs text-red-700 mt-1">Eklenen giderler</p>
+          </div>
+        </Card>
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
+          <div>
+            <p className="text-xs font-medium text-orange-800">Bu Ay Tahmini Gider</p>
+            <p className="text-2xl font-bold text-orange-900 mt-2">
+              {formatCurrency(stats?.monthlyEstimatedCosts || 0)}
+            </p>
+            <p className="text-xs text-orange-700 mt-1">Hesaplanan maliyet</p>
           </div>
         </Card>
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
           <div>
-            <p className="text-sm font-medium text-blue-800">Net Gelir</p>
+            <p className="text-xs font-medium text-blue-800">Net Kar/Zarar</p>
             <p className="text-2xl font-bold text-blue-900 mt-2">
-              {formatCurrency(stats?.monthlyNetIncome || 0)}
+              {formatCurrency((stats?.monthlyEarnings || 0) - (stats?.monthlyExpenses || 0) - (stats?.monthlyEstimatedCosts || 0))}
             </p>
+            <p className="text-xs text-blue-700 mt-1">Tahmini net</p>
           </div>
         </Card>
       </div>

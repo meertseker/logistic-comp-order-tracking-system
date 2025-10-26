@@ -308,7 +308,7 @@ ipcMain.handle('db:getMonthlyReport', async (_, year, month) => {
       WHERE created_at >= ? AND created_at < ?
     `).get(startDate, endDate)
     
-    // Total expenses
+    // Total expenses (manuel eklenen)
     const expenses = db.prepare(`
       SELECT COALESCE(SUM(e.amount), 0) as total
       FROM expenses e
@@ -316,9 +316,19 @@ ipcMain.handle('db:getMonthlyReport', async (_, year, month) => {
       WHERE o.created_at >= ? AND o.created_at < ?
     `).get(startDate, endDate)
     
+    // Tahmini maliyetler (hesaplanan)
+    const estimatedCosts = db.prepare(`
+      SELECT COALESCE(SUM(toplam_maliyet), 0) as total
+      FROM orders
+      WHERE created_at >= ? AND created_at < ?
+    `).get(startDate, endDate)
+    
     // Orders by vehicle
     const byVehicle = db.prepare(`
-      SELECT plaka, COUNT(*) as count, SUM(baslangic_fiyati) as total
+      SELECT plaka, COUNT(*) as count, 
+             SUM(baslangic_fiyati) as total,
+             SUM(toplam_maliyet) as totalCost,
+             SUM(kar_zarar) as totalProfit
       FROM orders
       WHERE created_at >= ? AND created_at < ?
       GROUP BY plaka
@@ -345,7 +355,8 @@ ipcMain.handle('db:getMonthlyReport', async (_, year, month) => {
     return {
       earnings: earnings.total,
       expenses: expenses.total,
-      netIncome: earnings.total - expenses.total,
+      estimatedCosts: estimatedCosts.total,
+      netIncome: earnings.total - expenses.total - estimatedCosts.total,
       byVehicle,
       byCustomer,
       byStatus,
@@ -379,6 +390,13 @@ ipcMain.handle('db:getDashboardStats', async () => {
       WHERE o.created_at >= ?
     `).get(startDate)
     
+    // Tahmini maliyet toplamı (yeni siparişlerden)
+    const monthlyEstimatedCosts = db.prepare(`
+      SELECT COALESCE(SUM(toplam_maliyet), 0) as total
+      FROM orders
+      WHERE created_at >= ?
+    `).get(startDate)
+    
     const recentOrders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC LIMIT 5').all()
     
     return {
@@ -387,7 +405,8 @@ ipcMain.handle('db:getDashboardStats', async () => {
       completedOrders: completedOrders.count,
       monthlyEarnings: monthlyEarnings.total,
       monthlyExpenses: monthlyExpenses.total,
-      monthlyNetIncome: monthlyEarnings.total - monthlyExpenses.total,
+      monthlyEstimatedCosts: monthlyEstimatedCosts.total,
+      monthlyNetIncome: monthlyEarnings.total - monthlyExpenses.total - monthlyEstimatedCosts.total,
       recentOrders,
     }
   } catch (error) {

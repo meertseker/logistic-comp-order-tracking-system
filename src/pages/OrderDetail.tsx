@@ -174,8 +174,15 @@ export default function OrderDetail() {
     return expenses.reduce((sum, exp) => sum + exp.amount, 0)
   }
 
+  const calculateEstimatedCost = () => {
+    return order?.toplam_maliyet || 0
+  }
+
   const calculateNetIncome = () => {
-    return (order?.baslangic_fiyati || 0) - calculateTotalExpenses()
+    const gelir = order?.baslangic_fiyati || 0
+    const ekGider = calculateTotalExpenses()
+    const tahminMaliyet = calculateEstimatedCost()
+    return gelir - ekGider - tahminMaliyet
   }
 
   if (loading) {
@@ -278,33 +285,98 @@ export default function OrderDetail() {
         </div>
       </Card>
 
-      {/* Financial Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Financial Summary - Geliştirilmiş */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-green-50 to-green-100">
           <div>
-            <p className="text-sm font-medium text-green-800">Gelir</p>
+            <p className="text-xs font-medium text-green-800">Müşteriden Alınan</p>
             <p className="text-2xl font-bold text-green-900 mt-2">
               {formatCurrency(order.baslangic_fiyati)}
+            </p>
+            <p className="text-xs text-green-700 mt-1">Toplam gelir</p>
+          </div>
+        </Card>
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
+          <div>
+            <p className="text-xs font-medium text-orange-800">Tahmini Maliyet</p>
+            <p className="text-2xl font-bold text-orange-900 mt-2">
+              {formatCurrency(calculateEstimatedCost())}
+            </p>
+            <p className="text-xs text-orange-700 mt-1">
+              {order.etkin_km > 0 ? `${order.etkin_km.toFixed(0)} km` : 'Hesaplanmadı'}
             </p>
           </div>
         </Card>
         <Card className="bg-gradient-to-br from-red-50 to-red-100">
           <div>
-            <p className="text-sm font-medium text-red-800">Toplam Gider</p>
+            <p className="text-xs font-medium text-red-800">Ek Giderler</p>
             <p className="text-2xl font-bold text-red-900 mt-2">
               {formatCurrency(calculateTotalExpenses())}
             </p>
+            <p className="text-xs text-red-700 mt-1">Sonradan eklenen</p>
           </div>
         </Card>
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+        <Card className={`bg-gradient-to-br ${calculateNetIncome() >= 0 ? 'from-blue-50 to-blue-100' : 'from-gray-50 to-gray-100'}`}>
           <div>
-            <p className="text-sm font-medium text-blue-800">Net Kazanç</p>
-            <p className="text-2xl font-bold text-blue-900 mt-2">
+            <p className={`text-xs font-medium ${calculateNetIncome() >= 0 ? 'text-blue-800' : 'text-gray-800'}`}>
+              Net Kar/Zarar
+            </p>
+            <p className={`text-2xl font-bold mt-2 ${calculateNetIncome() >= 0 ? 'text-blue-900' : 'text-gray-900'}`}>
               {formatCurrency(calculateNetIncome())}
+            </p>
+            <p className={`text-xs mt-1 ${calculateNetIncome() >= 0 ? 'text-blue-700' : 'text-gray-700'}`}>
+              {order.kar_zarar 
+                ? `Tahmini: ${formatCurrency(order.kar_zarar)}` 
+                : 'Hesaplanmadı'
+              }
             </p>
           </div>
         </Card>
       </div>
+
+      {/* Maliyet Dökümü (Varsa) */}
+      {order.toplam_maliyet > 0 && (
+        <Card title="💰 Maliyet Dökümü" className="bg-gray-50">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {order.yakit_maliyet > 0 && (
+              <div className="text-center p-3 bg-white rounded-lg">
+                <p className="text-xs text-gray-600">⛽ Yakıt</p>
+                <p className="text-lg font-bold text-gray-900">{formatCurrency(order.yakit_maliyet)}</p>
+                {order.yakit_litre > 0 && (
+                  <p className="text-xs text-gray-500">{order.yakit_litre.toFixed(1)} lt</p>
+                )}
+              </div>
+            )}
+            {order.surucu_maliyet > 0 && (
+              <div className="text-center p-3 bg-white rounded-lg">
+                <p className="text-xs text-gray-600">👤 Sürücü</p>
+                <p className="text-lg font-bold text-gray-900">{formatCurrency(order.surucu_maliyet)}</p>
+                {order.tahmini_gun > 0 && (
+                  <p className="text-xs text-gray-500">{order.tahmini_gun} gün</p>
+                )}
+              </div>
+            )}
+            {order.yemek_maliyet > 0 && (
+              <div className="text-center p-3 bg-white rounded-lg">
+                <p className="text-xs text-gray-600">🍽️ Yemek</p>
+                <p className="text-lg font-bold text-gray-900">{formatCurrency(order.yemek_maliyet)}</p>
+              </div>
+            )}
+            {order.hgs_maliyet > 0 && (
+              <div className="text-center p-3 bg-white rounded-lg">
+                <p className="text-xs text-gray-600">🛣️ HGS</p>
+                <p className="text-lg font-bold text-gray-900">{formatCurrency(order.hgs_maliyet)}</p>
+              </div>
+            )}
+            {order.bakim_maliyet > 0 && (
+              <div className="text-center p-3 bg-white rounded-lg">
+                <p className="text-xs text-gray-600">🔧 Bakım</p>
+                <p className="text-lg font-bold text-gray-900">{formatCurrency(order.bakim_maliyet)}</p>
+              </div>
+            )}
+          </div>
+        </Card>
+      )}
 
       {/* Expenses */}
       <Card

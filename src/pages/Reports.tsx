@@ -122,18 +122,34 @@ export default function Reports() {
         </div>
       ) : report ? (
         <>
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Summary Cards - Detaylı */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="bg-gradient-to-br from-green-50 to-green-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-800">Toplam Kazanç</p>
+                  <p className="text-xs font-medium text-green-800">Toplam Gelir</p>
                   <p className="text-3xl font-bold text-green-900 mt-2">
                     {formatCurrency(report.earnings)}
                   </p>
+                  <p className="text-xs text-green-700 mt-1">Müşterilerden alınan</p>
                 </div>
                 <div className="p-3 bg-green-200 rounded-full">
-                  <CurrencyDollarIcon className="w-8 h-8 text-green-700" />
+                  <CurrencyDollarIcon className="w-6 h-6 text-green-700" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-orange-800">Tahmini Gider</p>
+                  <p className="text-3xl font-bold text-orange-900 mt-2">
+                    {formatCurrency(report.estimatedCosts || 0)}
+                  </p>
+                  <p className="text-xs text-orange-700 mt-1">Hesaplanan maliyet</p>
+                </div>
+                <div className="p-3 bg-orange-200 rounded-full">
+                  <TruckIcon className="w-6 h-6 text-orange-700" />
                 </div>
               </div>
             </Card>
@@ -141,27 +157,33 @@ export default function Reports() {
             <Card className="bg-gradient-to-br from-red-50 to-red-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-red-800">Toplam Masraf</p>
+                  <p className="text-xs font-medium text-red-800">Ek Gider</p>
                   <p className="text-3xl font-bold text-red-900 mt-2">
                     {formatCurrency(report.expenses)}
                   </p>
+                  <p className="text-xs text-red-700 mt-1">Manuel eklenen</p>
                 </div>
                 <div className="p-3 bg-red-200 rounded-full">
-                  <ChartBarIcon className="w-8 h-8 text-red-700" />
+                  <ChartBarIcon className="w-6 h-6 text-red-700" />
                 </div>
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+            <Card className={`bg-gradient-to-br ${report.netIncome >= 0 ? 'from-blue-50 to-blue-100' : 'from-gray-50 to-gray-100'}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-800">Net Gelir</p>
-                  <p className="text-3xl font-bold text-blue-900 mt-2">
+                  <p className={`text-xs font-medium ${report.netIncome >= 0 ? 'text-blue-800' : 'text-gray-800'}`}>
+                    Net Kar/Zarar
+                  </p>
+                  <p className={`text-3xl font-bold mt-2 ${report.netIncome >= 0 ? 'text-blue-900' : 'text-gray-900'}`}>
                     {formatCurrency(report.netIncome)}
                   </p>
+                  <p className={`text-xs mt-1 ${report.netIncome >= 0 ? 'text-blue-700' : 'text-gray-700'}`}>
+                    {report.netIncome >= 0 ? 'Kârlı dönem' : 'Zararlı dönem'}
+                  </p>
                 </div>
-                <div className="p-3 bg-blue-200 rounded-full">
-                  <TruckIcon className="w-8 h-8 text-blue-700" />
+                <div className={`p-3 rounded-full ${report.netIncome >= 0 ? 'bg-blue-200' : 'bg-gray-200'}`}>
+                  <ChartBarIcon className={`w-6 h-6 ${report.netIncome >= 0 ? 'text-blue-700' : 'text-gray-700'}`} />
                 </div>
               </div>
             </Card>
@@ -190,9 +212,11 @@ export default function Reports() {
                     <tr className="border-b border-gray-200">
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Sıra</th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Plaka</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Sipariş Sayısı</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Toplam Kazanç</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Ortalama</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Sipariş</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Gelir</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Maliyet</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Kar/Zarar</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Ort/Sipariş</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -203,6 +227,12 @@ export default function Reports() {
                         <td className="py-3 px-4 text-right">{formatNumber(item.count)}</td>
                         <td className="py-3 px-4 text-right font-semibold text-green-600">
                           {formatCurrency(item.total)}
+                        </td>
+                        <td className="py-3 px-4 text-right font-semibold text-orange-600">
+                          {formatCurrency(item.totalCost || 0)}
+                        </td>
+                        <td className={`py-3 px-4 text-right font-semibold ${(item.totalProfit || 0) >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                          {formatCurrency(item.totalProfit || 0)}
                         </td>
                         <td className="py-3 px-4 text-right text-gray-600">
                           {formatCurrency(item.total / item.count)}
