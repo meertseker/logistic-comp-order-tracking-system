@@ -1,27 +1,84 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import Card from '../components/Card'
+import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { 
+  TrendingUp, 
+  DollarSign, 
+  Truck, 
+  Package,
+  Activity,
+  Calendar
+} from 'lucide-react'
 import StatCard from '../components/StatCard'
-import Button from '../components/Button'
-import { TruckIcon, ChartBarIcon, CurrencyDollarIcon, PlusIcon } from '../components/Icons'
-import { formatCurrency, formatDate } from '../utils/formatters'
+import EarningsChart from '../components/EarningsChart'
+import VehiclePerformance from '../components/VehiclePerformance'
+import StatusOverview from '../components/StatusOverview'
+import UpcomingDeliveries from '../components/UpcomingDeliveries'
+import QuickActions from '../components/QuickActions'
+import { formatCurrency } from '../utils/formatters'
 
 interface DashboardStats {
+  // Temel istatistikler
   totalOrders: number
   activeOrders: number
   completedOrders: number
+  totalVehicles: number
+  
+  // Mali veriler
   monthlyEarnings: number
   monthlyExpenses: number
+  monthlyEstimatedCosts: number
   monthlyNetIncome: number
+  
+  // Trend verileri
+  earningsTrend: number
+  expensesTrend: number
+  ordersTrend: number
+  netIncomeTrend: number
+  
+  // Grafikler için veriler
+  dailyData: Array<{
+    date: string
+    orders: number
+    earnings: number
+    costs: number
+  }>
+  weeklyData: Array<{
+    date: string
+    orders: number
+    earnings: number
+    costs: number
+  }>
+  topVehicles: Array<{
+    plaka: string
+    orderCount: number
+    totalEarnings: number
+    totalCosts: number
+    totalProfit: number
+  }>
+  statusDistribution: Array<{
+    status: string
+    count: number
+    totalValue: number
+  }>
+  
+  // Listeler
+  upcomingDeliveries: any[]
   recentOrders: any[]
+  
+  // Geçen ay karşılaştırma
+  lastMonthEarnings: number
+  lastMonthExpenses: number
+  lastMonthNetIncome: number
 }
 
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [greeting, setGreeting] = useState('')
 
   useEffect(() => {
     loadStats()
+    setGreeting(getGreeting())
   }, [])
 
   const loadStats = async () => {
@@ -35,170 +92,246 @@ export default function Dashboard() {
     }
   }
 
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return 'Günaydın'
+    if (hour < 18) return 'İyi günler'
+    return 'İyi akşamlar'
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: '#0A84FF' }}></div>
-          <p className="mt-4" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Yükleniyor...</p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-transparent mx-auto" style={{ borderColor: '#0A84FF', borderTopColor: 'transparent' }}></div>
+          <p className="mt-4 text-lg font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+            Dashboard yükleniyor...
+          </p>
+        </motion.div>
       </div>
     )
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" style={{ color: '#FFFFFF' }}>Hoş Geldiniz</h1>
-          <p className="mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>İşletmenizin genel görünümü</p>
-        </div>
-        <Link to="/orders/new">
-          <Button>
-            <PlusIcon className="w-5 h-5 mr-2" />
-            Yeni Sipariş
-          </Button>
-        </Link>
-      </div>
+  // Güncel tarih ve zaman
+  const currentDate = new Date().toLocaleDateString('tr-TR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 
-      {/* Stats Grid */}
+  return (
+    <div className="space-y-6 pb-8">
+      {/* Hero Header with Animated Background */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-2xl p-8"
+        style={{
+          background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.15) 0%, rgba(48, 209, 88, 0.15) 100%)',
+          border: '0.5px solid rgba(10, 132, 255, 0.3)',
+        }}
+      >
+        {/* Animated background circles */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full blur-3xl opacity-20 animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-green-500 rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
+        
+        <div className="relative z-10">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h1 className="text-4xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
+              {greeting} 👋
+            </h1>
+            <p className="text-lg mb-1" style={{ color: 'rgba(235, 235, 245, 0.8)' }}>
+              İşletmenizin anlık durumu
+            </p>
+            <div className="flex items-center gap-2 mt-2">
+              <Calendar className="w-4 h-4" style={{ color: 'rgba(235, 235, 245, 0.6)' }} />
+              <p className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                {currentDate}
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Quick Actions */}
+      <QuickActions />
+
+      {/* Main Stats Grid - Animated */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Toplam Sipariş"
           value={stats?.totalOrders || 0}
-          icon={<TruckIcon className="w-6 h-6" />}
+          icon={<Package className="w-6 h-6" />}
           color="blue"
+          trend={{
+            value: stats?.ordersTrend || 0,
+            isPositive: (stats?.ordersTrend || 0) >= 0,
+          }}
+          loading={loading}
         />
         <StatCard
-          title="Aktif Sipariş"
+          title="Aktif Teslimat"
           value={stats?.activeOrders || 0}
-          icon={<TruckIcon className="w-6 h-6" />}
+          icon={<Truck className="w-6 h-6" />}
           color="yellow"
+          subtitle="Bekliyor ve Yolda"
+          loading={loading}
         />
         <StatCard
           title="Tamamlanan"
           value={stats?.completedOrders || 0}
-          icon={<TruckIcon className="w-6 h-6" />}
+          icon={<Activity className="w-6 h-6" />}
           color="green"
+          subtitle="Teslim edildi"
+          loading={loading}
         />
         <StatCard
-          title="Bu Ay Kazanç"
-          value={formatCurrency(stats?.monthlyEarnings || 0)}
-          icon={<CurrencyDollarIcon className="w-6 h-6" />}
+          title="Aktif Araç"
+          value={stats?.totalVehicles || 0}
+          icon={<Truck className="w-6 h-6" />}
           color="purple"
+          subtitle="Kayıtlı araçlar"
+          loading={loading}
         />
       </div>
 
-      {/* Monthly Summary - Geliştirilmiş */}
+      {/* Financial Overview - Big Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card style={{ background: 'rgba(48, 209, 88, 0.15)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}>
-          <div>
-            <p className="text-xs font-medium" style={{ color: '#30D158' }}>Bu Ay Gelir</p>
-            <p className="text-2xl font-bold mt-2" style={{ color: '#FFFFFF' }}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          style={{ background: 'rgba(48, 209, 88, 0.12)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#30D158' }} />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="w-5 h-5" style={{ color: '#30D158' }} />
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#30D158' }}>
+                Bu Ay Gelir
+              </p>
+            </div>
+            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
               {formatCurrency(stats?.monthlyEarnings || 0)}
             </p>
-            <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Müşterilerden alınan</p>
+            <div className="flex items-center gap-2 mt-2">
+              <TrendingUp className="w-3 h-3" style={{ color: stats?.earningsTrend >= 0 ? '#30D158' : '#FF453A' }} />
+              <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                {stats?.earningsTrend >= 0 ? '+' : ''}{stats?.earningsTrend.toFixed(1)}% geçen aya göre
+              </p>
+            </div>
           </div>
-        </Card>
-        <Card style={{ background: 'rgba(255, 69, 58, 0.15)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}>
-          <div>
-            <p className="text-xs font-medium" style={{ color: '#FF453A' }}>Bu Ay Gider (Ek)</p>
-            <p className="text-2xl font-bold mt-2" style={{ color: '#FFFFFF' }}>
-              {formatCurrency(stats?.monthlyExpenses || 0)}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          style={{ background: 'rgba(255, 69, 58, 0.12)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#FF453A' }} />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-5 h-5" style={{ color: '#FF453A' }} />
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#FF453A' }}>
+                Bu Ay Gider
+              </p>
+            </div>
+            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+              {formatCurrency((stats?.monthlyExpenses || 0) + (stats?.monthlyEstimatedCosts || 0))}
             </p>
-            <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Eklenen giderler</p>
-          </div>
-        </Card>
-        <Card style={{ background: 'rgba(255, 159, 10, 0.15)', border: '0.5px solid rgba(255, 159, 10, 0.3)' }}>
-          <div>
-            <p className="text-xs font-medium" style={{ color: '#FF9F0A' }}>Bu Ay Tahmini Gider</p>
-            <p className="text-2xl font-bold mt-2" style={{ color: '#FFFFFF' }}>
-              {formatCurrency(stats?.monthlyEstimatedCosts || 0)}
+            <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+              Ek + Tahmini maliyetler
             </p>
-            <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Hesaplanan maliyet</p>
           </div>
-        </Card>
-        <Card style={{ background: 'rgba(10, 132, 255, 0.15)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}>
-          <div>
-            <p className="text-xs font-medium" style={{ color: '#0A84FF' }}>Net Kar/Zarar</p>
-            <p className="text-2xl font-bold mt-2" style={{ color: '#FFFFFF' }}>
-              {formatCurrency((stats?.monthlyEarnings || 0) - (stats?.monthlyExpenses || 0) - (stats?.monthlyEstimatedCosts || 0))}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          style={{ background: 'rgba(10, 132, 255, 0.12)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#0A84FF' }} />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <Activity className="w-5 h-5" style={{ color: '#0A84FF' }} />
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#0A84FF' }}>
+                Net Kar
+              </p>
+            </div>
+            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+              {formatCurrency(stats?.monthlyNetIncome || 0)}
             </p>
-            <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Tahmini net</p>
+            <div className="flex items-center gap-2 mt-2">
+              <TrendingUp className="w-3 h-3" style={{ color: stats?.netIncomeTrend >= 0 ? '#30D158' : '#FF453A' }} />
+              <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                {stats?.netIncomeTrend >= 0 ? '+' : ''}{stats?.netIncomeTrend.toFixed(1)}% geçen aya göre
+              </p>
+            </div>
           </div>
-        </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 }}
+          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          style={{ background: 'rgba(191, 90, 242, 0.12)', border: '0.5px solid rgba(191, 90, 242, 0.3)' }}
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#BF5AF2' }} />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-5 h-5" style={{ color: '#BF5AF2' }} />
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#BF5AF2' }}>
+                Kar Marjı
+              </p>
+            </div>
+            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+              {stats?.monthlyEarnings > 0 
+                ? `%${((stats?.monthlyNetIncome / stats?.monthlyEarnings) * 100).toFixed(1)}`
+                : '%0'
+              }
+            </p>
+            <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+              Karlılık oranı
+            </p>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Recent Orders */}
-      <Card title="Son Siparişler" actions={
-        <Link to="/orders">
-          <Button variant="secondary" size="sm">
-            Tümünü Gör
-          </Button>
-        </Link>
-      }>
-        {stats?.recentOrders && stats.recentOrders.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Plaka</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Müşteri</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Güzergah</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Fiyat</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Durum</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Tarih</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.recentOrders.map((order) => (
-                  <tr key={order.id}>
-                    <td style={{ color: '#FFFFFF', fontWeight: 500 }}>{order.plaka}</td>
-                    <td style={{ color: '#FFFFFF' }}>{order.musteri}</td>
-                    <td style={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '14px' }}>
-                      {order.nereden} → {order.nereye}
-                    </td>
-                    <td style={{ color: '#FFFFFF', fontWeight: 500 }}>
-                      {formatCurrency(order.baslangic_fiyati)}
-                    </td>
-                    <td>
-                      <span className="px-2 py-1 text-xs rounded-full" style={getStatusStyle(order.status)}>
-                        {order.status}
-                      </span>
-                    </td>
-                    <td style={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '14px' }}>
-                      {formatDate(order.created_at)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <TruckIcon className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(235, 235, 245, 0.3)' }} />
-            <p style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Henüz sipariş bulunmuyor</p>
-            <Link to="/orders/new">
-              <Button className="mt-4" size="sm">
-                İlk Siparişi Oluştur
-              </Button>
-            </Link>
-          </div>
-        )}
-      </Card>
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <EarningsChart
+            data={stats?.dailyData || []}
+            title="Son 30 Gün Gelir-Gider Analizi"
+            height={350}
+          />
+        </div>
+        <div>
+          <StatusOverview data={stats?.statusDistribution || []} />
+        </div>
+      </div>
+
+      {/* Bottom Section - Vehicle Performance & Upcoming Deliveries */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <VehiclePerformance vehicles={stats?.topVehicles || []} />
+        <UpcomingDeliveries orders={stats?.upcomingDeliveries || []} />
+      </div>
     </div>
   )
-}
-
-function getStatusStyle(status: string): React.CSSProperties {
-  const styles: Record<string, React.CSSProperties> = {
-    'Bekliyor': { backgroundColor: 'rgba(255, 214, 10, 0.2)', color: '#FFD60A' },
-    'Yolda': { backgroundColor: 'rgba(10, 132, 255, 0.2)', color: '#0A84FF' },
-    'Teslim Edildi': { backgroundColor: 'rgba(48, 209, 88, 0.2)', color: '#30D158' },
-    'Faturalandı': { backgroundColor: 'rgba(191, 90, 242, 0.2)', color: '#BF5AF2' },
-    'İptal': { backgroundColor: 'rgba(255, 69, 58, 0.2)', color: '#FF453A' },
-  }
-  return styles[status] || { backgroundColor: 'rgba(235, 235, 245, 0.2)', color: 'rgba(235, 235, 245, 0.6)' }
 }
 

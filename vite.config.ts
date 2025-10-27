@@ -5,6 +5,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   base: './',
+  publicDir: 'public', // Ensure public folder is copied to dist
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -20,6 +21,8 @@ export default defineConfig({
         drop_debugger: true,
       },
     },
+    // Copy public assets
+    assetsDir: 'assets',
   },
   server: {
     port: 5173,

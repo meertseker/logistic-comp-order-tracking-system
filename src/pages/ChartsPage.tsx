@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { BarChart3 } from 'lucide-react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -65,7 +67,16 @@ export default function ChartsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-transparent mx-auto" style={{ borderColor: '#0A84FF', borderTopColor: 'transparent' }}></div>
+          <p className="mt-4 text-lg font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+            Grafikler yükleniyor...
+          </p>
+        </motion.div>
       </div>
     )
   }
@@ -119,11 +130,23 @@ export default function ChartsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Grafik Raporlar</h1>
-        <p className="mt-1 text-gray-600">Son 6 aylık performans analizi</p>
-      </div>
+    <div className="space-y-6 pb-8">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(191, 90, 242, 0.15)' }}>
+            <BarChart3 className="w-6 h-6" style={{ color: '#BF5AF2' }} />
+          </div>
+          <h1 className="text-4xl font-bold" style={{ color: '#FFFFFF' }}>
+            Grafik Raporlar
+          </h1>
+        </div>
+        <p className="text-lg ml-16" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+          Son 6 aylık performans analizi
+        </p>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gelir-Gider Trend */}

@@ -1,5 +1,21 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  ArrowLeft, 
+  Save, 
+  Truck, 
+  MapPin, 
+  DollarSign, 
+  Calculator,
+  TrendingUp,
+  TrendingDown,
+  AlertCircle,
+  CheckCircle,
+  Activity,
+  Zap,
+  Plus
+} from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
@@ -8,7 +24,6 @@ import VehicleSelect from '../components/VehicleSelect'
 import TextArea from '../components/TextArea'
 import RoutePicker from '../components/RoutePicker'
 import { formatCurrency } from '../utils/formatters'
-import { PlusIcon } from '../components/Icons'
 import { useDebounce } from '../hooks/useDebounce'
 import { useToast } from '../context/ToastContext'
 
@@ -283,11 +298,40 @@ export default function CreateOrderFixed() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Yeni Sipariş Oluştur</h1>
-        <p className="mt-1 text-gray-600">Profesyonel maliyet analizi ile sipariş ekleyin</p>
+    <div className="max-w-7xl mx-auto space-y-6 pb-8">
+      {/* Modern Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
+        <div>
+          <div className="flex items-center gap-4 mb-2">
+            <Link to="/orders">
+              <motion.button
+                whileHover={{ scale: 1.05, x: -4 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-2 rounded-xl"
+                style={{ 
+                  backgroundColor: 'rgba(10, 132, 255, 0.15)', 
+                  color: '#0A84FF',
+                  border: '0.5px solid rgba(10, 132, 255, 0.3)'
+                }}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </motion.button>
+            </Link>
+            <div>
+              <h1 className="text-4xl font-bold" style={{ color: '#FFFFFF' }}>
+                Yeni Sipariş Oluştur
+              </h1>
+            </div>
+          </div>
+          <p className="text-lg ml-16" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+            🎯 Profesyonel maliyet analizi ile sipariş ekleyin
+          </p>
       </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form - Sol taraf */}
@@ -314,7 +358,7 @@ export default function CreateOrderFixed() {
                         <p className="mt-1 text-sm text-yellow-700">Sipariş oluşturmak için önce bir araç eklemelisiniz.</p>
                         <Link to="/vehicles" className="mt-3 inline-block">
                           <Button size="sm">
-                            <PlusIcon className="w-4 h-4 mr-2" />
+                            <Plus className="w-4 h-4 mr-2" />
                             Araç Ekle
                           </Button>
                         </Link>
@@ -329,10 +373,21 @@ export default function CreateOrderFixed() {
                       onChange={(plaka) => setFormData(prev => ({ ...prev, plaka }))}
                       disabled={false}
                     />
-                    {formData.plaka && costBreakdown && (
-                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p className="text-sm text-blue-800">
-                          <span className="font-semibold">Seçili Araç:</span> {formatCurrency(costBreakdown.toplamMaliyetPerKm)}/km (ortalama)
+                    {formData.plaka && (
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.12)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}>
+                        <p className="text-sm" style={{ color: '#0A84FF' }}>
+                          <span className="font-semibold text-white mr-1">Seçili Araç:</span>
+                          {(() => {
+                            const v = vehicles.find(v => v.plaka === formData.plaka)
+                            if (!v) return '-'
+                            const yakit = ((v.yakit_tuketimi || 25) * (v.yakit_fiyati || 40)) / 100
+                            const surucu = (v.gunluk_ucret || 1600) / (v.gunluk_ort_km || 500)
+                            const yemek = (v.yemek_gunluk || 150) / (v.gunluk_ort_km || 500)
+                            const bakim = ((v.yag_maliyet || 500) / (v.yag_aralik || 5000)) + ((v.lastik_maliyet || 8000) / (v.lastik_omur || 50000)) + ((v.buyuk_bakim_maliyet || 3000) / (v.buyuk_bakim_aralik || 15000))
+                            const hgs = v.hgs_per_km || 0
+                            const toplam = yakit + surucu + yemek + bakim + hgs
+                            return `${toplam.toFixed(2)} ₺/km (ortalama)`
+                          })()}
                         </p>
                       </div>
                     )}
@@ -379,22 +434,24 @@ export default function CreateOrderFixed() {
                     <button
                       type="button"
                       onClick={() => setTripType('oneway')}
-                      className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
+                      className="flex-1 px-4 py-3 rounded-lg border-2 transition-all font-semibold"
+                      style={
                         tripType === 'oneway'
-                          ? 'border-primary-500 bg-primary-50 text-primary-700 font-semibold'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                          ? { backgroundColor: 'rgba(10, 132, 255, 0.15)', borderColor: 'rgba(10, 132, 255, 0.5)', color: '#0A84FF' }
+                          : { borderColor: 'rgba(84, 84, 88, 0.35)', color: 'rgba(235, 235, 245, 0.7)' }
+                      }
                     >
                       🔜 Tek Yön
                     </button>
                     <button
                       type="button"
                       onClick={() => setTripType('roundtrip')}
-                      className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
+                      className="flex-1 px-4 py-3 rounded-lg border-2 transition-all font-semibold"
+                      style={
                         tripType === 'roundtrip'
-                          ? 'border-primary-500 bg-primary-50 text-primary-700 font-semibold'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                          ? { backgroundColor: 'rgba(10, 132, 255, 0.15)', borderColor: 'rgba(10, 132, 255, 0.5)', color: '#0A84FF' }
+                          : { borderColor: 'rgba(84, 84, 88, 0.35)', color: 'rgba(235, 235, 245, 0.7)' }
+                      }
                     >
                       🔄 Gidiş-Dönüş
                     </button>
@@ -456,43 +513,9 @@ export default function CreateOrderFixed() {
                 </div>
               </div>
 
-              {/* Dönüşte Yük (Sadece Gidiş-Dönüş İçin) */}
-              {tripType === 'roundtrip' && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">4️⃣ Dönüş Optimizasyonu</h3>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Dönüşte Yük Bulma İhtimali
-                      </label>
-                      <span className="text-sm font-bold text-primary-600">%{formData.returnLoadRate}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={formData.returnLoadRate}
-                      onChange={handleSliderChange}
-                      className="w-full h-3 bg-gradient-to-r from-red-200 via-yellow-200 to-green-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
-                      <span>🔴 Boş (0%)</span>
-                      <span>🟡 Yarı (%50)</span>
-                      <span>🟢 Dolu (%100)</span>
-                    </div>
-                    <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                      <p className="text-xs text-blue-800">
-                        💡 <strong>İpucu:</strong> Dönüşte yük bulunursa maliyet önemli ölçüde düşer.
-                        %100 dolu dönüş = dönüş km'si maliyet sıfır!
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Yük Açıklaması */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">5️⃣ Yük Detayları</h3>
+                <h3 className="text-lg font-semibold mb-4">4️⃣ Yük Detayları</h3>
                 <TextArea
                   label="Yük Açıklaması"
                   name="yukAciklamasi"
@@ -506,7 +529,7 @@ export default function CreateOrderFixed() {
 
               {/* Fiyat */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">6️⃣ Fiyatlandırma</h3>
+                <h3 className="text-lg font-semibold mb-4">5️⃣ Fiyatlandırma</h3>
                 
                 {/* Otomatik Fiyat Toggle */}
                 <div className="flex items-center justify-between mb-3 p-3 bg-gray-50 rounded-lg">
@@ -564,16 +587,20 @@ export default function CreateOrderFixed() {
                 )}
               </div>
 
-              {/* Actions */}
-              <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+              {/* Modern Actions */}
+              <div className="flex items-center justify-between pt-6" style={{ borderTop: '0.5px solid rgba(84, 84, 88, 0.35)' }}>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => navigate('/orders')}
                   disabled={loading}
                 >
-                  ← Geri
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Geri
                 </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button 
                   type="submit" 
                   disabled={loading || analyzing || vehicles.length === 0}
@@ -584,15 +611,19 @@ export default function CreateOrderFixed() {
                       Oluşturuluyor...
                     </>
                   ) : (
-                    '✓ Sipariş Oluştur'
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Sipariş Oluştur
+                      </>
                   )}
                 </Button>
+                </motion.div>
               </div>
             </form>
           </Card>
         </div>
 
-        {/* Analiz Panel - Sağ taraf */}
+        {/* Modern Analiz Panel - Sağ taraf */}
         <div className="space-y-4">
           {/* Kar/Zarar Özeti */}
           {analysis && formData.baslangicFiyati && (() => {
@@ -600,85 +631,166 @@ export default function CreateOrderFixed() {
             const breakEven = analysis.onerilenMinFiyat || 0
             const delta = entered - breakEven
             const pct = entered > 0 ? (delta / entered) * 100 : 0
+            const profitStatus = getProfitStatus(delta)
             return (
-              <Card className={`${getProfitBgColor(delta)} border-2`}>
-                <div className="text-center">
-                  <div className="mb-2">
-                    <span className="text-2xl">{getProfitStatus(delta).icon}</span>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="glass-card rounded-xl p-6 relative overflow-hidden"
+                style={{ 
+                  background: delta > 100 ? 'rgba(48, 209, 88, 0.15)' : delta < -100 ? 'rgba(255, 69, 58, 0.15)' : 'rgba(255, 214, 10, 0.15)',
+                  border: delta > 100 ? '0.5px solid rgba(48, 209, 88, 0.3)' : delta < -100 ? '0.5px solid rgba(255, 69, 58, 0.3)' : '0.5px solid rgba(255, 214, 10, 0.3)',
+                }}
+              >
+                <div 
+                  className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30"
+                  style={{ backgroundColor: delta > 100 ? '#30D158' : delta < -100 ? '#FF453A' : '#FFD60A' }}
+                />
+                <div className="relative text-center">
+                  <div className="mb-3">
+                    <span className="text-4xl">{profitStatus.icon}</span>
                   </div>
-                  <p className="text-xs font-medium text-gray-600 mb-2">Kâr Oranı</p>
-                  <p className={`text-4xl font-bold ${getProfitColor(delta)} mb-1`}>
+                  <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                    {profitStatus.text}
+                  </p>
+                  <p className="text-5xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
                     {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
                   </p>
-                  <div className="mt-2 text-sm">
-                    <p className="text-gray-700 font-medium">Başabaş Farkı: <span className={`${getProfitColor(delta)} font-semibold`}>{formatCurrency(delta)}</span></p>
+                  <div className="mt-4 p-3 rounded-xl" style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Başabaş Farkı:</span>
+                      <span className="text-lg font-bold" style={{ color: '#FFFFFF' }}>{formatCurrency(delta)}</span>
+                    </div>
                   </div>
-                  <div className="mt-2">
-                    <p className="text-xs text-gray-700 font-medium">Girilen fiyat: {formatCurrency(entered)}</p>
-                    <p className="text-xs text-gray-600">Başabaş: {formatCurrency(breakEven)}</p>
-                    <p className="text-xs text-gray-600">Maliyet: {formatCurrency(analysis.toplamMaliyet)}</p>
+                  <div className="mt-4 space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Girilen Fiyat:</span>
+                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(entered)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Başabaş Noktası:</span>
+                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(breakEven)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Toplam Maliyet:</span>
+                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(analysis.toplamMaliyet)}</span>
+                    </div>
                   </div>
                 </div>
-              </Card>
+              </motion.div>
             )
           })()}
 
-          {/* Maliyet Detayı */}
+          {/* Modern Maliyet Detayı */}
           {analysis && (
-            <Card title="📊 Maliyet Analizi">
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-600">Etkin Mesafe:</span>
-                  <span className="font-semibold">{analysis.etkinKm.toFixed(0)} km</span>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="glass-card rounded-xl p-6"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-xl" style={{ backgroundColor: 'rgba(10, 132, 255, 0.15)' }}>
+                  <Calculator className="w-5 h-5" style={{ color: '#0A84FF' }} />
                 </div>
-                
-                <div className="border-t pt-2 mt-2 space-y-1.5">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">⛽ Yakıt ({analysis.costBreakdown.yakitLitre?.toFixed(1)} lt):</span>
-                    <span className="font-medium">{formatCurrency(analysis.costBreakdown.yakitMaliyet)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">👤 Sürücü ({analysis.costBreakdown.surucuGun} gün):</span>
-                    <span className="font-medium">{formatCurrency(analysis.costBreakdown.surucuMaliyet)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">🍽️ Yemek:</span>
-                    <span className="font-medium">{formatCurrency(analysis.costBreakdown.yemekMaliyet)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">🛣️ HGS/Köprü:</span>
-                    <span className="font-medium">{formatCurrency(analysis.costBreakdown.hgsMaliyet)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">🔧 Bakım:</span>
-                    <span className="font-medium">{formatCurrency(analysis.costBreakdown.toplamBakimMaliyet)}</span>
-                  </div>
-                </div>
-                
-                <div className="border-t pt-2 mt-2 bg-red-50 rounded p-2">
-                  <div className="flex justify-between font-semibold">
-                    <span className="text-red-800">Toplam Maliyet:</span>
-                    <span className="text-red-600">{formatCurrency(analysis.toplamMaliyet)}</span>
+                <h3 className="text-lg font-semibold" style={{ color: '#FFFFFF' }}>
+                  Maliyet Analizi
+                </h3>
+              </div>
+
+              <div className="space-y-3">
+                {/* Etkin Mesafe */}
+                <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)' }}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" style={{ color: '#0A84FF' }} />
+                      <span className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Etkin Mesafe:</span>
+                    </div>
+                    <span className="font-bold text-lg" style={{ color: '#FFFFFF' }}>
+                      {analysis.etkinKm.toFixed(0)} km
+                    </span>
                   </div>
                 </div>
                 
-                <div className="bg-green-50 rounded p-2">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-gray-700">Önerilen Fiyat:</span>
-                    <span className="font-bold text-green-700">{formatCurrency(analysis.fiyatKdvli)}</span>
+                {/* Maliyet Kalemleri */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                      <Zap className="w-3.5 h-3.5" style={{ color: '#FFD60A' }} />
+                      Yakıt ({analysis.costBreakdown.yakitLitre?.toFixed(1)} lt):
+                    </span>
+                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
+                      {formatCurrency(analysis.costBreakdown.yakitMaliyet)}
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-600">(+%45 kar +%20 KDV)</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                      <Activity className="w-3.5 h-3.5" style={{ color: '#0A84FF' }} />
+                      Sürücü ({analysis.costBreakdown.surucuGun} gün):
+                    </span>
+                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
+                      {formatCurrency(analysis.costBreakdown.surucuMaliyet)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                      🍽️ Yemek:
+                    </span>
+                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
+                      {formatCurrency(analysis.costBreakdown.yemekMaliyet)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                      🛣️ HGS/Köprü:
+                    </span>
+                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
+                      {formatCurrency(analysis.costBreakdown.hgsMaliyet)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                      🔧 Bakım:
+                    </span>
+                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
+                      {formatCurrency(analysis.costBreakdown.toplamBakimMaliyet)}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Toplam Maliyet */}
+                <div className="mt-4 p-3 rounded-xl" style={{ backgroundColor: 'rgba(255, 69, 58, 0.15)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold" style={{ color: '#FF453A' }}>Toplam Maliyet:</span>
+                    <span className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
+                      {formatCurrency(analysis.toplamMaliyet)}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Önerilen Fiyat */}
+                <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(48, 209, 88, 0.15)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Önerilen Fiyat:</span>
+                    <span className="text-lg font-bold" style={{ color: '#30D158' }}>
+                      {formatCurrency(analysis.fiyatKdvli)}
+                    </span>
+                  </div>
+                  <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>(+%45 kar +%20 KDV)</p>
                 </div>
 
-                <div className="bg-yellow-50 rounded p-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-700">Başabaş:</span>
-                    <span className="font-medium text-yellow-700">{formatCurrency(analysis.onerilenMinFiyat)}</span>
+                {/* Başabaş */}
+                <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255, 214, 10, 0.15)', border: '0.5px solid rgba(255, 214, 10, 0.3)' }}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Başabaş Noktası:</span>
+                    <span className="text-lg font-bold" style={{ color: '#FFD60A' }}>
+                      {formatCurrency(analysis.onerilenMinFiyat)}
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-600">(Sadece +%20 KDV)</p>
+                  <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>(Sadece +%20 KDV)</p>
                 </div>
               </div>
-            </Card>
+            </motion.div>
           )}
 
           {/* Bilgi Kartı */}

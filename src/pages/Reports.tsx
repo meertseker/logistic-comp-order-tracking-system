@@ -1,8 +1,20 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import {
+  FileText,
+  Download,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Truck,
+  Users,
+  Activity,
+  Calendar,
+  BarChart3
+} from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Select from '../components/Select'
-import { ChartBarIcon, TruckIcon, CurrencyDollarIcon } from '../components/Icons'
 import { formatCurrency, formatNumber } from '../utils/formatters'
 import { exportReportToExcel } from '../utils/excelExport'
 import { exportReportToPDF } from '../utils/pdfExport'
@@ -80,27 +92,44 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pb-8">
+      {/* Modern Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Raporlar</h1>
-          <p className="mt-1 text-gray-600">Aylık performans raporları</p>
+          <h1 className="text-4xl font-bold" style={{ color: '#FFFFFF' }}>
+            Raporlar
+          </h1>
+          <p className="mt-2 text-lg" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+            Aylık performans ve mali raporlarınız
+          </p>
         </div>
         {report && (
-          <div className="flex space-x-2">
-            <Button onClick={exportToCSV} variant="secondary" size="sm">
-              📄 CSV
-            </Button>
-            <Button onClick={() => exportReportToExcel(report, year, month)} variant="secondary" size="sm">
-              📊 Excel
-            </Button>
-            <Button onClick={() => exportReportToPDF(report, year, month)} size="sm">
-              📕 PDF
-            </Button>
+          <div className="flex gap-2">
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button onClick={exportToCSV} variant="secondary" size="sm">
+                <Download className="w-4 h-4 mr-2" />
+                CSV
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button onClick={() => exportReportToExcel(report, year, month)} variant="secondary" size="sm">
+                <Download className="w-4 h-4 mr-2" />
+                Excel
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button onClick={() => exportReportToPDF(report, year, month)} size="sm">
+                <FileText className="w-4 h-4 mr-2" />
+                PDF
+              </Button>
+            </motion.div>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Filters */}
       <Card>
@@ -126,95 +155,158 @@ export default function Reports() {
       </Card>
 
       {loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Rapor hazırlanıyor...</p>
+        <div className="flex items-center justify-center h-64">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center"
+          >
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-transparent mx-auto" style={{ borderColor: '#0A84FF', borderTopColor: 'transparent' }}></div>
+            <p className="mt-4 text-lg font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+              Rapor hazırlanıyor...
+            </p>
+          </motion.div>
         </div>
       ) : report ? (
         <>
-          {/* Summary Cards - Detaylı */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Card className="bg-gradient-to-br from-green-50 to-green-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-green-800">Toplam Gelir</p>
-                  <p className="text-3xl font-bold text-green-900 mt-2">
-                    {formatCurrency(report.earnings)}
+          {/* Modern Summary Cards */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4"
+          >
+            {/* Toplam Gelir */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -4 }}
+              className="glass-card rounded-xl p-6 relative overflow-hidden"
+              style={{ background: 'rgba(48, 209, 88, 0.12)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}
+            >
+              <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#30D158' }} />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="w-4 h-4" style={{ color: '#30D158' }} />
+                  <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#30D158' }}>
+                    Toplam Gelir
                   </p>
-                  <p className="text-xs text-green-700 mt-1">Müşterilerden alınan</p>
                 </div>
-                <div className="p-3 bg-green-200 rounded-full">
-                  <CurrencyDollarIcon className="w-6 h-6 text-green-700" />
-                </div>
+                <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+                  {formatCurrency(report.earnings)}
+                </p>
+                <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Müşterilerden alınan</p>
               </div>
-            </Card>
+            </motion.div>
 
-            <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-orange-800">Tahmini Gider</p>
-                  <p className="text-3xl font-bold text-orange-900 mt-2">
-                    {formatCurrency(report.estimatedCosts || 0)}
+            {/* Tahmini Gider */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -4 }}
+              className="glass-card rounded-xl p-6 relative overflow-hidden"
+              style={{ background: 'rgba(255, 159, 10, 0.12)', border: '0.5px solid rgba(255, 159, 10, 0.3)' }}
+            >
+              <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#FF9F0A' }} />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <Truck className="w-4 h-4" style={{ color: '#FF9F0A' }} />
+                  <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#FF9F0A' }}>
+                    Tahmini Gider
                   </p>
-                  <p className="text-xs text-orange-700 mt-1">Hesaplanan maliyet</p>
                 </div>
-                <div className="p-3 bg-orange-200 rounded-full">
-                  <TruckIcon className="w-6 h-6 text-orange-700" />
-                </div>
+                <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+                  {formatCurrency(report.estimatedCosts || 0)}
+                </p>
+                <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Hesaplanan maliyet</p>
               </div>
-            </Card>
+            </motion.div>
 
-            <Card className="bg-gradient-to-br from-red-50 to-red-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-red-800">Ek Gider</p>
-                  <p className="text-3xl font-bold text-red-900 mt-2">
-                    {formatCurrency(report.expenses)}
+            {/* Ek Gider */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -4 }}
+              className="glass-card rounded-xl p-6 relative overflow-hidden"
+              style={{ background: 'rgba(255, 69, 58, 0.12)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}
+            >
+              <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#FF453A' }} />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingDown className="w-4 h-4" style={{ color: '#FF453A' }} />
+                  <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#FF453A' }}>
+                    Ek Gider
                   </p>
-                  <p className="text-xs text-red-700 mt-1">Manuel eklenen</p>
                 </div>
-                <div className="p-3 bg-red-200 rounded-full">
-                  <ChartBarIcon className="w-6 h-6 text-red-700" />
-                </div>
+                <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+                  {formatCurrency(report.expenses)}
+                </p>
+                <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Manuel eklenen</p>
               </div>
-            </Card>
+            </motion.div>
 
-            <Card className={`bg-gradient-to-br ${report.netIncome >= 0 ? 'from-blue-50 to-blue-100' : 'from-gray-50 to-gray-100'}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`text-xs font-medium ${report.netIncome >= 0 ? 'text-blue-800' : 'text-gray-800'}`}>
+            {/* Net Kar/Zarar */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -4 }}
+              className="glass-card rounded-xl p-6 relative overflow-hidden"
+              style={{ 
+                background: report.netIncome >= 0 ? 'rgba(10, 132, 255, 0.12)' : 'rgba(255, 69, 58, 0.12)',
+                border: report.netIncome >= 0 ? '0.5px solid rgba(10, 132, 255, 0.3)' : '0.5px solid rgba(255, 69, 58, 0.3)'
+              }}
+            >
+              <div 
+                className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" 
+                style={{ backgroundColor: report.netIncome >= 0 ? '#0A84FF' : '#FF453A' }}
+              />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                  {report.netIncome >= 0 ? (
+                    <TrendingUp className="w-4 h-4" style={{ color: '#0A84FF' }} />
+                  ) : (
+                    <TrendingDown className="w-4 h-4" style={{ color: '#FF453A' }} />
+                  )}
+                  <p 
+                    className="text-xs font-semibold uppercase tracking-wider" 
+                    style={{ color: report.netIncome >= 0 ? '#0A84FF' : '#FF453A' }}
+                  >
                     Net Kar/Zarar
                   </p>
-                  <p className={`text-3xl font-bold mt-2 ${report.netIncome >= 0 ? 'text-blue-900' : 'text-gray-900'}`}>
-                    {formatCurrency(report.netIncome)}
-                  </p>
-                  <p className={`text-xs mt-1 ${report.netIncome >= 0 ? 'text-blue-700' : 'text-gray-700'}`}>
-                    {report.netIncome >= 0 ? 'Kârlı dönem' : 'Zararlı dönem'}
-                  </p>
                 </div>
-                <div className={`p-3 rounded-full ${report.netIncome >= 0 ? 'bg-blue-200' : 'bg-gray-200'}`}>
-                  <ChartBarIcon className={`w-6 h-6 ${report.netIncome >= 0 ? 'text-blue-700' : 'text-gray-700'}`} />
-                </div>
+                <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+                  {formatCurrency(report.netIncome)}
+                </p>
+                <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                  {report.netIncome >= 0 ? '✓ Kârlı dönem' : '⚠ Zararlı dönem'}
+                </p>
               </div>
-            </Card>
+            </motion.div>
 
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-purple-800">Gerçek Kâr Marjı</p>
-                  <p className="text-3xl font-bold text-purple-900 mt-2">
-                    %{report.gercekKarMarji?.toFixed(1) || '0.0'}
-                  </p>
-                  <p className="text-xs text-purple-700 mt-1">
-                    Gelir / Kâr oranı
+            {/* Gerçek Kâr */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -4 }}
+              className="glass-card rounded-xl p-6 relative overflow-hidden"
+              style={{ 
+                background: report.gercekKar >= 0 ? 'rgba(191, 90, 242, 0.12)' : 'rgba(255, 214, 10, 0.12)',
+                border: report.gercekKar >= 0 ? '0.5px solid rgba(191, 90, 242, 0.3)' : '0.5px solid rgba(255, 214, 10, 0.3)'
+              }}
+            >
+              <div 
+                className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" 
+                style={{ backgroundColor: report.gercekKar >= 0 ? '#BF5AF2' : '#FFD60A' }}
+              />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <Activity className="w-4 h-4" style={{ color: report.gercekKar >= 0 ? '#BF5AF2' : '#FFD60A' }} />
+                  <p 
+                    className="text-xs font-semibold uppercase tracking-wider" 
+                    style={{ color: report.gercekKar >= 0 ? '#BF5AF2' : '#FFD60A' }}
+                  >
+                    Gerçek Kâr
                   </p>
                 </div>
-                <div className="p-3 bg-purple-200 rounded-full">
-                  <ChartBarIcon className="w-6 h-6 text-purple-700" />
-                </div>
+                <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+                  {formatCurrency(report.gercekKar || 0)}
+                </p>
+                <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                  {report.gercekKarMarji ? `%${report.gercekKarMarji.toFixed(1)} marj` : 'Hesaplanmadı'}
+                </p>
               </div>
-            </Card>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Status Breakdown */}
           {report.byStatus && report.byStatus.length > 0 && (
@@ -313,7 +405,7 @@ export default function Reports() {
       ) : (
         <Card>
           <div className="text-center py-12">
-            <ChartBarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <BarChart3 className="w-16 h-16 mx-auto mb-4" style={{ color: 'rgba(235, 235, 245, 0.3)' }} />
             <p className="text-gray-500 text-lg">
               Rapor görüntülemek için yukarıdan ay ve yıl seçiniz
             </p>

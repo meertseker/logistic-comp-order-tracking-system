@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { Truck, Plus, Edit, Settings } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import Modal from '../components/Modal'
-import { PlusIcon, PencilIcon, TruckIcon } from '../components/Icons'
 import { formatCurrency } from '../utils/formatters'
 
 export default function VehiclesProfessional() {
@@ -177,18 +178,33 @@ export default function VehiclesProfessional() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pb-8">
+      {/* Modern Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Araç Yönetimi</h1>
-          <p className="mt-1 text-gray-600">Araç parametrelerini ve maliyet ayarlarını yönetin (Profesyonel Sistem)</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255, 159, 10, 0.15)' }}>
+              <Truck className="w-6 h-6" style={{ color: '#FF9F0A' }} />
+            </div>
+            <h1 className="text-4xl font-bold" style={{ color: '#FFFFFF' }}>
+              Araç Yönetimi
+            </h1>
+          </div>
+          <p className="text-lg ml-16" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+            Araç parametrelerini ve maliyet ayarlarını yönetin
+          </p>
         </div>
-        <Button onClick={handleNew}>
-          <PlusIcon className="w-5 h-5 mr-2" />
-          Yeni Araç
-        </Button>
-      </div>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button onClick={handleNew}>
+            <Plus className="w-5 h-5 mr-2" />
+            Yeni Araç
+          </Button>
+        </motion.div>
+      </motion.div>
 
       {/* Bilgilendirme */}
       <Card className="bg-blue-50 border-blue-200">
@@ -227,7 +243,7 @@ export default function VehiclesProfessional() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="p-3 bg-primary-100 rounded-lg">
-                      <TruckIcon className="w-6 h-6 text-primary-600" />
+                      <Truck className="w-6 h-6 text-primary-600" />
                     </div>
                     <div className="ml-3">
                       <h3 className="text-lg font-bold text-gray-900">{vehicle.plaka}</h3>
@@ -236,12 +252,15 @@ export default function VehiclesProfessional() {
                       </p>
                     </div>
                   </div>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => handleEdit(vehicle)}
-                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                    className="p-2 rounded-xl"
+                    style={{ color: '#0A84FF', backgroundColor: 'rgba(10, 132, 255, 0.15)' }}
                   >
-                    <PencilIcon className="w-5 h-5" />
-                  </button>
+                    <Edit className="w-5 h-5" />
+                  </motion.button>
                 </div>
 
                 {/* Maliyet Detayları */}
@@ -286,7 +305,7 @@ export default function VehiclesProfessional() {
       ) : (
         <Card>
           <div className="text-center py-12">
-            <TruckIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <Truck className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-4">Henüz araç eklenmemiş</p>
             <p className="text-sm text-gray-600 mb-4">İlk aracınızı ekleyerek başlayın</p>
             <Button onClick={handleNew}>

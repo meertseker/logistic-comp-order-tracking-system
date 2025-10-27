@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { MapPin, Plus, Edit, Trash2, Navigation } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import TextArea from '../components/TextArea'
 import Modal from '../components/Modal'
-import { PlusIcon, PencilIcon, TrashIcon } from '../components/Icons'
 import { formatCurrency } from '../utils/formatters'
 import { useToast } from '../context/ToastContext'
 
@@ -122,18 +123,33 @@ export default function Routes() {
   }, {} as Record<string, any>)
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pb-8">
+      {/* Modern Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Güzergah Yönetimi</h1>
-          <p className="mt-1 text-gray-600">HGS/köprü maliyetlerini ve mesafe bilgilerini yönetin</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255, 69, 58, 0.15)' }}>
+              <MapPin className="w-6 h-6" style={{ color: '#FF453A' }} />
+            </div>
+            <h1 className="text-4xl font-bold" style={{ color: '#FFFFFF' }}>
+              Güzergah Yönetimi
+            </h1>
+          </div>
+          <p className="text-lg ml-16" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+            HGS/köprü maliyetlerini ve mesafe bilgilerini yönetin
+          </p>
         </div>
-        <Button onClick={handleNew}>
-          <PlusIcon className="w-5 h-5 mr-2" />
-          Yeni Güzergah
-        </Button>
-      </div>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button onClick={handleNew}>
+            <Plus className="w-5 h-5 mr-2" />
+            Yeni Güzergah
+          </Button>
+        </motion.div>
+      </motion.div>
 
       {/* Bilgilendirme */}
       <Card className="bg-blue-50 border-blue-200">
@@ -189,18 +205,24 @@ export default function Routes() {
                     <td className="py-3 px-4 text-right">{route.sure_saat}h</td>
                     <td className="py-3 px-4">
                       <div className="flex space-x-2">
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => handleEdit(route)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          className="p-2 rounded-lg transition-colors"
+                          style={{ color: '#0A84FF', backgroundColor: 'rgba(10, 132, 255, 0.1)' }}
                         >
-                          <PencilIcon className="w-4 h-4" />
-                        </button>
-                        <button
+                          <Edit className="w-4 h-4" />
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => handleDelete(route.id, route.nereden, route.nereye)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          className="p-2 rounded-lg transition-colors"
+                          style={{ color: '#FF453A', backgroundColor: 'rgba(255, 69, 58, 0.1)' }}
                         >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
+                          <Trash2 className="w-4 h-4" />
+                        </motion.button>
                       </div>
                     </td>
                   </tr>

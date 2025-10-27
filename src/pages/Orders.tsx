@@ -1,12 +1,26 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Plus, 
+  Search, 
+  Eye, 
+  Trash2, 
+  Download,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Package,
+  AlertCircle,
+  CheckCircle,
+  Target
+} from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import Select from '../components/Select'
 import AdvancedFilters from '../components/AdvancedFilters'
 import Pagination from '../components/Pagination'
-import { PlusIcon, MagnifyingGlassIcon, EyeIcon, TrashIcon } from '../components/Icons'
 import { formatCurrency, formatDate } from '../utils/formatters'
 import { exportOrdersToExcel } from '../utils/excelExport'
 
@@ -213,88 +227,198 @@ export default function Orders() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pb-8">
+      {/* Modern Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Siparişler</h1>
-          <p className="mt-1 text-gray-600">Tüm siparişlerinizi yönetin</p>
+          <h1 className="text-4xl font-bold" style={{ color: '#FFFFFF' }}>
+            Siparişler
+          </h1>
+          <p className="mt-2 text-lg" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+            Tüm siparişlerinizi yönetin ve takip edin
+          </p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex gap-3">
           {orders.length > 0 && (
-            <Button variant="secondary" onClick={() => exportOrdersToExcel(orders)}>
-              📊 Excel İndir
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button variant="secondary" onClick={() => exportOrdersToExcel(orders)}>
+                <Download className="w-5 h-5 mr-2" />
+                Excel İndir
+              </Button>
+            </motion.div>
           )}
           <Link to="/orders/new">
-            <Button>
-              <PlusIcon className="w-5 h-5 mr-2" />
-              Yeni Sipariş
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button>
+                <Plus className="w-5 h-5 mr-2" />
+                Yeni Sipariş
+              </Button>
+            </motion.div>
           </Link>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Finansal Özet */}
+      {/* Modern Finansal Özet */}
       {orders.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
-            <div className="text-center">
-              <p className="text-xs font-medium text-blue-800">Toplam Gelir</p>
-              <p className="text-2xl font-bold text-blue-900 mt-1">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4"
+        >
+          {/* Toplam Gelir */}
+          <motion.div
+            whileHover={{ scale: 1.02, y: -4 }}
+            className="glass-card rounded-xl p-6 relative overflow-hidden"
+            style={{ background: 'rgba(10, 132, 255, 0.12)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}
+          >
+            <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#0A84FF' }} />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className="w-4 h-4" style={{ color: '#0A84FF' }} />
+                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#0A84FF' }}>
+                  Toplam Gelir
+                </p>
+              </div>
+              <p className="text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
                 {formatCurrency(statistics.toplamGelir)}
               </p>
-              <p className="text-xs text-blue-700 mt-1">{statistics.toplamSiparis} sipariş</p>
+              <div className="flex items-center gap-2 mt-2">
+                <Package className="w-3 h-3" style={{ color: 'rgba(235, 235, 245, 0.6)' }} />
+                <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                  {statistics.toplamSiparis} sipariş
+                </p>
+              </div>
             </div>
-          </Card>
-          <Card className="bg-gradient-to-br from-red-50 to-red-100">
-            <div className="text-center">
-              <p className="text-xs font-medium text-red-800">Toplam Maliyet</p>
-              <p className="text-2xl font-bold text-red-900 mt-1">
+          </motion.div>
+
+          {/* Toplam Maliyet */}
+          <motion.div
+            whileHover={{ scale: 1.02, y: -4 }}
+            className="glass-card rounded-xl p-6 relative overflow-hidden"
+            style={{ background: 'rgba(255, 69, 58, 0.12)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}
+          >
+            <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#FF453A' }} />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingDown className="w-4 h-4" style={{ color: '#FF453A' }} />
+                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#FF453A' }}>
+                  Toplam Maliyet
+                </p>
+              </div>
+              <p className="text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
                 {formatCurrency(statistics.toplamMaliyet)}
               </p>
-              <p className="text-xs text-red-700 mt-1">Tahmini gider</p>
-            </div>
-          </Card>
-          <Card className={`bg-gradient-to-br ${statistics.toplamKar >= 0 ? 'from-green-50 to-green-100' : 'from-orange-50 to-orange-100'}`}>
-            <div className="text-center">
-              <p className={`text-xs font-medium ${statistics.toplamKar >= 0 ? 'text-green-800' : 'text-orange-800'}`}>
-                Gerçek Kâr
+              <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                Tahmini gider
               </p>
-              <p className={`text-2xl font-bold mt-1 ${statistics.toplamKar >= 0 ? 'text-green-900' : 'text-orange-900'}`}>
+            </div>
+          </motion.div>
+
+          {/* Gerçek Kâr */}
+          <motion.div
+            whileHover={{ scale: 1.02, y: -4 }}
+            className="glass-card rounded-xl p-6 relative overflow-hidden"
+            style={{ 
+              background: statistics.toplamKar >= 0 ? 'rgba(48, 209, 88, 0.12)' : 'rgba(255, 159, 10, 0.12)', 
+              border: statistics.toplamKar >= 0 ? '0.5px solid rgba(48, 209, 88, 0.3)' : '0.5px solid rgba(255, 159, 10, 0.3)' 
+            }}
+          >
+            <div 
+              className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" 
+              style={{ backgroundColor: statistics.toplamKar >= 0 ? '#30D158' : '#FF9F0A' }} 
+            />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                {statistics.toplamKar >= 0 ? (
+                  <CheckCircle className="w-4 h-4" style={{ color: '#30D158' }} />
+                ) : (
+                  <AlertCircle className="w-4 h-4" style={{ color: '#FF9F0A' }} />
+                )}
+                <p 
+                  className="text-xs font-medium uppercase tracking-wider" 
+                  style={{ color: statistics.toplamKar >= 0 ? '#30D158' : '#FF9F0A' }}
+                >
+                  Gerçek Kâr
+                </p>
+              </div>
+              <p className="text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
                 {formatCurrency(statistics.toplamKar)}
               </p>
-              <p className={`text-xs mt-1 ${statistics.toplamKar >= 0 ? 'text-green-700' : 'text-orange-700'}`}>
-                {statistics.toplamKar >= 0 ? 'Kârlı' : 'Zararlı'}
+              <p 
+                className="text-xs" 
+                style={{ color: statistics.toplamKar >= 0 ? '#30D158' : '#FF9F0A' }}
+              >
+                {statistics.toplamKar >= 0 ? '✓ Kârlı' : '⚠ Zararlı'}
               </p>
             </div>
-          </Card>
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
-            <div className="text-center">
-              <p className="text-xs font-medium text-purple-800">Gerçek Kâr Marjı</p>
-              <p className="text-2xl font-bold text-purple-900 mt-1">
+          </motion.div>
+
+          {/* Kâr Marjı */}
+          <motion.div
+            whileHover={{ scale: 1.02, y: -4 }}
+            className="glass-card rounded-xl p-6 relative overflow-hidden"
+            style={{ background: 'rgba(191, 90, 242, 0.12)', border: '0.5px solid rgba(191, 90, 242, 0.3)' }}
+          >
+            <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#BF5AF2' }} />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-4 h-4" style={{ color: '#BF5AF2' }} />
+                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#BF5AF2' }}>
+                  Kâr Marjı
+                </p>
+              </div>
+              <p className="text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
                 {statistics.toplamGelir > 0 
                   ? `%${statistics.gercekKarMarji.toFixed(1)}`
                   : '-%'
                 }
               </p>
-              <p className="text-xs text-purple-700 mt-1">Gelir / Kâr</p>
-            </div>
-          </Card>
-          <Card className={`bg-gradient-to-br ${statistics.hedefKarSapmasi >= 0 ? 'from-teal-50 to-teal-100' : 'from-amber-50 to-amber-100'}`}>
-            <div className="text-center">
-              <p className={`text-xs font-medium ${statistics.hedefKarSapmasi >= 0 ? 'text-teal-800' : 'text-amber-800'}`}>
-                Hedef Sapması
+              <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                Gelir / Kâr oranı
               </p>
-              <p className={`text-2xl font-bold mt-1 ${statistics.hedefKarSapmasi >= 0 ? 'text-teal-900' : 'text-amber-900'}`}>
+            </div>
+          </motion.div>
+
+          {/* Hedef Sapması */}
+          <motion.div
+            whileHover={{ scale: 1.02, y: -4 }}
+            className="glass-card rounded-xl p-6 relative overflow-hidden"
+            style={{ 
+              background: statistics.hedefKarSapmasi >= 0 ? 'rgba(48, 209, 88, 0.12)' : 'rgba(255, 214, 10, 0.12)', 
+              border: statistics.hedefKarSapmasi >= 0 ? '0.5px solid rgba(48, 209, 88, 0.3)' : '0.5px solid rgba(255, 214, 10, 0.3)' 
+            }}
+          >
+            <div 
+              className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" 
+              style={{ backgroundColor: statistics.hedefKarSapmasi >= 0 ? '#30D158' : '#FFD60A' }} 
+            />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="w-4 h-4" style={{ color: statistics.hedefKarSapmasi >= 0 ? '#30D158' : '#FFD60A' }} />
+                <p 
+                  className="text-xs font-medium uppercase tracking-wider" 
+                  style={{ color: statistics.hedefKarSapmasi >= 0 ? '#30D158' : '#FFD60A' }}
+                >
+                  Hedef Sapma
+                </p>
+              </div>
+              <p className="text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
                 {formatCurrency(statistics.hedefKarSapmasi)}
               </p>
-              <p className={`text-xs mt-1 ${statistics.hedefKarSapmasi >= 0 ? 'text-teal-700' : 'text-amber-700'}`}>
-                {statistics.hedefKarSapmasi >= 0 ? 'Hedefin üstünde' : 'Hedefin altında'}
+              <p 
+                className="text-xs" 
+                style={{ color: statistics.hedefKarSapmasi >= 0 ? '#30D158' : '#FFD60A' }}
+              >
+                {statistics.hedefKarSapmasi >= 0 ? '↑ Hedefin üstünde' : '↓ Hedefin altında'}
               </p>
             </div>
-          </Card>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {/* Filters */}
@@ -323,45 +447,52 @@ export default function Orders() {
         </div>
       </Card>
 
-      {/* Bulk Actions */}
-      {selectedOrders.length > 0 && (
-        <Card className="bg-primary-50 border-primary-200">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-primary-900">
-              {selectedOrders.length} sipariş seçildi
-            </p>
-            <div className="flex space-x-2">
-              <Select
-                options={[
-                  { value: '', label: 'Durum Değiştir...' },
-                  ...STATUS_OPTIONS.filter(s => s.value !== '')
-                ]}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    handleBulkStatusUpdate(e.target.value)
-                    e.target.value = '' // Reset
-                  }
-                }}
-              />
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={handleBulkDelete}
-              >
-                <TrashIcon className="w-4 h-4 mr-1" />
-                Sil ({selectedOrders.length})
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setSelectedOrders([])}
-              >
-                İptal
-              </Button>
+      {/* Modern Bulk Actions */}
+      <AnimatePresence>
+        {selectedOrders.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            className="glass-card rounded-xl p-4"
+            style={{ background: 'rgba(10, 132, 255, 0.12)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5" style={{ color: '#0A84FF' }} />
+                <p className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>
+                  {selectedOrders.length} sipariş seçildi
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Select
+                  options={[
+                    { value: '', label: 'Durum Değiştir...' },
+                    ...STATUS_OPTIONS.filter(s => s.value !== '')
+                  ]}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleBulkStatusUpdate(e.target.value)
+                      e.target.value = ''
+                    }
+                  }}
+                />
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button variant="danger" size="sm" onClick={handleBulkDelete}>
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Sil ({selectedOrders.length})
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button variant="secondary" size="sm" onClick={() => setSelectedOrders([])}>
+                    İptal
+                  </Button>
+                </motion.div>
+              </div>
             </div>
-          </div>
-        </Card>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Orders Table */}
       <Card>
@@ -396,7 +527,11 @@ export default function Orders() {
               </thead>
               <tbody>
                 {currentOrders.map((order) => (
-                  <tr key={order.id} className={`border-b border-gray-100 hover:bg-gray-50 ${selectedOrders.includes(order.id) ? 'bg-primary-50' : ''}`}>
+                  <tr
+                    key={order.id}
+                    className={`border-b border-gray-100 hover:bg-gray-50 ${selectedOrders.includes(order.id) ? 'text-white' : ''}`}
+                    style={selectedOrders.includes(order.id) ? { backgroundColor: 'rgba(10, 132, 255, 0.15)' } : undefined}
+                  >
                     <td className="py-3 px-4">
                       <input
                         type="checkbox"
@@ -408,8 +543,8 @@ export default function Orders() {
                     <td className="py-3 px-4 font-medium">#{order.id}</td>
                     <td className="py-3 px-4 font-medium">{order.plaka}</td>
                     <td className="py-3 px-4">{order.musteri}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{order.telefon}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
+                    <td className="py-3 px-4 text-sm" style={{ color: selectedOrders.includes(order.id) ? '#FFFFFF' : 'rgba(235, 235, 245, 0.6)' }}>{order.telefon}</td>
+                    <td className="py-3 px-4 text-sm" style={{ color: selectedOrders.includes(order.id) ? '#FFFFFF' : 'rgba(235, 235, 245, 0.6)' }}>
                       {order.nereden} → {order.nereye}
                     </td>
                     <td className="py-3 px-4 font-medium">
@@ -420,22 +555,30 @@ export default function Orders() {
                         {order.status}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
+                    <td className="py-3 px-4 text-sm" style={{ color: selectedOrders.includes(order.id) ? '#FFFFFF' : 'rgba(235, 235, 245, 0.6)' }}>
                       {formatDate(order.created_at)}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex space-x-2">
                         <Link to={`/orders/${order.id}`}>
-                          <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                            <EyeIcon className="w-4 h-4" />
-                          </button>
+                          <motion.button 
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="p-2 rounded-lg transition-colors"
+                            style={{ color: '#0A84FF', backgroundColor: 'rgba(10, 132, 255, 0.1)' }}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </motion.button>
                         </Link>
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => handleDelete(order.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 rounded-lg transition-colors"
+                          style={{ color: '#FF453A', backgroundColor: 'rgba(255, 69, 58, 0.1)' }}
                         >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
+                          <Trash2 className="w-4 h-4" />
+                        </motion.button>
                       </div>
                     </td>
                   </tr>

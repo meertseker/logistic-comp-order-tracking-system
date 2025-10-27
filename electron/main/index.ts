@@ -405,44 +405,192 @@ ipcMain.handle('db:getMonthlyReport', async (_, year, month) => {
 ipcMain.handle('db:getDashboardStats', async () => {
   const db = getDB()
   try {
+    // Temel sayılar
     const totalOrders = db.prepare('SELECT COUNT(*) as count FROM orders').get()
     const activeOrders = db.prepare('SELECT COUNT(*) as count FROM orders WHERE status IN (?, ?)').get('Yolda', 'Bekliyor')
     const completedOrders = db.prepare('SELECT COUNT(*) as count FROM orders WHERE status = ?').get('Teslim Edildi')
     
     const thisMonth = new Date()
-    const startDate = `${thisMonth.getFullYear()}-${String(thisMonth.getMonth() + 1).padStart(2, '0')}-01`
+    const lastMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth() - 1, 1)
+    const thisMonthStart = `${thisMonth.getFullYear()}-${String(thisMonth.getMonth() + 1).padStart(2, '0')}-01`
+    const lastMonthStart = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}-01`
+    const lastMonthEnd = thisMonthStart
     
+    // Bu ay verileri
     const monthlyEarnings = db.prepare(`
       SELECT COALESCE(SUM(baslangic_fiyati), 0) as total
       FROM orders
       WHERE created_at >= ?
-    `).get(startDate)
+    `).get(thisMonthStart)
     
     const monthlyExpenses = db.prepare(`
       SELECT COALESCE(SUM(e.amount), 0) as total
       FROM expenses e
       JOIN orders o ON e.order_id = o.id
       WHERE o.created_at >= ?
-    `).get(startDate)
+    `).get(thisMonthStart)
     
-    // Tahmini maliyet toplamı (yeni siparişlerden)
     const monthlyEstimatedCosts = db.prepare(`
       SELECT COALESCE(SUM(toplam_maliyet), 0) as total
       FROM orders
       WHERE created_at >= ?
-    `).get(startDate)
+    `).get(thisMonthStart)
     
+    // Geçen ay verileri (trend için)
+    const lastMonthEarnings = db.prepare(`
+      SELECT COALESCE(SUM(baslangic_fiyati), 0) as total
+      FROM orders
+      WHERE created_at >= ? AND created_at < ?
+    `).get(lastMonthStart, lastMonthEnd)
+    
+    const lastMonthExpenses = db.prepare(`
+      SELECT COALESCE(SUM(e.amount), 0) as total
+      FROM expenses e
+      JOIN orders o ON e.order_id = o.id
+      WHERE o.created_at >= ? AND o.created_at < ?
+    `).get(lastMonthStart, lastMonthEnd)
+    
+    const lastMonthEstimatedCosts = db.prepare(`
+      SELECT COALESCE(SUM(toplam_maliyet), 0) as total
+      FROM orders
+      WHERE created_at >= ? AND created_at < ?
+    `).get(lastMonthStart, lastMonthEnd)
+    
+    const lastMonthOrders = db.prepare(`
+      SELECT COUNT(*) as count FROM orders
+      WHERE created_at >= ? AND created_at < ?
+    `).get(lastMonthStart, lastMonthEnd)
+    
+    const thisMonthOrders = db.prepare(`
+      SELECT COUNT(*) as count FROM orders
+      WHERE created_at >= ?
+    `).get(thisMonthStart)
+    
+    // Son 30 gün günlük veriler (grafikler için)
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const thirtyDaysStart = thirtyDaysAgo.toISOString().split('T')[0]
+    
+    const dailyData = db.prepare(`
+      SELECT 
+        DATE(created_at) as date,
+        COUNT(*) as orders,
+        COALESCE(SUM(baslangic_fiyati), 0) as earnings,
+        COALESCE(SUM(toplam_maliyet), 0) as costs
+      FROM orders
+      WHERE created_at >= ?
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `).all(thirtyDaysStart)
+    
+    // Son 7 gün günlük veriler
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    const sevenDaysStart = sevenDaysAgo.toISOString().split('T')[0]
+    
+    const weeklyData = db.prepare(`
+      SELECT 
+        DATE(created_at) as date,
+        COUNT(*) as orders,
+        COALESCE(SUM(baslangic_fiyati), 0) as earnings,
+        COALESCE(SUM(toplam_maliyet), 0) as costs
+      FROM orders
+      WHERE created_at >= ?
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `).all(sevenDaysStart)
+    
+    // En çok çalışan araçlar (bu ay)
+    const topVehicles = db.prepare(`
+      SELECT 
+        plaka,
+        COUNT(*) as orderCount,
+        SUM(baslangic_fiyati) as totalEarnings,
+        SUM(toplam_maliyet) as totalCosts,
+        SUM(kar_zarar) as totalProfit
+      FROM orders
+      WHERE created_at >= ?
+      GROUP BY plaka
+      ORDER BY orderCount DESC
+      LIMIT 5
+    `).all(thisMonthStart)
+    
+    // Durum dağılımı
+    const statusDistribution = db.prepare(`
+      SELECT 
+        status,
+        COUNT(*) as count,
+        SUM(baslangic_fiyati) as totalValue
+      FROM orders
+      GROUP BY status
+    `).all()
+    
+    // Yaklaşan teslimatlar
+    const upcomingDeliveries = db.prepare(`
+      SELECT * FROM orders
+      WHERE status IN ('Yolda', 'Bekliyor')
+      ORDER BY created_at ASC
+      LIMIT 5
+    `).all()
+    
+    // Son siparişler
     const recentOrders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC LIMIT 5').all()
     
+    // Trend hesaplamaları
+    const earningsTrend = (lastMonthEarnings as any).total > 0 
+      ? (((monthlyEarnings as any).total - (lastMonthEarnings as any).total) / (lastMonthEarnings as any).total) * 100 
+      : 0
+    
+    const expensesTrend = (lastMonthExpenses as any).total > 0
+      ? (((monthlyExpenses as any).total - (lastMonthExpenses as any).total) / (lastMonthExpenses as any).total) * 100
+      : 0
+    
+    const ordersTrend = (lastMonthOrders as any).count > 0
+      ? (((thisMonthOrders as any).count - (lastMonthOrders as any).count) / (lastMonthOrders as any).count) * 100
+      : 0
+    
+    const netIncome = (monthlyEarnings as any).total - (monthlyExpenses as any).total - (monthlyEstimatedCosts as any).total
+    const lastMonthNetIncome = (lastMonthEarnings as any).total - (lastMonthExpenses as any).total - (lastMonthEstimatedCosts as any).total
+    const netIncomeTrend = lastMonthNetIncome !== 0
+      ? ((netIncome - lastMonthNetIncome) / Math.abs(lastMonthNetIncome)) * 100
+      : 0
+    
+    // Toplam aktif araç sayısı
+    const totalVehicles = db.prepare('SELECT COUNT(*) as count FROM vehicles WHERE aktif = 1').get()
+    
     return {
-      totalOrders: totalOrders.count,
-      activeOrders: activeOrders.count,
-      completedOrders: completedOrders.count,
-      monthlyEarnings: monthlyEarnings.total,
-      monthlyExpenses: monthlyExpenses.total,
-      monthlyEstimatedCosts: monthlyEstimatedCosts.total,
-      monthlyNetIncome: monthlyEarnings.total - monthlyExpenses.total - monthlyEstimatedCosts.total,
+      // Temel istatistikler
+      totalOrders: (totalOrders as any).count,
+      activeOrders: (activeOrders as any).count,
+      completedOrders: (completedOrders as any).count,
+      totalVehicles: (totalVehicles as any).count,
+      
+      // Mali veriler
+      monthlyEarnings: (monthlyEarnings as any).total,
+      monthlyExpenses: (monthlyExpenses as any).total,
+      monthlyEstimatedCosts: (monthlyEstimatedCosts as any).total,
+      monthlyNetIncome: netIncome,
+      
+      // Trend verileri
+      earningsTrend,
+      expensesTrend,
+      ordersTrend,
+      netIncomeTrend,
+      
+      // Grafikler için veriler
+      dailyData,
+      weeklyData,
+      topVehicles,
+      statusDistribution,
+      
+      // Listeler
+      upcomingDeliveries,
       recentOrders,
+      
+      // Geçen ay karşılaştırma
+      lastMonthEarnings: (lastMonthEarnings as any).total,
+      lastMonthExpenses: (lastMonthExpenses as any).total,
+      lastMonthNetIncome,
     }
   } catch (error) {
     console.error('Error fetching dashboard stats:', error)

@@ -1,12 +1,28 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import {
+  ArrowLeft,
+  Download,
+  Edit,
+  Trash2,
+  Plus,
+  Upload,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Package,
+  CheckCircle,
+  AlertCircle,
+  FileText,
+  MapPin
+} from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import Select from '../components/Select'
 import Modal from '../components/Modal'
 import StatusTimeline from '../components/StatusTimeline'
-import { TrashIcon, PlusIcon, ArrowUpTrayIcon, PencilIcon } from '../components/Icons'
 import { formatCurrency, formatDate } from '../utils/formatters'
 import { exportOrderToPDF } from '../utils/pdfExport'
 
@@ -190,48 +206,105 @@ export default function OrderDetail() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Yükleniyor...</p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-transparent mx-auto" style={{ borderColor: '#0A84FF', borderTopColor: 'transparent' }}></div>
+          <p className="mt-4 text-lg font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+            Sipariş yükleniyor...
+          </p>
+        </motion.div>
       </div>
     )
   }
 
   if (!order) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">Sipariş bulunamadı</p>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center py-12"
+      >
+        <AlertCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#FF453A' }} />
+        <p className="text-xl font-semibold mb-2" style={{ color: '#FFFFFF' }}>Sipariş bulunamadı</p>
+        <p className="mb-6" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Bu sipariş silinmiş veya mevcut değil</p>
         <Link to="/orders">
-          <Button className="mt-4">Siparişlere Dön</Button>
+          <Button>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Siparişlere Dön
+          </Button>
         </Link>
-      </div>
+      </motion.div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sipariş #{order.id}</h1>
-          <p className="mt-1 text-gray-600">{order.plaka} - {order.musteri}</p>
-        </div>
-        <div className="flex space-x-2">
-          <Button variant="secondary" onClick={() => exportOrderToPDF(order)}>
-            📄 PDF İndir
-          </Button>
-          <Link to={`/orders/${id}/edit`}>
-            <Button variant="secondary">
-              <PencilIcon className="w-4 h-4 mr-2" />
-              Düzenle
-            </Button>
-          </Link>
+    <div className="space-y-6 pb-8">
+      {/* Modern Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
+        <div className="flex items-center gap-4">
           <Link to="/orders">
-            <Button variant="secondary">Geri</Button>
+            <motion.button
+              whileHover={{ scale: 1.05, x: -4 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 rounded-xl"
+              style={{ 
+                backgroundColor: 'rgba(10, 132, 255, 0.15)', 
+                color: '#0A84FF',
+                border: '0.5px solid rgba(10, 132, 255, 0.3)'
+              }}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </motion.button>
+          </Link>
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-4xl font-bold" style={{ color: '#FFFFFF' }}>
+                Sipariş #{order.id}
+              </h1>
+              <span 
+                className="px-3 py-1 text-sm rounded-full font-semibold"
+                style={{
+                  backgroundColor: getStatusBgColor(order.status),
+                  color: getStatusTextColor(order.status)
+                }}
+              >
+                {order.status}
+              </span>
+            </div>
+            <div className="flex items-center gap-4 mt-2">
+              <div className="flex items-center gap-2">
+                <Package className="w-4 h-4" style={{ color: 'rgba(235, 235, 245, 0.6)' }} />
+                <span className="text-lg" style={{ color: 'rgba(235, 235, 245, 0.7)' }}>{order.plaka}</span>
+              </div>
+              <span style={{ color: 'rgba(235, 235, 245, 0.4)' }}>•</span>
+              <span className="text-lg" style={{ color: 'rgba(235, 235, 245, 0.7)' }}>{order.musteri}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button variant="secondary" onClick={() => exportOrderToPDF(order)}>
+              <Download className="w-4 h-4 mr-2" />
+              PDF İndir
+            </Button>
+          </motion.div>
+          <Link to={`/orders/${id}/edit`}>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button variant="secondary">
+                <Edit className="w-4 h-4 mr-2" />
+                Düzenle
+              </Button>
+            </motion.div>
           </Link>
         </div>
-      </div>
+      </motion.div>
 
       {/* Status Timeline */}
       <Card title="📍 Sipariş Durumu">
@@ -280,7 +353,7 @@ export default function OrderDetail() {
                     onClick={() => setEditingStatus(true)}
                     className="p-1 text-gray-500 hover:text-gray-700"
                   >
-                    <PencilIcon className="w-4 h-4" />
+                    <Edit className="w-4 h-4" />
                   </button>
                 </>
               )}
@@ -307,177 +380,326 @@ export default function OrderDetail() {
         </div>
       </Card>
 
-      {/* Financial Summary - Geliştirilmiş */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-green-50 to-green-100">
-          <div>
-            <p className="text-xs font-medium text-green-800">Müşteriden Alınan</p>
-            <p className="text-2xl font-bold text-green-900 mt-2">
+      {/* Modern Financial Summary */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        {/* Gelir */}
+        <motion.div
+          whileHover={{ scale: 1.02, y: -4 }}
+          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          style={{ background: 'rgba(48, 209, 88, 0.12)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}
+        >
+          <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#30D158' }} />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="w-4 h-4" style={{ color: '#30D158' }} />
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#30D158' }}>
+                Müşteriden Alınan
+              </p>
+            </div>
+            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
               {formatCurrency(order.baslangic_fiyati)}
             </p>
-            <p className="text-xs text-green-700 mt-1">Toplam gelir</p>
+            <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Toplam gelir</p>
           </div>
-        </Card>
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
-          <div>
-            <p className="text-xs font-medium text-orange-800">Tahmini Maliyet</p>
-            <p className="text-2xl font-bold text-orange-900 mt-2">
+        </motion.div>
+
+        {/* Tahmini Maliyet */}
+        <motion.div
+          whileHover={{ scale: 1.02, y: -4 }}
+          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          style={{ background: 'rgba(255, 159, 10, 0.12)', border: '0.5px solid rgba(255, 159, 10, 0.3)' }}
+        >
+          <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#FF9F0A' }} />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingDown className="w-4 h-4" style={{ color: '#FF9F0A' }} />
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#FF9F0A' }}>
+                Tahmini Maliyet
+              </p>
+            </div>
+            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
               {formatCurrency(calculateEstimatedCost())}
             </p>
-            <p className="text-xs text-orange-700 mt-1">
+            <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
               {order.etkin_km > 0 ? `${order.etkin_km.toFixed(0)} km` : 'Hesaplanmadı'}
             </p>
           </div>
-        </Card>
-        <Card className="bg-gradient-to-br from-red-50 to-red-100">
-          <div>
-            <p className="text-xs font-medium text-red-800">Ek Giderler</p>
-            <p className="text-2xl font-bold text-red-900 mt-2">
+        </motion.div>
+
+        {/* Ek Giderler */}
+        <motion.div
+          whileHover={{ scale: 1.02, y: -4 }}
+          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          style={{ background: 'rgba(255, 69, 58, 0.12)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}
+        >
+          <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#FF453A' }} />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertCircle className="w-4 h-4" style={{ color: '#FF453A' }} />
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#FF453A' }}>
+                Ek Giderler
+              </p>
+            </div>
+            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
               {formatCurrency(calculateTotalExpenses())}
             </p>
-            <p className="text-xs text-red-700 mt-1">Sonradan eklenen</p>
+            <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Sonradan eklenen</p>
           </div>
-        </Card>
-        <Card className={`bg-gradient-to-br ${calculateNetIncome() >= 0 ? 'from-blue-50 to-blue-100' : 'from-gray-50 to-gray-100'}`}>
-          <div>
-            <p className={`text-xs font-medium ${calculateNetIncome() >= 0 ? 'text-blue-800' : 'text-gray-800'}`}>
-              Net Kar/Zarar
-            </p>
-            <p className={`text-2xl font-bold mt-2 ${calculateNetIncome() >= 0 ? 'text-blue-900' : 'text-gray-900'}`}>
+        </motion.div>
+
+        {/* Net Kar/Zarar */}
+        <motion.div
+          whileHover={{ scale: 1.02, y: -4 }}
+          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          style={{ 
+            background: calculateNetIncome() >= 0 ? 'rgba(10, 132, 255, 0.12)' : 'rgba(255, 69, 58, 0.12)',
+            border: calculateNetIncome() >= 0 ? '0.5px solid rgba(10, 132, 255, 0.3)' : '0.5px solid rgba(255, 69, 58, 0.3)'
+          }}
+        >
+          <div 
+            className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" 
+            style={{ backgroundColor: calculateNetIncome() >= 0 ? '#0A84FF' : '#FF453A' }}
+          />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              {calculateNetIncome() >= 0 ? (
+                <TrendingUp className="w-4 h-4" style={{ color: '#0A84FF' }} />
+              ) : (
+                <TrendingDown className="w-4 h-4" style={{ color: '#FF453A' }} />
+              )}
+              <p 
+                className="text-xs font-semibold uppercase tracking-wider" 
+                style={{ color: calculateNetIncome() >= 0 ? '#0A84FF' : '#FF453A' }}
+              >
+                Net Kar/Zarar
+              </p>
+            </div>
+            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
               {formatCurrency(calculateNetIncome())}
             </p>
-            <p className={`text-xs mt-1 ${calculateNetIncome() >= 0 ? 'text-blue-700' : 'text-gray-700'}`}>
+            <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
               {order.kar_zarar 
                 ? `Tahmini: ${formatCurrency(order.kar_zarar)}` 
                 : 'Hesaplanmadı'
               }
             </p>
           </div>
-        </Card>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      {/* Maliyet Dökümü (Varsa) */}
+      {/* Modern Maliyet Dökümü */}
       {order.toplam_maliyet > 0 && (
-        <Card title="💰 Maliyet Dökümü" className="bg-gray-50">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="glass-card rounded-xl p-6"
+        >
+          <h3 className="text-lg font-semibold mb-6" style={{ color: '#FFFFFF' }}>
+            💰 Maliyet Dökümü
+          </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {order.yakit_maliyet > 0 && (
-              <div className="text-center p-3 bg-white rounded-lg">
-                <p className="text-xs text-gray-600">⛽ Yakıt</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(order.yakit_maliyet)}</p>
+              <motion.div
+                whileHover={{ scale: 1.05, y: -4 }}
+                className="text-center p-4 rounded-xl"
+                style={{ backgroundColor: 'rgba(255, 214, 10, 0.1)', border: '0.5px solid rgba(255, 214, 10, 0.2)' }}
+              >
+                <p className="text-xs mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>⛽ Yakıt</p>
+                <p className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
+                  {formatCurrency(order.yakit_maliyet)}
+                </p>
                 {order.yakit_litre > 0 && (
-                  <p className="text-xs text-gray-500">{order.yakit_litre.toFixed(1)} lt</p>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>
+                    {order.yakit_litre.toFixed(1)} lt
+                  </p>
                 )}
-              </div>
+              </motion.div>
             )}
             {order.surucu_maliyet > 0 && (
-              <div className="text-center p-3 bg-white rounded-lg">
-                <p className="text-xs text-gray-600">👤 Sürücü</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(order.surucu_maliyet)}</p>
+              <motion.div
+                whileHover={{ scale: 1.05, y: -4 }}
+                className="text-center p-4 rounded-xl"
+                style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)', border: '0.5px solid rgba(10, 132, 255, 0.2)' }}
+              >
+                <p className="text-xs mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>👤 Sürücü</p>
+                <p className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
+                  {formatCurrency(order.surucu_maliyet)}
+                </p>
                 {order.tahmini_gun > 0 && (
-                  <p className="text-xs text-gray-500">{order.tahmini_gun} gün</p>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>
+                    {order.tahmini_gun} gün
+                  </p>
                 )}
-              </div>
+              </motion.div>
             )}
             {order.yemek_maliyet > 0 && (
-              <div className="text-center p-3 bg-white rounded-lg">
-                <p className="text-xs text-gray-600">🍽️ Yemek</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(order.yemek_maliyet)}</p>
-              </div>
+              <motion.div
+                whileHover={{ scale: 1.05, y: -4 }}
+                className="text-center p-4 rounded-xl"
+                style={{ backgroundColor: 'rgba(255, 159, 10, 0.1)', border: '0.5px solid rgba(255, 159, 10, 0.2)' }}
+              >
+                <p className="text-xs mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>🍽️ Yemek</p>
+                <p className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
+                  {formatCurrency(order.yemek_maliyet)}
+                </p>
+              </motion.div>
             )}
             {order.hgs_maliyet > 0 && (
-              <div className="text-center p-3 bg-white rounded-lg">
-                <p className="text-xs text-gray-600">🛣️ HGS</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(order.hgs_maliyet)}</p>
-              </div>
+              <motion.div
+                whileHover={{ scale: 1.05, y: -4 }}
+                className="text-center p-4 rounded-xl"
+                style={{ backgroundColor: 'rgba(191, 90, 242, 0.1)', border: '0.5px solid rgba(191, 90, 242, 0.2)' }}
+              >
+                <p className="text-xs mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>🛣️ HGS</p>
+                <p className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
+                  {formatCurrency(order.hgs_maliyet)}
+                </p>
+              </motion.div>
             )}
             {order.bakim_maliyet > 0 && (
-              <div className="text-center p-3 bg-white rounded-lg">
-                <p className="text-xs text-gray-600">🔧 Bakım</p>
-                <p className="text-lg font-bold text-gray-900">{formatCurrency(order.bakim_maliyet)}</p>
-              </div>
+              <motion.div
+                whileHover={{ scale: 1.05, y: -4 }}
+                className="text-center p-4 rounded-xl"
+                style={{ backgroundColor: 'rgba(48, 209, 88, 0.1)', border: '0.5px solid rgba(48, 209, 88, 0.2)' }}
+              >
+                <p className="text-xs mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>🔧 Bakım</p>
+                <p className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
+                  {formatCurrency(order.bakim_maliyet)}
+                </p>
+              </motion.div>
             )}
           </div>
-        </Card>
+        </motion.div>
       )}
 
-      {/* Expenses */}
+      {/* Modern Expenses Section */}
       <Card
         title="Giderler"
         actions={
-          <Button size="sm" onClick={() => setShowExpenseModal(true)}>
-            <PlusIcon className="w-4 h-4 mr-2" />
-            Gider Ekle
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button size="sm" onClick={() => setShowExpenseModal(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Gider Ekle
+            </Button>
+          </motion.div>
         }
       >
         {expenses.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Tür</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Tutar</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Açıklama</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Tarih</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">İşlem</th>
+                <tr style={{ borderBottom: '0.5px solid rgba(84, 84, 88, 0.35)' }}>
+                  <th className="text-left py-3 px-4 font-semibold text-xs uppercase tracking-wider" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Tür</th>
+                  <th className="text-left py-3 px-4 font-semibold text-xs uppercase tracking-wider" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Tutar</th>
+                  <th className="text-left py-3 px-4 font-semibold text-xs uppercase tracking-wider" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Açıklama</th>
+                  <th className="text-left py-3 px-4 font-semibold text-xs uppercase tracking-wider" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Tarih</th>
+                  <th className="text-left py-3 px-4 font-semibold text-xs uppercase tracking-wider" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>İşlem</th>
                 </tr>
               </thead>
               <tbody>
-                {expenses.map((expense) => (
-                  <tr key={expense.id} className="border-b border-gray-100">
-                    <td className="py-3 px-4 font-medium">{expense.type}</td>
-                    <td className="py-3 px-4 font-semibold text-red-600">
+                {expenses.map((expense, index) => (
+                  <motion.tr
+                    key={expense.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    style={{ borderBottom: '0.5px solid rgba(84, 84, 88, 0.25)' }}
+                  >
+                    <td className="py-3 px-4 font-medium" style={{ color: '#FFFFFF' }}>{expense.type}</td>
+                    <td className="py-3 px-4 font-bold" style={{ color: '#FF453A' }}>
                       {formatCurrency(expense.amount)}
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{expense.description || '-'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{formatDate(expense.timestamp)}</td>
-                    <td className="py-3 px-4">
-                      <button
-                        onClick={() => handleDeleteExpense(expense.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
+                    <td className="py-3 px-4 text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                      {expense.description || '-'}
                     </td>
-                  </tr>
+                    <td className="py-3 px-4 text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                      {formatDate(expense.timestamp)}
+                    </td>
+                    <td className="py-3 px-4">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleDeleteExpense(expense.id)}
+                        className="p-2 rounded-lg transition-colors"
+                        style={{ color: '#FF453A', backgroundColor: 'rgba(255, 69, 58, 0.1)' }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </motion.button>
+                    </td>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <p className="text-center text-gray-500 py-8">Henüz gider eklenmemiş</p>
+          <div className="text-center py-12">
+            <AlertCircle className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(235, 235, 245, 0.3)' }} />
+            <p style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Henüz gider eklenmemiş</p>
+          </div>
         )}
       </Card>
 
-      {/* Invoices */}
+      {/* Modern Invoices Section */}
       <Card
         title="Faturalar"
         actions={
-          <Button size="sm" onClick={() => setShowInvoiceModal(true)}>
-            <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
-            Fatura Yükle
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button size="sm" onClick={() => setShowInvoiceModal(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Fatura Yükle
+            </Button>
+          </motion.div>
         }
       >
         {invoices.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {invoices.map((invoice) => (
-              <div key={invoice.id} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-medium text-sm truncate">{invoice.file_name}</p>
-                  <button
+            {invoices.map((invoice, index) => (
+              <motion.div
+                key={invoice.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
+                whileHover={{ scale: 1.02, y: -4 }}
+                className="p-4 rounded-xl"
+                style={{ 
+                  backgroundColor: 'rgba(10, 132, 255, 0.1)', 
+                  border: '0.5px solid rgba(10, 132, 255, 0.2)' 
+                }}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2 flex-1 mr-2">
+                    <FileText className="w-4 h-4 flex-shrink-0" style={{ color: '#0A84FF' }} />
+                    <p className="font-medium text-sm truncate" style={{ color: '#FFFFFF' }}>
+                      {invoice.file_name}
+                    </p>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => handleDeleteInvoice(invoice.id, invoice.file_path)}
-                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                    className="p-1.5 rounded-lg"
+                    style={{ color: '#FF453A', backgroundColor: 'rgba(255, 69, 58, 0.15)' }}
                   >
-                    <TrashIcon className="w-4 h-4" />
-                  </button>
+                    <Trash2 className="w-4 h-4" />
+                  </motion.button>
                 </div>
-                <p className="text-xs text-gray-500">{formatDate(invoice.uploaded_at)}</p>
-              </div>
+                <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>
+                  {formatDate(invoice.uploaded_at)}
+                </p>
+              </motion.div>
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-500 py-8">Henüz fatura yüklenmemiş</p>
+          <div className="text-center py-12">
+            <FileText className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(235, 235, 245, 0.3)' }} />
+            <p style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Henüz fatura yüklenmemiş</p>
+          </div>
         )}
       </Card>
 
@@ -562,5 +784,27 @@ function getStatusColor(status: string): string {
     'İptal': 'bg-red-100 text-red-800',
   }
   return colors[status] || 'bg-gray-100 text-gray-800'
+}
+
+function getStatusBgColor(status: string): string {
+  const colors: Record<string, string> = {
+    'Bekliyor': 'rgba(255, 214, 10, 0.2)',
+    'Yolda': 'rgba(10, 132, 255, 0.2)',
+    'Teslim Edildi': 'rgba(48, 209, 88, 0.2)',
+    'Faturalandı': 'rgba(191, 90, 242, 0.2)',
+    'İptal': 'rgba(255, 69, 58, 0.2)',
+  }
+  return colors[status] || 'rgba(235, 235, 245, 0.2)'
+}
+
+function getStatusTextColor(status: string): string {
+  const colors: Record<string, string> = {
+    'Bekliyor': '#FFD60A',
+    'Yolda': '#0A84FF',
+    'Teslim Edildi': '#30D158',
+    'Faturalandı': '#BF5AF2',
+    'İptal': '#FF453A',
+  }
+  return colors[status] || 'rgba(235, 235, 245, 0.6)'
 }
 
