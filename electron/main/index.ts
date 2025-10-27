@@ -998,7 +998,8 @@ ipcMain.handle('cost:getBreakdown', async (_, plaka) => {
       (params.yagDegisimMaliyet / params.yagDegisimAralik) +
       (params.lastikMaliyet / params.lastikOmur) +
       (params.buyukBakimMaliyet / params.buyukBakimAralik)
-    const hgsPerKm = params.hgsPerKm
+    // HGS/km yerine 0 kullanıyoruz çünkü HGS güzergah bazlı hesaplanıyor, sabit km başına değil
+    const hgsPerKm = 0
     
     const toplamPerKm = yakitPerKm + surucuPerKm + yemekPerKm + bakimPerKm + hgsPerKm
     

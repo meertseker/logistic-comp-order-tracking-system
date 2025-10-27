@@ -384,8 +384,8 @@ export default function CreateOrderFixed() {
                             const surucu = (v.gunluk_ucret || 1600) / (v.gunluk_ort_km || 500)
                             const yemek = (v.yemek_gunluk || 150) / (v.gunluk_ort_km || 500)
                             const bakim = ((v.yag_maliyet || 500) / (v.yag_aralik || 5000)) + ((v.lastik_maliyet || 8000) / (v.lastik_omur || 50000)) + ((v.buyuk_bakim_maliyet || 3000) / (v.buyuk_bakim_aralik || 15000))
-                            const hgs = v.hgs_per_km || 0
-                            const toplam = yakit + surucu + yemek + bakim + hgs
+                            // HGS güzergah bazlı hesaplanır, sabit km başına değil
+                            const toplam = yakit + surucu + yemek + bakim
                             return `${toplam.toFixed(2)} ₺/km (ortalama)`
                           })()}
                         </p>
