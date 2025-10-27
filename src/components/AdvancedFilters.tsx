@@ -51,9 +51,11 @@ export default function AdvancedFilters({ onFilter, onReset }: FilterProps) {
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+          className="text-sm font-medium transition-colors flex items-center space-x-2"
+          style={{ color: '#0A84FF' }}
         >
-          {showAdvanced ? '▼' : '▶'} Gelişmiş Filtreler
+          <span className="transform transition-transform duration-200" style={{ transform: showAdvanced ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
+          <span>Gelişmiş Filtreler</span>
         </button>
         {showAdvanced && (
           <div className="flex space-x-2">
@@ -68,13 +70,13 @@ export default function AdvancedFilters({ onFilter, onReset }: FilterProps) {
       </div>
 
       {showAdvanced && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-5 glass-card rounded-xl animate-fade-in" style={{ border: '0.5px solid rgba(84, 84, 88, 0.65)' }}>
           {/* Tarih Aralığı */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
               Tarih Aralığı
             </label>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Input
                 type="date"
                 name="dateFrom"
@@ -94,10 +96,10 @@ export default function AdvancedFilters({ onFilter, onReset }: FilterProps) {
 
           {/* Fiyat Aralığı */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
               Fiyat Aralığı (₺)
             </label>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Input
                 type="number"
                 name="priceMin"
@@ -117,7 +119,7 @@ export default function AdvancedFilters({ onFilter, onReset }: FilterProps) {
 
           {/* Karlılık */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
               Karlılık Durumu
             </label>
             <Select

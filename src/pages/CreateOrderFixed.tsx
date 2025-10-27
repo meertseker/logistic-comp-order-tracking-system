@@ -4,7 +4,9 @@ import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import Select from '../components/Select'
+import VehicleSelect from '../components/VehicleSelect'
 import TextArea from '../components/TextArea'
+import RoutePicker from '../components/RoutePicker'
 import { formatCurrency } from '../utils/formatters'
 import { PlusIcon } from '../components/Icons'
 import { useDebounce } from '../hooks/useDebounce'
@@ -157,6 +159,24 @@ export default function CreateOrderFixed() {
     }
   }
 
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  // RoutePicker'dan gelen değişiklikleri işle
+  const handleRouteChange = (next: { from?: string; to?: string; gidisKm?: number }) => {
+    setFormData(prev => ({
+      ...prev,
+      nereden: next.from !== undefined ? next.from : prev.nereden,
+      nereye: next.to !== undefined ? next.to : prev.nereye,
+      gidisKm: next.gidisKm !== undefined ? String(next.gidisKm) : prev.gidisKm,
+    }))
+  }
+
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, returnLoadRate: e.target.value }))
   }
@@ -302,32 +322,15 @@ export default function CreateOrderFixed() {
                     </div>
                   </div>
                 ) : (
-                  <div>
-                    <Select
-                      label="Araç"
-                      name="plaka"
+                  <div className="space-y-2">
+                    <VehicleSelect
+                      vehicles={vehicles}
                       value={formData.plaka}
-                      onChange={handleChange}
-                      error={errors.plaka}
-                      required
-                      options={[
-                        { value: '', label: 'Araç Seçiniz...' },
-                        ...vehicles.map(v => {
-                          const costPerKm = (
-                            ((v.yakit_tuketimi || 25) * (v.yakit_fiyati || 40)) / 100 +
-                            (v.gunluk_ucret || 1600) / (v.gunluk_ort_km || 500) +
-                            (v.yemek_gunluk || 150) / (v.gunluk_ort_km || 500) +
-                            (v.hgs_per_km || 0.5)
-                          )
-                          return {
-                            value: v.plaka,
-                            label: `${v.plaka} (${formatCurrency(costPerKm)}/km)`
-                          }
-                        })
-                      ]}
+                      onChange={(plaka) => setFormData(prev => ({ ...prev, plaka }))}
+                      disabled={false}
                     />
                     {formData.plaka && costBreakdown && (
-                      <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <p className="text-sm text-blue-800">
                           <span className="font-semibold">Seçili Araç:</span> {formatCurrency(costBreakdown.toplamMaliyetPerKm)}/km (ortalama)
                         </p>
@@ -398,28 +401,12 @@ export default function CreateOrderFixed() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    label="Nereden"
-                    name="nereden"
-                    value={formData.nereden}
-                    onChange={handleChange}
-                    error={errors.nereden}
-                    placeholder="İstanbul"
-                    required
-                    disabled={vehicles.length === 0}
-                  />
-                  <Input
-                    label="Nereye"
-                    name="nereye"
-                    value={formData.nereye}
-                    onChange={handleChange}
-                    error={errors.nereye}
-                    placeholder="Ankara"
-                    required
-                    disabled={vehicles.length === 0}
-                  />
-                </div>
+                <RoutePicker
+                  from={formData.nereden}
+                  to={formData.nereye}
+                  onChange={handleRouteChange}
+                  disabled={vehicles.length === 0}
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <Input
@@ -608,40 +595,33 @@ export default function CreateOrderFixed() {
         {/* Analiz Panel - Sağ taraf */}
         <div className="space-y-4">
           {/* Kar/Zarar Özeti */}
-          {analysis && formData.baslangicFiyati && (
-            <Card className={`${getProfitBgColor(analysis.karZarar)} border-2`}>
-              <div className="text-center">
-                <div className="mb-2">
-                  <span className="text-2xl">{getProfitStatus(analysis.karZarar).icon}</span>
-                </div>
-                <p className="text-xs font-medium text-gray-600 mb-2">
-                  {getProfitStatus(analysis.karZarar).text}
-                </p>
-                <p className={`text-4xl font-bold ${getProfitColor(analysis.karZarar)} mb-1`}>
-                  {formatCurrency(analysis.karZarar)}
-                </p>
-                {Math.abs(analysis.karZarar) > 10 && (
-                  <p className={`text-sm ${getProfitColor(analysis.karZarar)}`}>
-                    {analysis.karZararYuzde > 0 ? '+' : ''}
-                    {analysis.karZararYuzde.toFixed(1)}%
-                  </p>
-                )}
-                {Math.abs(analysis.karZarar) <= 100 && (
-                  <div className="mt-2">
-                    <p className="text-xs text-gray-700 font-medium">
-                      Girilen fiyat: {formatCurrency(analysis.musteriOdemesi)}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      Önerilen: {formatCurrency(analysis.fiyatKdvli)}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      Maliyet: {formatCurrency(analysis.toplamMaliyet)}
-                    </p>
+          {analysis && formData.baslangicFiyati && (() => {
+            const entered = Number(formData.baslangicFiyati) || 0
+            const breakEven = analysis.onerilenMinFiyat || 0
+            const delta = entered - breakEven
+            const pct = entered > 0 ? (delta / entered) * 100 : 0
+            return (
+              <Card className={`${getProfitBgColor(delta)} border-2`}>
+                <div className="text-center">
+                  <div className="mb-2">
+                    <span className="text-2xl">{getProfitStatus(delta).icon}</span>
                   </div>
-                )}
-              </div>
-            </Card>
-          )}
+                  <p className="text-xs font-medium text-gray-600 mb-2">Kâr Oranı</p>
+                  <p className={`text-4xl font-bold ${getProfitColor(delta)} mb-1`}>
+                    {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
+                  </p>
+                  <div className="mt-2 text-sm">
+                    <p className="text-gray-700 font-medium">Başabaş Farkı: <span className={`${getProfitColor(delta)} font-semibold`}>{formatCurrency(delta)}</span></p>
+                  </div>
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-700 font-medium">Girilen fiyat: {formatCurrency(entered)}</p>
+                    <p className="text-xs text-gray-600">Başabaş: {formatCurrency(breakEven)}</p>
+                    <p className="text-xs text-gray-600">Maliyet: {formatCurrency(analysis.toplamMaliyet)}</p>
+                  </div>
+                </div>
+              </Card>
+            )
+          })()}
 
           {/* Maliyet Detayı */}
           {analysis && (

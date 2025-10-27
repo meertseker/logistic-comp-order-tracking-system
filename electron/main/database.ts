@@ -111,6 +111,24 @@ const createTables = () => {
     )
   `)
   
+  // Routes table (güzergah HGS/köprü maliyetleri)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS routes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nereden TEXT NOT NULL,
+      nereye TEXT NOT NULL,
+      mesafe_km REAL DEFAULT 0,
+      hgs_maliyet REAL DEFAULT 0,
+      kopru_maliyet REAL DEFAULT 0,
+      sure_saat REAL DEFAULT 0,
+      notlar TEXT,
+      aktif INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(nereden, nereye)
+    )
+  `)
+  
   // Vehicles table - Basit versiyon
   db.exec(`
     CREATE TABLE IF NOT EXISTS vehicles (
@@ -136,7 +154,6 @@ const createTables = () => {
     'buyuk_bakim_maliyet REAL DEFAULT 3000',
     'buyuk_bakim_aralik REAL DEFAULT 15000',
     'ufak_onarim_aylik REAL DEFAULT 200',
-    'hgs_per_km REAL DEFAULT 0.50',
     'kar_orani REAL DEFAULT 0.45',
     'kdv REAL DEFAULT 0.20',
     'arac_degeri REAL DEFAULT 2300000',
@@ -144,6 +161,7 @@ const createTables = () => {
     'hedef_toplam_km REAL DEFAULT 72000',
     'sigorta_yillik REAL DEFAULT 12000',
     'mtv_yillik REAL DEFAULT 5000',
+    'muayene_yillik REAL DEFAULT 1500',
   ]
   
   for (const column of vehicleColumns) {
@@ -177,6 +195,37 @@ const createTables = () => {
       INSERT OR IGNORE INTO settings (key, value, description)
       VALUES (?, ?, ?)
     `).run(key, value, description)
+  })
+  
+  // Varsayılan güzergahları ekle
+  const defaultRoutes = [
+    ['İstanbul', 'Ankara', 450, 450, 150, 6, 'Ana güzergah'],
+    ['Ankara', 'İstanbul', 450, 450, 150, 6, 'Dönüş güzergahı'],
+    ['İstanbul', 'İzmir', 480, 380, 150, 7, ''],
+    ['İzmir', 'İstanbul', 480, 380, 150, 7, ''],
+    ['İstanbul', 'Bursa', 150, 120, 150, 2, ''],
+    ['Bursa', 'İstanbul', 150, 120, 150, 2, ''],
+    ['Ankara', 'İzmir', 550, 350, 0, 8, ''],
+    ['İzmir', 'Ankara', 550, 350, 0, 8, ''],
+    ['İstanbul', 'Adana', 940, 580, 150, 12, ''],
+    ['Adana', 'İstanbul', 940, 580, 150, 12, ''],
+    ['Ankara', 'Adana', 490, 420, 0, 7, ''],
+    ['Adana', 'Ankara', 490, 420, 0, 7, ''],
+    ['İstanbul', 'Antalya', 720, 480, 150, 10, ''],
+    ['Antalya', 'İstanbul', 720, 480, 150, 10, ''],
+    ['İstanbul', 'Trabzon', 1100, 680, 150, 14, ''],
+    ['Trabzon', 'İstanbul', 1100, 680, 150, 14, ''],
+    ['Ankara', 'Antalya', 490, 380, 0, 7, ''],
+    ['Antalya', 'Ankara', 490, 380, 0, 7, ''],
+    ['İzmir', 'Antalya', 490, 320, 0, 7, ''],
+    ['Antalya', 'İzmir', 490, 320, 0, 7, ''],
+  ]
+  
+  defaultRoutes.forEach(([nereden, nereye, mesafe, hgs, kopru, sure, notlar]) => {
+    db.prepare(`
+      INSERT OR IGNORE INTO routes (nereden, nereye, mesafe_km, hgs_maliyet, kopru_maliyet, sure_saat, notlar)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(nereden, nereye, mesafe, hgs, kopru, sure, notlar)
   })
 }
 

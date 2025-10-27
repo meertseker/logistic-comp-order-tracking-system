@@ -133,7 +133,7 @@ export default function Reports() {
       ) : report ? (
         <>
           {/* Summary Cards - Detaylı */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <Card className="bg-gradient-to-br from-green-50 to-green-100">
               <div className="flex items-center justify-between">
                 <div>
@@ -194,6 +194,23 @@ export default function Reports() {
                 </div>
                 <div className={`p-3 rounded-full ${report.netIncome >= 0 ? 'bg-blue-200' : 'bg-gray-200'}`}>
                   <ChartBarIcon className={`w-6 h-6 ${report.netIncome >= 0 ? 'text-blue-700' : 'text-gray-700'}`} />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-purple-800">Gerçek Kâr Marjı</p>
+                  <p className="text-3xl font-bold text-purple-900 mt-2">
+                    %{report.gercekKarMarji?.toFixed(1) || '0.0'}
+                  </p>
+                  <p className="text-xs text-purple-700 mt-1">
+                    Gelir / Kâr oranı
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-200 rounded-full">
+                  <ChartBarIcon className="w-6 h-6 text-purple-700" />
                 </div>
               </div>
             </Card>

@@ -12,27 +12,35 @@ interface StatCardProps {
 }
 
 export default function StatCard({ title, value, icon, color = 'blue', trend }: StatCardProps) {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    red: 'bg-red-50 text-red-600',
-    yellow: 'bg-yellow-50 text-yellow-600',
-    purple: 'bg-purple-50 text-purple-600',
+  const colorStyles = {
+    blue: { bg: 'rgba(10, 132, 255, 0.15)', text: '#0A84FF' },
+    green: { bg: 'rgba(48, 209, 88, 0.15)', text: '#30D158' },
+    red: { bg: 'rgba(255, 69, 58, 0.15)', text: '#FF453A' },
+    yellow: { bg: 'rgba(255, 214, 10, 0.15)', text: '#FFD60A' },
+    purple: { bg: 'rgba(191, 90, 242, 0.15)', text: '#BF5AF2' },
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+    <div className="glass-card rounded-xl p-6 glass-hover">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm font-medium mb-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>{title}</p>
+          <p className="text-3xl font-semibold mb-1" style={{ color: '#FFFFFF' }}>{value}</p>
           {trend && (
-            <p className={`text-sm mt-2 ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-              {trend.isPositive ? '↑' : '↓'} {trend.value}
-            </p>
+            <div className="flex items-center mt-2">
+              <span 
+                className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium"
+                style={{
+                  backgroundColor: trend.isPositive ? 'rgba(48, 209, 88, 0.15)' : 'rgba(255, 69, 58, 0.15)',
+                  color: trend.isPositive ? '#30D158' : '#FF453A'
+                }}
+              >
+                {trend.isPositive ? '↑' : '↓'} {trend.value}
+              </span>
+            </div>
           )}
         </div>
-        <div className={`p-3 rounded-full ${colorClasses[color]}`}>
+        <div className="p-3 rounded-lg" style={{ backgroundColor: colorStyles[color].bg, color: colorStyles[color].text }}>
           {icon}
         </div>
       </div>

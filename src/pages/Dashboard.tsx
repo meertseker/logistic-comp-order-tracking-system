@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Card from '../components/Card'
 import StatCard from '../components/StatCard'
@@ -39,8 +39,8 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Yükleniyor...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: '#0A84FF' }}></div>
+          <p className="mt-4" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Yükleniyor...</p>
         </div>
       </div>
     )
@@ -51,8 +51,8 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Hoş Geldiniz</h1>
-          <p className="mt-1 text-gray-600">İşletmenizin genel görünümü</p>
+          <h1 className="text-3xl font-bold" style={{ color: '#FFFFFF' }}>Hoş Geldiniz</h1>
+          <p className="mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>İşletmenizin genel görünümü</p>
         </div>
         <Link to="/orders/new">
           <Button>
@@ -92,40 +92,40 @@ export default function Dashboard() {
 
       {/* Monthly Summary - Geliştirilmiş */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-green-50 to-green-100">
+        <Card style={{ background: 'rgba(48, 209, 88, 0.15)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}>
           <div>
-            <p className="text-xs font-medium text-green-800">Bu Ay Gelir</p>
-            <p className="text-2xl font-bold text-green-900 mt-2">
+            <p className="text-xs font-medium" style={{ color: '#30D158' }}>Bu Ay Gelir</p>
+            <p className="text-2xl font-bold mt-2" style={{ color: '#FFFFFF' }}>
               {formatCurrency(stats?.monthlyEarnings || 0)}
             </p>
-            <p className="text-xs text-green-700 mt-1">Müşterilerden alınan</p>
+            <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Müşterilerden alınan</p>
           </div>
         </Card>
-        <Card className="bg-gradient-to-br from-red-50 to-red-100">
+        <Card style={{ background: 'rgba(255, 69, 58, 0.15)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}>
           <div>
-            <p className="text-xs font-medium text-red-800">Bu Ay Gider (Ek)</p>
-            <p className="text-2xl font-bold text-red-900 mt-2">
+            <p className="text-xs font-medium" style={{ color: '#FF453A' }}>Bu Ay Gider (Ek)</p>
+            <p className="text-2xl font-bold mt-2" style={{ color: '#FFFFFF' }}>
               {formatCurrency(stats?.monthlyExpenses || 0)}
             </p>
-            <p className="text-xs text-red-700 mt-1">Eklenen giderler</p>
+            <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Eklenen giderler</p>
           </div>
         </Card>
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
+        <Card style={{ background: 'rgba(255, 159, 10, 0.15)', border: '0.5px solid rgba(255, 159, 10, 0.3)' }}>
           <div>
-            <p className="text-xs font-medium text-orange-800">Bu Ay Tahmini Gider</p>
-            <p className="text-2xl font-bold text-orange-900 mt-2">
+            <p className="text-xs font-medium" style={{ color: '#FF9F0A' }}>Bu Ay Tahmini Gider</p>
+            <p className="text-2xl font-bold mt-2" style={{ color: '#FFFFFF' }}>
               {formatCurrency(stats?.monthlyEstimatedCosts || 0)}
             </p>
-            <p className="text-xs text-orange-700 mt-1">Hesaplanan maliyet</p>
+            <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Hesaplanan maliyet</p>
           </div>
         </Card>
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+        <Card style={{ background: 'rgba(10, 132, 255, 0.15)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}>
           <div>
-            <p className="text-xs font-medium text-blue-800">Net Kar/Zarar</p>
-            <p className="text-2xl font-bold text-blue-900 mt-2">
+            <p className="text-xs font-medium" style={{ color: '#0A84FF' }}>Net Kar/Zarar</p>
+            <p className="text-2xl font-bold mt-2" style={{ color: '#FFFFFF' }}>
               {formatCurrency((stats?.monthlyEarnings || 0) - (stats?.monthlyExpenses || 0) - (stats?.monthlyEstimatedCosts || 0))}
             </p>
-            <p className="text-xs text-blue-700 mt-1">Tahmini net</p>
+            <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Tahmini net</p>
           </div>
         </Card>
       </div>
@@ -153,21 +153,21 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {stats.recentOrders.map((order) => (
-                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium">{order.plaka}</td>
-                    <td className="py-3 px-4">{order.musteri}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
+                  <tr key={order.id}>
+                    <td style={{ color: '#FFFFFF', fontWeight: 500 }}>{order.plaka}</td>
+                    <td style={{ color: '#FFFFFF' }}>{order.musteri}</td>
+                    <td style={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '14px' }}>
                       {order.nereden} → {order.nereye}
                     </td>
-                    <td className="py-3 px-4 font-medium">
+                    <td style={{ color: '#FFFFFF', fontWeight: 500 }}>
                       {formatCurrency(order.baslangic_fiyati)}
                     </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(order.status)}`}>
+                    <td>
+                      <span className="px-2 py-1 text-xs rounded-full" style={getStatusStyle(order.status)}>
                         {order.status}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
+                    <td style={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '14px' }}>
                       {formatDate(order.created_at)}
                     </td>
                   </tr>
@@ -177,8 +177,8 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <TruckIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">Henüz sipariş bulunmuyor</p>
+            <TruckIcon className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(235, 235, 245, 0.3)' }} />
+            <p style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Henüz sipariş bulunmuyor</p>
             <Link to="/orders/new">
               <Button className="mt-4" size="sm">
                 İlk Siparişi Oluştur
@@ -191,14 +191,14 @@ export default function Dashboard() {
   )
 }
 
-function getStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    'Bekliyor': 'bg-yellow-100 text-yellow-800',
-    'Yolda': 'bg-blue-100 text-blue-800',
-    'Teslim Edildi': 'bg-green-100 text-green-800',
-    'Faturalandı': 'bg-purple-100 text-purple-800',
-    'İptal': 'bg-red-100 text-red-800',
+function getStatusStyle(status: string): React.CSSProperties {
+  const styles: Record<string, React.CSSProperties> = {
+    'Bekliyor': { backgroundColor: 'rgba(255, 214, 10, 0.2)', color: '#FFD60A' },
+    'Yolda': { backgroundColor: 'rgba(10, 132, 255, 0.2)', color: '#0A84FF' },
+    'Teslim Edildi': { backgroundColor: 'rgba(48, 209, 88, 0.2)', color: '#30D158' },
+    'Faturalandı': { backgroundColor: 'rgba(191, 90, 242, 0.2)', color: '#BF5AF2' },
+    'İptal': { backgroundColor: 'rgba(255, 69, 58, 0.2)', color: '#FF453A' },
   }
-  return colors[status] || 'bg-gray-100 text-gray-800'
+  return styles[status] || { backgroundColor: 'rgba(235, 235, 245, 0.2)', color: 'rgba(235, 235, 245, 0.6)' }
 }
 

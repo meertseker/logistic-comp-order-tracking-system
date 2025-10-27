@@ -11,23 +11,26 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span style={{ color: '#FF453A' }} className="ml-1">*</span>}
           </label>
         )}
         <input
           ref={ref}
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors ${
-            error
-              ? 'border-red-500 focus:ring-red-500'
-              : 'border-gray-300'
-          } ${className}`}
+          className={`w-full px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 border transition-all placeholder-opacity-100 ${className}`}
+          style={{
+            backgroundColor: '#2C2C2E',
+            color: '#FFFFFF',
+            borderColor: error ? 'rgba(255, 69, 58, 0.5)' : 'rgba(84, 84, 88, 0.65)',
+          }}
           {...props}
         />
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-2 text-sm flex items-center" style={{ color: '#FF453A' }}>
+          <span className="mr-1">⚠️</span>{error}
+        </p>}
         {helperText && !error && (
-          <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+          <p className="mt-2 text-xs" style={{ color: 'rgba(235, 235, 245, 0.3)' }}>{helperText}</p>
         )}
       </div>
     )

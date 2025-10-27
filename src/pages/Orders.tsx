@@ -35,6 +35,8 @@ export default function Orders() {
     toplamMaliyet: 0,
     toplamKar: 0,
     toplamSiparis: 0,
+    gercekKarMarji: 0,      // Gerçek kâr marjı %
+    hedefKarSapmasi: 0,     // Hedef kâr sapması
   })
 
   // Pagination hesaplama
@@ -123,14 +125,24 @@ export default function Orders() {
   const calculateStatistics = () => {
     const toplamGelir = orders.reduce((sum, o) => sum + (o.baslangic_fiyati || 0), 0)
     const toplamMaliyet = orders.reduce((sum, o) => sum + (o.toplam_maliyet || 0), 0)
-    // Doğru hesap: Toplam Gelir - Toplam Maliyet
-    const toplamKar = toplamGelir - toplamMaliyet
+    const toplamOnerilenFiyat = orders.reduce((sum, o) => sum + (o.onerilen_fiyat || 0), 0)
+    
+    // Gerçek Kâr: Müşteri ödemesi - Maliyet
+    const gercekKar = toplamGelir - toplamMaliyet
+    
+    // Gerçek Kâr Marjı: (Gerçek Kâr / Toplam Gelir) × 100
+    const gercekKarMarji = toplamGelir > 0 ? (gercekKar / toplamGelir) * 100 : 0
+    
+    // Hedef Kâr Sapması: Müşteri ödemesi - Önerilen fiyat
+    const hedefKarSapmasi = toplamGelir - toplamOnerilenFiyat
     
     setStatistics({
       toplamGelir,
       toplamMaliyet,
-      toplamKar,
+      toplamKar: gercekKar,           // Gerçek kâr
       toplamSiparis: orders.length,
+      gercekKarMarji,                 // Yeni metrik
+      hedefKarSapmasi,                // Yeni metrik
     })
   }
 
@@ -225,7 +237,7 @@ export default function Orders() {
 
       {/* Finansal Özet */}
       {orders.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
             <div className="text-center">
               <p className="text-xs font-medium text-blue-800">Toplam Gelir</p>
@@ -247,7 +259,7 @@ export default function Orders() {
           <Card className={`bg-gradient-to-br ${statistics.toplamKar >= 0 ? 'from-green-50 to-green-100' : 'from-orange-50 to-orange-100'}`}>
             <div className="text-center">
               <p className={`text-xs font-medium ${statistics.toplamKar >= 0 ? 'text-green-800' : 'text-orange-800'}`}>
-                Toplam Kar/Zarar
+                Gerçek Kâr
               </p>
               <p className={`text-2xl font-bold mt-1 ${statistics.toplamKar >= 0 ? 'text-green-900' : 'text-orange-900'}`}>
                 {formatCurrency(statistics.toplamKar)}
@@ -259,14 +271,27 @@ export default function Orders() {
           </Card>
           <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
             <div className="text-center">
-              <p className="text-xs font-medium text-purple-800">Kar Marjı</p>
+              <p className="text-xs font-medium text-purple-800">Gerçek Kâr Marjı</p>
               <p className="text-2xl font-bold text-purple-900 mt-1">
                 {statistics.toplamGelir > 0 
-                  ? `%${((statistics.toplamKar / statistics.toplamGelir) * 100).toFixed(1)}`
+                  ? `%${statistics.gercekKarMarji.toFixed(1)}`
                   : '-%'
                 }
               </p>
-              <p className="text-xs text-purple-700 mt-1">Ortalama</p>
+              <p className="text-xs text-purple-700 mt-1">Gelir / Kâr</p>
+            </div>
+          </Card>
+          <Card className={`bg-gradient-to-br ${statistics.hedefKarSapmasi >= 0 ? 'from-teal-50 to-teal-100' : 'from-amber-50 to-amber-100'}`}>
+            <div className="text-center">
+              <p className={`text-xs font-medium ${statistics.hedefKarSapmasi >= 0 ? 'text-teal-800' : 'text-amber-800'}`}>
+                Hedef Sapması
+              </p>
+              <p className={`text-2xl font-bold mt-1 ${statistics.hedefKarSapmasi >= 0 ? 'text-teal-900' : 'text-amber-900'}`}>
+                {formatCurrency(statistics.hedefKarSapmasi)}
+              </p>
+              <p className={`text-xs mt-1 ${statistics.hedefKarSapmasi >= 0 ? 'text-teal-700' : 'text-amber-700'}`}>
+                {statistics.hedefKarSapmasi >= 0 ? 'Hedefin üstünde' : 'Hedefin altında'}
+              </p>
             </div>
           </Card>
         </div>

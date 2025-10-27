@@ -27,6 +27,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getVehicleParams: (plaka: string) => ipcRenderer.invoke('db:getVehicleParams', plaka),
     saveVehicle: (vehicleData: any) => ipcRenderer.invoke('db:saveVehicle', vehicleData),
     getVehicles: () => ipcRenderer.invoke('db:getVehicles'),
+    
+    getRoutes: () => ipcRenderer.invoke('db:getRoutes'),
+    getRoute: (nereden: string, nereye: string) => ipcRenderer.invoke('db:getRoute', nereden, nereye),
+    saveRoute: (routeData: any) => ipcRenderer.invoke('db:saveRoute', routeData),
+    deleteRoute: (id: number) => ipcRenderer.invoke('db:deleteRoute', id),
   },
   
   // Cost calculation operations

@@ -29,8 +29,10 @@ export default function VehiclesProfessional() {
     buyukBakimMaliyet: '3000',
     buyukBakimAralik: '15000',
     ufakOnarimAylik: '200',
-    // HGS
-    hgsPerKm: '0.50',
+    // Sabit Giderler (Yıllık)
+    sigortaYillik: '12000',
+    mtvYillik: '5000',
+    muayeneYillik: '1500',
     // Fiyatlandırma
     karOrani: '0.45',
     kdv: '0.20',
@@ -72,7 +74,9 @@ export default function VehiclesProfessional() {
       buyukBakimMaliyet: (vehicle.buyuk_bakim_maliyet || 3000).toString(),
       buyukBakimAralik: (vehicle.buyuk_bakim_aralik || 15000).toString(),
       ufakOnarimAylik: (vehicle.ufak_onarim_aylik || 200).toString(),
-      hgsPerKm: (vehicle.hgs_per_km || 0.5).toString(),
+      sigortaYillik: (vehicle.sigorta_yillik || 12000).toString(),
+      mtvYillik: (vehicle.mtv_yillik || 5000).toString(),
+      muayeneYillik: (vehicle.muayene_yillik || 1500).toString(),
       karOrani: (vehicle.kar_orani || 0.45).toString(),
       kdv: (vehicle.kdv || 0.20).toString(),
       aracDegeri: (vehicle.arac_degeri || 2300000).toString(),
@@ -98,7 +102,9 @@ export default function VehiclesProfessional() {
       buyukBakimMaliyet: '3000',
       buyukBakimAralik: '15000',
       ufakOnarimAylik: '200',
-      hgsPerKm: '0.50',
+      sigortaYillik: '12000',
+      mtvYillik: '5000',
+      muayeneYillik: '1500',
       karOrani: '0.45',
       kdv: '0.20',
       aracDegeri: '2300000',
@@ -134,7 +140,9 @@ export default function VehiclesProfessional() {
         buyukBakimMaliyet: Number(formData.buyukBakimMaliyet),
         buyukBakimAralik: Number(formData.buyukBakimAralik),
         ufakOnarimAylik: Number(formData.ufakOnarimAylik),
-        hgsPerKm: Number(formData.hgsPerKm),
+        sigortaYillik: Number(formData.sigortaYillik),
+        mtvYillik: Number(formData.mtvYillik),
+        muayeneYillik: Number(formData.muayeneYillik),
         karOrani: Number(formData.karOrani),
         kdv: Number(formData.kdv),
         aracDegeri: Number(formData.aracDegeri),
@@ -159,9 +167,13 @@ export default function VehiclesProfessional() {
       (vehicle.lastik_maliyet || 8000) / (vehicle.lastik_omur || 50000) +
       (vehicle.buyuk_bakim_maliyet || 3000) / (vehicle.buyuk_bakim_aralik || 15000)
     )
-    const hgsPerKm = vehicle.hgs_per_km || 0.5
+    // Sabit giderler (yıllık, km bazlı dönüşüm - ortalama 120000 km/yıl varsayımı)
+    const yillikKm = vehicle.hedef_toplam_km || 120000
+    const sigortaPerKm = (vehicle.sigorta_yillik || 12000) / yillikKm
+    const mtvPerKm = (vehicle.mtv_yillik || 5000) / yillikKm
+    const muayenePerKm = (vehicle.muayene_yillik || 1500) / yillikKm
     
-    return yakitPerKm + surucuPerKm + yemekPerKm + bakimPerKm + hgsPerKm
+    return yakitPerKm + surucuPerKm + yemekPerKm + bakimPerKm + sigortaPerKm + mtvPerKm + muayenePerKm
   }
 
   return (
@@ -188,12 +200,13 @@ export default function VehiclesProfessional() {
           </div>
           <div className="ml-3">
             <h3 className="text-sm font-medium text-blue-800">Profesyonel Maliyet Sistemi</h3>
-            <div className="mt-2 text-sm text-blue-700">
+            <div className="mt-2 text-sm text-blue-700 space-y-1">
               <p>✅ Yakıt: lt/100km × TL/lt hesabı</p>
               <p>✅ Sürücü: Günlük minimum garantili</p>
-              <p>✅ HGS: Güzergah bazlı gerçek maliyetler</p>
+              <p>✅ HGS: Güzergahlar sayfasından ayrı tanımlanır</p>
               <p>✅ Bakım: Detaylı (yağ, lastik, bakım, onarım)</p>
-              <p>✅ Amortisman: Muhasebe için ayrı (iş fiyatına dahil değil)</p>
+              <p>✅ Sabit Giderler: Sigorta, MTV, Muayene (otomatik dahil)</p>
+              <p>✅ Amortisman: Muhasebe için opsiyonel</p>
             </div>
           </div>
         </div>
@@ -251,9 +264,9 @@ export default function VehiclesProfessional() {
                       {formatCurrency((vehicle.yemek_gunluk || 150) / (vehicle.gunluk_ort_km || 500))}/km
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">HGS:</span>
-                    <span className="font-medium">{formatCurrency(vehicle.hgs_per_km || 0.5)}/km</span>
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Sigorta/MTV/Muayene:</span>
+                    <span>{formatCurrency((vehicle.sigorta_yillik || 12000) / 365)}/gün</span>
                   </div>
                   <div className="flex justify-between border-t pt-2">
                     <span className="text-gray-600">Kar Oranı:</span>
@@ -444,20 +457,47 @@ export default function VehiclesProfessional() {
             </div>
           </div>
 
-          {/* HGS ve Fiyatlandırma */}
+          {/* Sabit Giderler (Yıllık) */}
           <div>
-            <h4 className="font-semibold text-gray-900 mb-3">💰 Fiyatlandırma Parametreleri</h4>
+            <h4 className="font-semibold text-gray-900 mb-3">💳 Sabit Giderler (Yıllık)</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
-                label="HGS (TL/km)"
-                name="hgsPerKm"
+                label="Sigorta (TL/yıl)"
+                name="sigortaYillik"
                 type="number"
-                step="0.01"
-                value={formData.hgsPerKm}
+                value={formData.sigortaYillik}
                 onChange={handleChange}
-                helperText="Bilinmeyen güzergahlar için"
+                helperText="Yıllık kasko/trafik sigortası"
                 required
               />
+              <Input
+                label="MTV (TL/yıl)"
+                name="mtvYillik"
+                type="number"
+                value={formData.mtvYillik}
+                onChange={handleChange}
+                helperText="Motorlu Taşıtlar Vergisi"
+                required
+              />
+              <Input
+                label="Muayene (TL/yıl)"
+                name="muayeneYillik"
+                type="number"
+                value={formData.muayeneYillik}
+                onChange={handleChange}
+                helperText="Yıllık muayene maliyeti"
+                required
+              />
+            </div>
+            <div className="mt-2 p-2 bg-amber-50 rounded text-sm text-amber-800">
+              <strong>Bilgi:</strong> Bu sabit giderler otomatik olarak maliyetlere dahil edilir (gün/km bazlı dönüştürülür)
+            </div>
+          </div>
+
+          {/* Fiyatlandırma */}
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-3">💰 Fiyatlandırma Parametreleri</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Kar Oranı (0.45 = %45)"
                 name="karOrani"

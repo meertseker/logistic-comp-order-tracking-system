@@ -20,12 +20,15 @@ export interface ProfessionalVehicleParams {
   buyukBakimAralik: number      // km
   ufakOnarimAylik: number       // TL/ay (tahmini)
   
-  // HGS/Köprü (güzergah bazlı veya km bazlı)
-  hgsPerKm: number             // TL/km (bilinmeyen güzergahlar için)
+  // Sabit Yıllık Giderler (otomatik dahil edilir)
+  sigorta: number               // TL/yıl
+  mtv: number                   // TL/yıl
+  muayene: number               // TL/yıl
   
-  // Diğer değişken giderler
-  sigorta: number               // TL/yıl (opsiyonel)
-  mtv: number                   // TL/yıl (opsiyonel)
+  // Amortisman (opsiyonel - uzun vadeli maliyet analizi için)
+  aracDegeri?: number           // TL (örn: 2,000,000)
+  ekonomikOmur?: number         // km (örn: 800,000)
+  yillikOrtalamaKm?: number     // km/yıl (örn: 120,000)
   
   // Fiyatlandırma
   karOrani: number              // 0.45 = %45
@@ -61,8 +64,16 @@ export interface DetailedCostBreakdown {
   onarimMaliyet: number
   toplamBakimMaliyet: number
   
+  // Sabit Maliyetler (varsayılan olarak dahil)
+  sigortaMaliyet?: number
+  mtvMaliyet?: number
+  muayeneMaliyet?: number
+  amortismanMaliyet?: number
+  toplamSabitmaliyet?: number
+  
   // Toplam
-  toplamDirektMaliyet: number
+  toplamDirektMaliyet: number      // Sadece değişken maliyetler
+  toplamTumMaliyet?: number        // Sabit maliyetler dahil (varsa)
   maliyetPerKm: number
 }
 
@@ -126,20 +137,27 @@ export class ProfessionalCostCalculator {
     return { gun, ucret, yemek }
   }
 
-  // HGS/Köprü maliyeti (güzergah bazlı, case-insensitive)
-  calculateTollCost(nereden: string, nereye: string, km: number): number {
+  // HGS/Köprü maliyeti (sadece güzergah bazlı, km bazlı tahmini YOK)
+  // Önce database'den kontrol et, yoksa hardcoded listeden, o da yoksa 0
+  calculateTollCost(nereden: string, nereye: string, km: number, routeFromDB?: any): number {
+    // Database'den gelen güzergah varsa onu kullan (ÖNCELİK 1)
+    if (routeFromDB) {
+      return (routeFromDB.hgs_maliyet || 0) + (routeFromDB.kopru_maliyet || 0)
+    }
+    
     // Şehir isimlerini normalize et
     const from = normalizeCity(nereden)
     const to = normalizeCity(nereye)
     const key = `${from}-${to}`
     const toll = ROUTE_TOLLS[key]
     
+    // Hardcoded listeden kontrol et (ÖNCELİK 2)
     if (toll) {
       return toll.hgs + toll.kopru
     }
     
-    // Bilinmeyen güzergah: km bazlı tahmini
-    return km * this.params.hgsPerKm
+    // Bilinmeyen güzergah: 0 döndür (güzergahlar sayfasından eklenmeli)
+    return 0
   }
 
   // Bakım/Onarım maliyeti (detaylı)
@@ -167,8 +185,51 @@ export class ProfessionalCostCalculator {
     return gidisKm + donusKm * (1 - returnLoadRate)
   }
 
+  // Sigorta, MTV ve Muayene maliyeti (varsayılan olarak dahil edilir)
+  calculateInsuranceAndTax(km: number, estimatedDays: number, includeFixed: boolean = true): {
+    sigorta: number
+    mtv: number
+    muayene: number
+    toplam: number
+  } {
+    if (!includeFixed) {
+      return { sigorta: 0, mtv: 0, muayene: 0, toplam: 0 }
+    }
+    
+    // Gün bazlı hesaplama (daha doğru)
+    const sigorta = (this.params.sigorta / 365) * estimatedDays
+    const mtv = (this.params.mtv / 365) * estimatedDays
+    const muayene = (this.params.muayene / 365) * estimatedDays
+    
+    return {
+      sigorta,
+      mtv,
+      muayene,
+      toplam: sigorta + mtv + muayene
+    }
+  }
+
+  // Amortisman maliyeti (opsiyonel - varsayılan olarak dahil değil)
+  calculateDepreciation(km: number, includeDepreciation: boolean = false): number {
+    if (!includeDepreciation || !this.params.aracDegeri || !this.params.ekonomikOmur) {
+      return 0
+    }
+    
+    // KM bazlı doğrusal amortisman
+    const amortizasyonPerKm = this.params.aracDegeri / this.params.ekonomikOmur
+    return amortizasyonPerKm * km
+  }
+
   // Detaylı maliyet analizi
-  analyzeDetailedCost(route: RouteInfo, musteriOdeme: number): ProfessionalProfitAnalysis {
+  analyzeDetailedCost(
+    route: RouteInfo, 
+    musteriOdeme: number, 
+    routeFromDB?: any,
+    options?: {
+      includeSigorta?: boolean,    // Varsayılan: false
+      includeAmortisman?: boolean  // Varsayılan: false
+    }
+  ): ProfessionalProfitAnalysis {
     const etkinKm = this.calculateEffectiveKm(route.gidisKm, route.donusKm, route.returnLoadRate)
     
     // Yakıt
@@ -177,14 +238,28 @@ export class ProfessionalCostCalculator {
     // Sürücü
     const driver = this.calculateDriverCost(etkinKm, route.tahminiGun)
     
-    // HGS
-    const hgs = this.calculateTollCost(route.nereden, route.nereye, etkinKm)
+    // HGS (database'den gelen güzergah bilgisi varsa kullan)
+    const hgs = this.calculateTollCost(route.nereden, route.nereye, etkinKm, routeFromDB)
     
     // Bakım
     const maintenance = this.calculateMaintenanceCost(etkinKm, route.tahminiGun || 1)
     
-    // Toplam direkt maliyet
+    // Toplam değişken maliyet
     const toplamMaliyet = fuel.maliyet + driver.ucret + driver.yemek + hgs + maintenance.toplam
+    
+    // Sabit maliyetler (sigorta/MTV/muayene varsayılan olarak dahil, amortisman opsiyonel)
+    const insuranceAndTax = this.calculateInsuranceAndTax(
+      etkinKm, 
+      route.tahminiGun || 1, 
+      true  // Her zaman dahil et
+    )
+    const depreciation = this.calculateDepreciation(
+      etkinKm, 
+      options?.includeAmortisman || false
+    )
+    
+    const toplamSabitmaliyet = insuranceAndTax.toplam + depreciation
+    const toplamTumMaliyet = toplamMaliyet + toplamSabitmaliyet
     
     // Detaylı breakdown
     const costBreakdown: DetailedCostBreakdown = {
@@ -199,14 +274,21 @@ export class ProfessionalCostCalculator {
       bakimMaliyet: maintenance.bakim,
       onarimMaliyet: maintenance.onarim,
       toplamBakimMaliyet: maintenance.toplam,
+      sigortaMaliyet: insuranceAndTax.sigorta,
+      mtvMaliyet: insuranceAndTax.mtv,
+      muayeneMaliyet: insuranceAndTax.muayene,
+      amortismanMaliyet: depreciation,
+      toplamSabitmaliyet: toplamSabitmaliyet,
       toplamDirektMaliyet: toplamMaliyet,
+      toplamTumMaliyet: toplamTumMaliyet,
       maliyetPerKm: toplamMaliyet / etkinKm,
     }
     
-    // Fiyatlandırma
-    const fiyatKarli = toplamMaliyet * (1 + this.params.karOrani)
+    // Fiyatlandırma (sabit maliyetler dahil, amortisman hariç)
+    const maliyetFiyatlandirmaIcin = toplamMaliyet + insuranceAndTax.toplam  // Sigorta/MTV/Muayene dahil
+    const fiyatKarli = maliyetFiyatlandirmaIcin * (1 + this.params.karOrani)
     const fiyatKdvli = fiyatKarli * (1 + this.params.kdv)
-    const onerilenMinFiyat = toplamMaliyet * (1 + this.params.kdv) // Başabaş + KDV
+    const onerilenMinFiyat = maliyetFiyatlandirmaIcin * (1 + this.params.kdv) // Başabaş + KDV
     
     // Kar/Zarar
     const karZarar = musteriOdeme - fiyatKdvli
@@ -215,7 +297,7 @@ export class ProfessionalCostCalculator {
     return {
       etkinKm,
       costBreakdown,
-      toplamMaliyet,
+      toplamMaliyet: maliyetFiyatlandirmaIcin,  // Sigorta/MTV/Muayene dahil maliyet
       fiyatKarli,
       fiyatKdvli,
       musteriOdemesi: musteriOdeme,
@@ -246,12 +328,15 @@ export const DEFAULT_PROFESSIONAL_PARAMS: ProfessionalVehicleParams = {
   buyukBakimAralik: 15_000,     // km
   ufakOnarimAylik: 200,         // TL/ay
   
-  // HGS
-  hgsPerKm: 0.50,               // TL/km (bilinmeyen güzergahlar)
+  // Sabit Giderler (varsayılan olarak dahil edilir)
+  sigorta: 12_000,              // TL/yıl
+  mtv: 5_000,                   // TL/yıl
+  muayene: 1_500,               // TL/yıl
   
-  // Diğer
-  sigorta: 12_000,              // TL/yıl (opsiyonel)
-  mtv: 5_000,                   // TL/yıl (opsiyonel)
+  // Amortisman (opsiyonel - varsayılan hesaplamalara dahil değil)
+  aracDegeri: 2_000_000,        // TL (örnek araç değeri)
+  ekonomikOmur: 800_000,        // km (ekonomik kullanım ömrü)
+  yillikOrtalamaKm: 120_000,    // km/yıl (ortalama yıllık kullanım)
   
   // Fiyatlandırma
   karOrani: 0.45,               // %45

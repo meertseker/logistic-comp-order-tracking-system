@@ -8,6 +8,7 @@ import EditOrder from './pages/EditOrder'
 import Reports from './pages/Reports'
 import ChartsPage from './pages/ChartsPage'
 import VehiclesProfessional from './pages/VehiclesProfessional'
+import RoutesPage from './pages/Routes'
 import { ToastProvider } from './context/ToastContext'
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route path="/reports" element={<Reports />} />
             <Route path="/charts" element={<ChartsPage />} />
             <Route path="/vehicles" element={<VehiclesProfessional />} />
+            <Route path="/routes" element={<RoutesPage />} />
           </Routes>
         </Layout>
       </Router>

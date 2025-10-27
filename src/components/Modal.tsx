@@ -40,35 +40,39 @@ export default function Modal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+          className="fixed inset-0 transition-opacity bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         />
 
         {/* Modal */}
         <div
-          className={`relative inline-block w-full ${sizeClasses[size]} p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg`}
+          className={`relative inline-block w-full ${sizeClasses[size]} my-8 overflow-hidden text-left align-middle transition-all transform glass-strong shadow-ios-lg rounded-2xl border border-white/10`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <XMarkIcon className="w-6 h-6" />
-            </button>
+          <div className="border-b border-white/10 p-5" style={{ backgroundColor: 'rgba(28, 28, 30, 0.5)' }}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-white">
+                {title}
+              </h3>
+              <button
+                onClick={onClose}
+                className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <XMarkIcon className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
           </div>
 
           {/* Body */}
-          <div className="mb-6">{children}</div>
+          <div className="p-6">{children}</div>
 
           {/* Footer */}
           {footer && (
-            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-end space-x-3 p-5 border-t border-white/10" style={{ backgroundColor: 'rgba(28, 28, 30, 0.3)' }}>
               {footer}
             </div>
           )}
