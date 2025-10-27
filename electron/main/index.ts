@@ -8,6 +8,7 @@ import {
   type RouteInfo
 } from './professional-cost-calculator'
 import { BackupManager } from './backup'
+import { getLicenseManager } from './license-manager'
 
 // __dirname is available in CommonJS (esbuild handles this)
 
@@ -1002,6 +1003,66 @@ ipcMain.handle('cost:getBreakdown', async (_, plaka) => {
   } catch (error) {
     console.error('Error getting cost breakdown:', error)
     throw error
+  }
+})
+
+// ==================== LICENSE HANDLERS ====================
+
+// Makine ID'sini al
+ipcMain.handle('license:getMachineId', async () => {
+  try {
+    const licenseManager = getLicenseManager()
+    return { success: true, machineId: licenseManager.getMachineId() }
+  } catch (error) {
+    console.error('Error getting machine ID:', error)
+    return { success: false, error: 'Makine ID alınamadı' }
+  }
+})
+
+// Lisans durumunu kontrol et
+ipcMain.handle('license:validate', async () => {
+  try {
+    const licenseManager = getLicenseManager()
+    const validation = licenseManager.validateLicense()
+    return validation
+  } catch (error) {
+    console.error('Error validating license:', error)
+    return { valid: false, reason: 'Lisans doğrulama hatası' }
+  }
+})
+
+// Lisansı aktive et
+ipcMain.handle('license:activate', async (_, licenseKey: string, companyName: string, email: string) => {
+  try {
+    const licenseManager = getLicenseManager()
+    const result = licenseManager.activateLicense(licenseKey, companyName, email)
+    return result
+  } catch (error) {
+    console.error('Error activating license:', error)
+    return { success: false, message: 'Aktivasyon sırasında bir hata oluştu' }
+  }
+})
+
+// Lisans bilgilerini al
+ipcMain.handle('license:getInfo', async () => {
+  try {
+    const licenseManager = getLicenseManager()
+    return licenseManager.getLicenseInfo()
+  } catch (error) {
+    console.error('Error getting license info:', error)
+    return { licensed: false }
+  }
+})
+
+// Lisansı deaktive et (sil)
+ipcMain.handle('license:deactivate', async () => {
+  try {
+    const licenseManager = getLicenseManager()
+    const result = licenseManager.deactivateLicense()
+    return { success: result }
+  } catch (error) {
+    console.error('Error deactivating license:', error)
+    return { success: false }
   }
 })
 

@@ -14,7 +14,8 @@
     "preview": "vite preview",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && node scripts/watch-electron.js\"",
     "rebuild": "electron-rebuild -f -w better-sqlite3",
-    "migrate": "node scripts/migrate-database.js"
+    "migrate": "node scripts/migrate-database.js",
+    "license:generate": "node scripts/generate-license.js"
   },
   "keywords": [
     "electron",
@@ -33,6 +34,7 @@
     "jspdf": "^2.5.0",
     "jspdf-autotable": "^3.8.0",
     "lucide-react": "^0.548.0",
+    "node-machine-id": "^1.1.12",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",

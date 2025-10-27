@@ -38,6 +38,14 @@ export interface ElectronAPI {
   app: {
     getPath: (name: string) => Promise<string>
   }
+  
+  license: {
+    getMachineId: () => Promise<{ success: boolean; machineId?: string; error?: string }>
+    validate: () => Promise<{ valid: boolean; reason?: string; license?: any }>
+    activate: (licenseKey: string, companyName: string, email: string) => Promise<{ success: boolean; message: string }>
+    getInfo: () => Promise<{ licensed: boolean; info?: any }>
+    deactivate: () => Promise<{ success: boolean }>
+  }
 }
 
 declare global {

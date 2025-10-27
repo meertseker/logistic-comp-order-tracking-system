@@ -60,5 +60,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     restore: (backupPath: string) => ipcRenderer.invoke('backup:restore', backupPath),
     delete: (backupPath: string) => ipcRenderer.invoke('backup:delete', backupPath),
   },
+  
+  // License operations
+  license: {
+    getMachineId: () => ipcRenderer.invoke('license:getMachineId'),
+    validate: () => ipcRenderer.invoke('license:validate'),
+    activate: (licenseKey: string, companyName: string, email: string) => 
+      ipcRenderer.invoke('license:activate', licenseKey, companyName, email),
+    getInfo: () => ipcRenderer.invoke('license:getInfo'),
+    deactivate: () => ipcRenderer.invoke('license:deactivate'),
+  },
 })
 
