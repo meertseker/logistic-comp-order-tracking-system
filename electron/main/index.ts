@@ -8,7 +8,7 @@ import {
   type RouteInfo
 } from './professional-cost-calculator'
 import { BackupManager } from './backup'
-import { getLicenseManager } from './license-manager'
+import { getAdvancedLicenseManager } from './advanced-license-manager'
 
 // __dirname is available in CommonJS (esbuild handles this)
 
@@ -48,7 +48,7 @@ const createWindow = () => {
   })
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Initialize database
   initDatabase()
   
@@ -56,6 +56,21 @@ app.whenReady().then(() => {
   const dbPath = path.join(app.getPath('userData'), 'transport.db')
   backupManager = new BackupManager(dbPath)
   backupManager.startAutoBackup()
+  
+  // Initialize advanced license manager ve periyodik doğrulamayı başlat
+  try {
+    const licenseManager = await getAdvancedLicenseManager()
+    const validation = await licenseManager.validateLicense()
+    
+    if (validation.valid) {
+      console.log('✅ License valid - starting periodic verification')
+      licenseManager.startPeriodicVerification()
+    } else {
+      console.log('⚠️ License not valid:', validation.reason)
+    }
+  } catch (error) {
+    console.error('License initialization error:', error)
+  }
   
   // Create window
   createWindow()
@@ -1006,24 +1021,25 @@ ipcMain.handle('cost:getBreakdown', async (_, plaka) => {
   }
 })
 
-// ==================== LICENSE HANDLERS ====================
+// ==================== ADVANCED LICENSE HANDLERS ====================
 
-// Makine ID'sini al
+// Hardware Fingerprint al
 ipcMain.handle('license:getMachineId', async () => {
   try {
-    const licenseManager = getLicenseManager()
-    return { success: true, machineId: licenseManager.getMachineId() }
+    const licenseManager = await getAdvancedLicenseManager()
+    const hwFingerprint = await licenseManager.getHardwareFingerprint()
+    return { success: true, machineId: hwFingerprint }
   } catch (error) {
-    console.error('Error getting machine ID:', error)
-    return { success: false, error: 'Makine ID alınamadı' }
+    console.error('Error getting hardware fingerprint:', error)
+    return { success: false, error: 'Hardware fingerprint alınamadı' }
   }
 })
 
-// Lisans durumunu kontrol et
+// Lisans durumunu kontrol et (Gelişmiş)
 ipcMain.handle('license:validate', async () => {
   try {
-    const licenseManager = getLicenseManager()
-    const validation = licenseManager.validateLicense()
+    const licenseManager = await getAdvancedLicenseManager()
+    const validation = await licenseManager.validateLicense()
     return validation
   } catch (error) {
     console.error('Error validating license:', error)
@@ -1031,11 +1047,11 @@ ipcMain.handle('license:validate', async () => {
   }
 })
 
-// Lisansı aktive et
+// Lisansı aktive et (Gelişmiş)
 ipcMain.handle('license:activate', async (_, licenseKey: string, companyName: string, email: string) => {
   try {
-    const licenseManager = getLicenseManager()
-    const result = licenseManager.activateLicense(licenseKey, companyName, email)
+    const licenseManager = await getAdvancedLicenseManager()
+    const result = await licenseManager.activateLicense(licenseKey, companyName, email)
     return result
   } catch (error) {
     console.error('Error activating license:', error)
@@ -1043,21 +1059,21 @@ ipcMain.handle('license:activate', async (_, licenseKey: string, companyName: st
   }
 })
 
-// Lisans bilgilerini al
+// Lisans bilgilerini al (Gelişmiş)
 ipcMain.handle('license:getInfo', async () => {
   try {
-    const licenseManager = getLicenseManager()
-    return licenseManager.getLicenseInfo()
+    const licenseManager = await getAdvancedLicenseManager()
+    return await licenseManager.getLicenseInfo()
   } catch (error) {
     console.error('Error getting license info:', error)
     return { licensed: false }
   }
 })
 
-// Lisansı deaktive et (sil)
+// Lisansı deaktive et (Gelişmiş)
 ipcMain.handle('license:deactivate', async () => {
   try {
-    const licenseManager = getLicenseManager()
+    const licenseManager = await getAdvancedLicenseManager()
     const result = licenseManager.deactivateLicense()
     return { success: result }
   } catch (error) {

@@ -15,7 +15,8 @@
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && node scripts/watch-electron.js\"",
     "rebuild": "electron-rebuild -f -w better-sqlite3",
     "migrate": "node scripts/migrate-database.js",
-    "license:generate": "node scripts/generate-license.js"
+    "license:generate": "node scripts/generate-license.js",
+    "license:advanced": "node scripts/generate-license-advanced.js"
   },
   "keywords": [
     "electron",
@@ -40,6 +41,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
     "recharts": "^3.3.0",
+    "systeminformation": "^5.27.11",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
