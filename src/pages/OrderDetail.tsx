@@ -15,7 +15,8 @@ import {
   CheckCircle,
   AlertCircle,
   FileText,
-  MapPin
+  MapPin,
+  Truck
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -315,13 +316,50 @@ export default function OrderDetail() {
         />
       </Card>
 
+      {/* Taşeron Uyarısı */}
+      {order.is_subcontractor === 1 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card rounded-xl p-5"
+          style={{ background: 'rgba(255, 159, 10, 0.15)', border: '0.5px solid rgba(255, 159, 10, 0.3)' }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(255, 159, 10, 0.2)' }}>
+              <Truck className="w-5 h-5" style={{ color: '#FF9F0A' }} />
+            </div>
+            <div>
+              <p className="font-bold text-lg" style={{ color: '#FFFFFF' }}>Taşeron Sipariş</p>
+              <p className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.7)' }}>
+                Bu sipariş taşeron firma aracılığıyla gerçekleştirilmektedir
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Order Info */}
       <Card title="Sipariş Bilgileri">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <p className="text-sm font-medium text-gray-600">Plaka</p>
-            <p className="text-lg font-semibold">{order.plaka}</p>
-          </div>
+          {order.is_subcontractor === 1 ? (
+            <>
+              <div>
+                <p className="text-sm font-medium text-gray-600">Taşeron Firma</p>
+                <p className="text-lg font-semibold">{order.subcontractor_company}</p>
+              </div>
+              {order.subcontractor_vehicle && (
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Taşeron Araç</p>
+                  <p className="text-lg font-semibold">{order.subcontractor_vehicle}</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div>
+              <p className="text-sm font-medium text-gray-600">Plaka</p>
+              <p className="text-lg font-semibold">{order.plaka}</p>
+            </div>
+          )}
           <div>
             <p className="text-sm font-medium text-gray-600">Müşteri</p>
             <p className="text-lg font-semibold">{order.musteri}</p>
@@ -408,7 +446,7 @@ export default function OrderDetail() {
           </div>
         </motion.div>
 
-        {/* Tahmini Maliyet */}
+        {/* Tahmini Maliyet / Taşeron Maliyeti */}
         <motion.div
           whileHover={{ scale: 1.02, y: -4 }}
           className="glass-card rounded-xl p-6 relative overflow-hidden"
@@ -419,14 +457,17 @@ export default function OrderDetail() {
             <div className="flex items-center gap-2 mb-2">
               <TrendingDown className="w-4 h-4" style={{ color: '#FF9F0A' }} />
               <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#FF9F0A' }}>
-                Tahmini Maliyet
+                {order.is_subcontractor === 1 ? 'Taşeron Maliyeti' : 'Tahmini Maliyet'}
               </p>
             </div>
             <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
               {formatCurrency(calculateEstimatedCost())}
             </p>
             <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-              {order.etkin_km > 0 ? `${order.etkin_km.toFixed(0)} km` : 'Hesaplanmadı'}
+              {order.is_subcontractor === 1 
+                ? 'Taşeron firmaya ödenen'
+                : (order.etkin_km > 0 ? `${order.etkin_km.toFixed(0)} km` : 'Hesaplanmadı')
+              }
             </p>
           </div>
         </motion.div>
@@ -492,8 +533,8 @@ export default function OrderDetail() {
         </motion.div>
       </motion.div>
 
-      {/* Modern Maliyet Dökümü */}
-      {order.toplam_maliyet > 0 && (
+      {/* Modern Maliyet Dökümü - Sadece kendi araçlar için */}
+      {order.is_subcontractor !== 1 && order.toplam_maliyet > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

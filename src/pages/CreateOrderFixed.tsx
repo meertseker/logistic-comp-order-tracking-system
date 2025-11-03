@@ -36,6 +36,7 @@ export default function CreateOrderFixed() {
   const [loadingVehicles, setLoadingVehicles] = useState(true)
   const [autoPrice, setAutoPrice] = useState(true) // Otomatik fiyat toggle
   const [tripType, setTripType] = useState<'oneway' | 'roundtrip'>('oneway') // Tek yön/Gidiş-dönüş
+  const [isSubcontractor, setIsSubcontractor] = useState(false) // Taşeron firmaya mı veriliyor
   
   const [formData, setFormData] = useState({
     plaka: '',
@@ -49,6 +50,9 @@ export default function CreateOrderFixed() {
     donusKm: '',
     returnLoadRate: '0', // 0-100
     tahminiGun: '1',
+    subcontractorCompany: '',
+    subcontractorVehicle: '',
+    subcontractorCost: '',
   })
   
   const [analysis, setAnalysis] = useState<any>(null)
@@ -199,7 +203,18 @@ export default function CreateOrderFixed() {
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.plaka) newErrors.plaka = 'Araç seçimi zorunludur'
+    // Taşeron kontrolü
+    if (isSubcontractor) {
+      if (!formData.subcontractorCompany.trim()) newErrors.subcontractorCompany = 'Taşeron firma adı zorunludur'
+      if (!formData.subcontractorCost.trim()) {
+        newErrors.subcontractorCost = 'Taşeron maliyeti zorunludur'
+      } else if (isNaN(Number(formData.subcontractorCost)) || Number(formData.subcontractorCost) <= 0) {
+        newErrors.subcontractorCost = 'Geçerli bir maliyet giriniz'
+      }
+    } else {
+      if (!formData.plaka) newErrors.plaka = 'Araç seçimi zorunludur'
+    }
+
     if (!formData.musteri.trim()) newErrors.musteri = 'Müşteri adı zorunludur'
     
     // Telefon validasyonu
@@ -239,8 +254,20 @@ export default function CreateOrderFixed() {
 
     try {
       setLoading(true)
+      
+      // Taşeron ise kar/zarar hesaplama
+      let karZarar = 0
+      let karZararYuzde = 0
+      
+      if (isSubcontractor) {
+        karZarar = Number(formData.baslangicFiyati) - Number(formData.subcontractorCost)
+        karZararYuzde = Number(formData.baslangicFiyati) > 0 
+          ? (karZarar / Number(formData.baslangicFiyati)) * 100 
+          : 0
+      }
+      
       const result = await window.electronAPI.db.createOrder({
-        plaka: formData.plaka.trim(),
+        plaka: isSubcontractor ? (formData.subcontractorCompany + ' (Taşeron)') : formData.plaka.trim(),
         musteri: formData.musteri.trim(),
         telefon: formData.telefon.trim(),
         nereden: normalizeCity(formData.nereden),
@@ -251,20 +278,25 @@ export default function CreateOrderFixed() {
         gidisKm: Number(formData.gidisKm),
         donusKm: Number(formData.donusKm) || 0,
         returnLoadRate: Number(formData.returnLoadRate) / 100,
-        etkinKm: analysis?.etkinKm || 0,
+        etkinKm: isSubcontractor ? 0 : (analysis?.etkinKm || 0),
         tahminiGun: Number(formData.tahminiGun) || 1,
         
-        yakitLitre: analysis?.costBreakdown?.yakitLitre || 0,
-        yakitMaliyet: analysis?.costBreakdown?.yakitMaliyet || 0,
-        surucuMaliyet: analysis?.costBreakdown?.surucuMaliyet || 0,
-        yemekMaliyet: analysis?.costBreakdown?.yemekMaliyet || 0,
-        hgsMaliyet: analysis?.costBreakdown?.hgsMaliyet || 0,
-        bakimMaliyet: analysis?.costBreakdown?.toplamBakimMaliyet || 0,
-        toplamMaliyet: analysis?.toplamMaliyet || 0,
+        yakitLitre: isSubcontractor ? 0 : (analysis?.costBreakdown?.yakitLitre || 0),
+        yakitMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.yakitMaliyet || 0),
+        surucuMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.surucuMaliyet || 0),
+        yemekMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.yemekMaliyet || 0),
+        hgsMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.hgsMaliyet || 0),
+        bakimMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.toplamBakimMaliyet || 0),
+        toplamMaliyet: isSubcontractor ? Number(formData.subcontractorCost) : (analysis?.toplamMaliyet || 0),
         
-        onerilenFiyat: analysis?.fiyatKdvli || 0,
-        karZarar: analysis?.karZarar || 0,
-        karZararYuzde: analysis?.karZararYuzde || 0,
+        onerilenFiyat: isSubcontractor ? 0 : (analysis?.fiyatKdvli || 0),
+        karZarar: isSubcontractor ? karZarar : (analysis?.karZarar || 0),
+        karZararYuzde: isSubcontractor ? karZararYuzde : (analysis?.karZararYuzde || 0),
+        
+        isSubcontractor: isSubcontractor,
+        subcontractorCompany: isSubcontractor ? formData.subcontractorCompany.trim() : null,
+        subcontractorVehicle: isSubcontractor ? formData.subcontractorVehicle.trim() : null,
+        subcontractorCost: isSubcontractor ? Number(formData.subcontractorCost) : 0,
       })
 
       if (result.success) {
@@ -339,11 +371,90 @@ export default function CreateOrderFixed() {
           <Card>
             <form onSubmit={handleSubmit} className="space-y-6">
               
-              {/* Araç Seçimi */}
+              {/* Taşeron Toggle */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'rgba(255, 159, 10, 0.12)', border: '0.5px solid rgba(255, 159, 10, 0.3)' }}>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(255, 159, 10, 0.2)' }}>
+                      <Truck className="w-5 h-5" style={{ color: '#FF9F0A' }} />
+                    </div>
+                    <div>
+                      <p className="font-semibold" style={{ color: '#FFFFFF' }}>Taşeron Firma</p>
+                      <p className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                        Bu sipariş başka bir firmaya mı verilecek?
+                      </p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={isSubcontractor}
+                      onChange={(e) => {
+                        setIsSubcontractor(e.target.checked)
+                        if (e.target.checked) {
+                          setFormData(prev => ({ ...prev, plaka: '' }))
+                        } else {
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            subcontractorCompany: '',
+                            subcontractorVehicle: '',
+                            subcontractorCost: ''
+                          }))
+                        }
+                      }}
+                    />
+                    <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Araç Seçimi veya Taşeron Bilgileri */}
               <div>
-                <h3 className="text-lg font-semibold mb-4">1️⃣ Araç Bilgileri</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  {isSubcontractor ? '1️⃣ Taşeron Firma Bilgileri' : '1️⃣ Araç Bilgileri'}
+                </h3>
                 
-                {loadingVehicles ? (
+                {isSubcontractor ? (
+                  <div className="space-y-4">
+                    <Input
+                      label="Taşeron Firma Adı *"
+                      value={formData.subcontractorCompany}
+                      onChange={(e) => setFormData(prev => ({ ...prev, subcontractorCompany: e.target.value }))}
+                      error={errors.subcontractorCompany}
+                      placeholder="Örn: ABC Lojistik"
+                    />
+                    <Input
+                      label="Araç/Plaka Bilgisi (Opsiyonel)"
+                      value={formData.subcontractorVehicle}
+                      onChange={(e) => setFormData(prev => ({ ...prev, subcontractorVehicle: e.target.value }))}
+                      placeholder="Örn: 34 ABC 123"
+                    />
+                    <Input
+                      label="Taşeron Maliyeti (₺) *"
+                      type="number"
+                      step="0.01"
+                      value={formData.subcontractorCost}
+                      onChange={(e) => setFormData(prev => ({ ...prev, subcontractorCost: e.target.value }))}
+                      error={errors.subcontractorCost}
+                      placeholder="Taşeron firmaya ödenecek tutar"
+                    />
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.12)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}>
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 mt-0.5" style={{ color: '#0A84FF' }} />
+                        <div>
+                          <p className="text-sm font-semibold mb-1" style={{ color: '#FFFFFF' }}>
+                            Taşeron Firma Notu
+                          </p>
+                          <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.7)' }}>
+                            Bu sipariş kendi araçlarınızla değil, taşeron firma aracılığıyla gerçekleştirilecek. 
+                            Kar/zarar hesaplaması: (Müşteri ödemesi - Taşeron maliyeti)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : loadingVehicles ? (
                   <div className="text-center py-4">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
                   </div>
@@ -531,26 +642,28 @@ export default function CreateOrderFixed() {
               <div>
                 <h3 className="text-lg font-semibold mb-4">5️⃣ Fiyatlandırma</h3>
                 
-                {/* Otomatik Fiyat Toggle */}
-                <div className="flex items-center justify-between mb-3 p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Otomatik Fiyat</p>
-                    <p className="text-xs text-gray-600">Sistem önerilen fiyatı otomatik uygular</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setAutoPrice(!autoPrice)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      autoPrice ? 'bg-primary-600' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        autoPrice ? 'translate-x-6' : 'translate-x-1'
+                {/* Otomatik Fiyat Toggle - Sadece kendi araçlar için */}
+                {!isSubcontractor && (
+                  <div className="flex items-center justify-between mb-3 p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Otomatik Fiyat</p>
+                      <p className="text-xs text-gray-600">Sistem önerilen fiyatı otomatik uygular</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAutoPrice(!autoPrice)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        autoPrice ? 'bg-primary-600' : 'bg-gray-200'
                       }`}
-                    />
-                  </button>
-                </div>
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          autoPrice ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                )}
 
                 <Input
                   label="Toplam Ücret (₺)"
@@ -563,11 +676,11 @@ export default function CreateOrderFixed() {
                   error={errors.baslangicFiyati}
                   placeholder="Otomatik hesaplanacak..."
                   required
-                  disabled={vehicles.length === 0}
+                  disabled={!isSubcontractor && vehicles.length === 0}
                   onKeyDown={(e) => {
                     if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault()
                   }}
-                  helperText={autoPrice ? 'Önerilen fiyat otomatik uygulanıyor' : 'Manuel fiyat girişi'}
+                  helperText={isSubcontractor ? 'Müşteriden alınacak toplam ücret' : (autoPrice ? 'Önerilen fiyat otomatik uygulanıyor' : 'Manuel fiyat girişi')}
                 />
 
                 {analysis && !autoPrice && (
@@ -603,7 +716,7 @@ export default function CreateOrderFixed() {
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button 
                   type="submit" 
-                  disabled={loading || analyzing || vehicles.length === 0}
+                  disabled={loading || analyzing || (!isSubcontractor && vehicles.length === 0)}
                 >
                   {loading ? (
                     <>
@@ -625,8 +738,59 @@ export default function CreateOrderFixed() {
 
         {/* Modern Analiz Panel - Sağ taraf */}
         <div className="space-y-4">
+          {/* Taşeron Kar/Zarar Özeti */}
+          {isSubcontractor && formData.baslangicFiyati && formData.subcontractorCost && (() => {
+            const gelir = Number(formData.baslangicFiyati) || 0
+            const maliyet = Number(formData.subcontractorCost) || 0
+            const kar = gelir - maliyet
+            const karYuzde = gelir > 0 ? (kar / gelir) * 100 : 0
+            return (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="glass-card rounded-xl p-6 relative overflow-hidden"
+                style={{ 
+                  background: kar > 0 ? 'rgba(48, 209, 88, 0.15)' : kar < 0 ? 'rgba(255, 69, 58, 0.15)' : 'rgba(255, 214, 10, 0.15)',
+                  border: kar > 0 ? '0.5px solid rgba(48, 209, 88, 0.3)' : kar < 0 ? '0.5px solid rgba(255, 69, 58, 0.3)' : '0.5px solid rgba(255, 214, 10, 0.3)',
+                }}
+              >
+                <div 
+                  className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30"
+                  style={{ backgroundColor: kar > 0 ? '#30D158' : kar < 0 ? '#FF453A' : '#FFD60A' }}
+                />
+                <div className="relative text-center">
+                  <div className="mb-3">
+                    <span className="text-4xl">{kar > 0 ? '🎉' : kar < 0 ? '⚠️' : '➡️'}</span>
+                  </div>
+                  <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                    Taşeron Kar Marjı
+                  </p>
+                  <p className="text-5xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
+                    {karYuzde > 0 ? '+' : ''}{karYuzde.toFixed(1)}%
+                  </p>
+                  <div className="mt-4 p-3 rounded-xl" style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Net Kar:</span>
+                      <span className="text-lg font-bold" style={{ color: '#FFFFFF' }}>{formatCurrency(kar)}</span>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Müşteriden Alınan:</span>
+                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(gelir)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Taşerona Ödenen:</span>
+                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(maliyet)}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )
+          })()}
+          
           {/* Kar/Zarar Özeti */}
-          {analysis && formData.baslangicFiyati && (() => {
+          {!isSubcontractor && analysis && formData.baslangicFiyati && (() => {
             const entered = Number(formData.baslangicFiyati) || 0
             const breakEven = analysis.onerilenMinFiyat || 0
             const delta = entered - breakEven
@@ -682,7 +846,7 @@ export default function CreateOrderFixed() {
           })()}
 
           {/* Modern Maliyet Detayı */}
-          {analysis && (
+          {!isSubcontractor && analysis && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

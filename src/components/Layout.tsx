@@ -9,7 +9,8 @@ import {
   FileText,
   BarChart3,
   Menu,
-  Sparkles
+  Sparkles,
+  Container
 } from 'lucide-react'
 
 interface LayoutProps {
@@ -20,6 +21,7 @@ const navigation = [
   { name: 'Ana Sayfa', href: '/', icon: Home, badge: null },
   { name: 'Siparişler', href: '/orders', icon: Package, badge: null },
   { name: 'Araçlar', href: '/vehicles', icon: Truck, badge: null },
+  { name: 'Dorseler', href: '/trailers', icon: Container, badge: null },
   { name: 'Güzergahlar', href: '/routes', icon: MapPin, badge: null },
   { name: 'Raporlar', href: '/reports', icon: FileText, badge: null },
   { name: 'Grafikler', href: '/charts', icon: BarChart3, badge: null },

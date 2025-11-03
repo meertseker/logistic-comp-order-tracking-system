@@ -515,7 +515,7 @@ export default function Orders() {
                     />
                   </th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">ID</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Plaka</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Araç/Firma</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Müşteri</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Telefon</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Güzergah</th>
@@ -541,7 +541,18 @@ export default function Orders() {
                       />
                     </td>
                     <td className="py-3 px-4 font-medium">#{order.id}</td>
-                    <td className="py-3 px-4 font-medium">{order.plaka}</td>
+                    <td className="py-3 px-4">
+                      {order.is_subcontractor === 1 ? (
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-1 text-xs rounded-md font-medium" style={{ backgroundColor: 'rgba(255, 159, 10, 0.15)', color: '#FF9F0A' }}>
+                            🚛 Taşeron
+                          </span>
+                          <span className="font-medium">{order.subcontractor_company}</span>
+                        </div>
+                      ) : (
+                        <span className="font-medium">{order.plaka}</span>
+                      )}
+                    </td>
                     <td className="py-3 px-4">{order.musteri}</td>
                     <td className="py-3 px-4 text-sm" style={{ color: selectedOrders.includes(order.id) ? '#FFFFFF' : 'rgba(235, 235, 245, 0.6)' }}>{order.telefon}</td>
                     <td className="py-3 px-4 text-sm" style={{ color: selectedOrders.includes(order.id) ? '#FFFFFF' : 'rgba(235, 235, 245, 0.6)' }}>

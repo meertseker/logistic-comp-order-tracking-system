@@ -19,8 +19,29 @@ async function buildElectron() {
           fileName: () => 'index.cjs',
         },
         rollupOptions: {
-          external: ['electron', 'better-sqlite3', 'fs', 'path'],
+          external: [
+            'electron', 
+            'better-sqlite3', 
+            'fs', 
+            'fs/promises',
+            'path', 
+            'crypto', 
+            'os', 
+            'child_process',
+            'node-machine-id',
+            'systeminformation',
+            'util',
+            'https',
+            'http',
+            'net'
+          ],
+          output: {
+            format: 'cjs',
+            inlineDynamicImports: false,
+          }
         },
+        target: 'node18',
+        minify: false,
         emptyOutDir: true,
       },
       resolve: {

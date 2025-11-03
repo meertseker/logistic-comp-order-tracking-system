@@ -21,6 +21,12 @@ export interface ElectronAPI {
     getVehicleParams: (plaka: string) => Promise<any>
     saveVehicle: (vehicleData: any) => Promise<{ success: boolean }>
     getVehicles: () => Promise<any[]>
+    
+    getTrailers: () => Promise<any[]>
+    getTrailer: (id: number) => Promise<any>
+    createTrailer: (trailerData: any) => Promise<{ id: number; success: boolean }>
+    updateTrailer: (id: number, trailerData: any) => Promise<{ success: boolean }>
+    deleteTrailer: (id: number) => Promise<{ success: boolean }>
   }
   
   cost: {

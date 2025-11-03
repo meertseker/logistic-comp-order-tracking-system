@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
@@ -10,6 +10,7 @@ import Reports from './pages/Reports'
 import ChartsPage from './pages/ChartsPage'
 import VehiclesProfessional from './pages/VehiclesProfessional'
 import RoutesPage from './pages/Routes'
+import Trailers from './pages/Trailers'
 import { ToastProvider } from './context/ToastContext'
 import LicenseActivation from './components/LicenseActivation'
 
@@ -65,6 +66,7 @@ function App() {
             <Route path="/reports" element={<Reports />} />
             <Route path="/charts" element={<ChartsPage />} />
             <Route path="/vehicles" element={<VehiclesProfessional />} />
+            <Route path="/trailers" element={<Trailers />} />
             <Route path="/routes" element={<RoutesPage />} />
           </Routes>
         </Layout>

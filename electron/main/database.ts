@@ -64,6 +64,10 @@ const createTables = () => {
     'onerilen_fiyat REAL DEFAULT 0',
     'kar_zarar REAL DEFAULT 0',
     'kar_zarar_yuzde REAL DEFAULT 0',
+    'is_subcontractor INTEGER DEFAULT 0',
+    'subcontractor_company TEXT',
+    'subcontractor_vehicle TEXT',
+    'subcontractor_cost REAL DEFAULT 0',
   ]
   
   for (const column of ordersColumns) {
@@ -140,6 +144,24 @@ const createTables = () => {
     )
   `)
   
+  // Trailers (Dorseler) table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS trailers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      dorse_no TEXT UNIQUE NOT NULL,
+      musteri_adi TEXT NOT NULL,
+      kapasite REAL DEFAULT 0,
+      kapasite_birimi TEXT DEFAULT 'ton',
+      mevcut_yuk REAL DEFAULT 0,
+      lokasyon TEXT,
+      durum TEXT DEFAULT 'Boş',
+      notlar TEXT,
+      aktif INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+  
   // Yeni kolonları ekle
   const vehicleColumns = [
     'yakit_tuketimi REAL DEFAULT 25',
@@ -181,6 +203,9 @@ const createTables = () => {
     CREATE INDEX IF NOT EXISTS idx_invoices_order_id ON invoices(order_id);
     CREATE INDEX IF NOT EXISTS idx_settings_key ON settings(key);
     CREATE INDEX IF NOT EXISTS idx_vehicles_plaka ON vehicles(plaka);
+    CREATE INDEX IF NOT EXISTS idx_trailers_dorse_no ON trailers(dorse_no);
+    CREATE INDEX IF NOT EXISTS idx_trailers_musteri ON trailers(musteri_adi);
+    CREATE INDEX IF NOT EXISTS idx_trailers_durum ON trailers(durum);
   `)
   
   // Insert default global settings if not exists

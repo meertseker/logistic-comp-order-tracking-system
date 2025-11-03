@@ -140,9 +140,10 @@ ipcMain.handle('db:createOrder', async (_, orderData) => {
         gidis_km, donus_km, return_load_rate, etkin_km, tahmini_gun,
         yakit_litre, yakit_maliyet, surucu_maliyet, yemek_maliyet, hgs_maliyet, bakim_maliyet,
         toplam_maliyet, onerilen_fiyat, kar_zarar, kar_zarar_yuzde,
+        is_subcontractor, subcontractor_company, subcontractor_vehicle, subcontractor_cost,
         status, created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `)
     
     const result = stmt.run(
@@ -168,6 +169,10 @@ ipcMain.handle('db:createOrder', async (_, orderData) => {
       orderData.onerilenFiyat || 0,
       orderData.karZarar || 0,
       orderData.karZararYuzde || 0,
+      orderData.isSubcontractor ? 1 : 0,
+      orderData.subcontractorCompany || null,
+      orderData.subcontractorVehicle || null,
+      orderData.subcontractorCost || 0,
       'Bekliyor'
     )
     
@@ -189,6 +194,7 @@ ipcMain.handle('db:updateOrder', async (_, id, orderData) => {
           yakit_litre = ?, yakit_maliyet = ?, surucu_maliyet = ?, yemek_maliyet = ?, 
           hgs_maliyet = ?, bakim_maliyet = ?, toplam_maliyet = ?,
           onerilen_fiyat = ?, kar_zarar = ?, kar_zarar_yuzde = ?, status = ?,
+          is_subcontractor = ?, subcontractor_company = ?, subcontractor_vehicle = ?, subcontractor_cost = ?,
           updated_at = datetime('now')
       WHERE id = ?
     `)
@@ -217,6 +223,10 @@ ipcMain.handle('db:updateOrder', async (_, id, orderData) => {
       orderData.karZarar || 0,
       orderData.karZararYuzde || 0,
       orderData.status || 'Bekliyor',
+      orderData.isSubcontractor ? 1 : 0,
+      orderData.subcontractorCompany || null,
+      orderData.subcontractorVehicle || null,
+      orderData.subcontractorCost || 0,
       id
     )
     
@@ -1080,6 +1090,104 @@ ipcMain.handle('license:deactivate', async () => {
   } catch (error) {
     console.error('Error deactivating license:', error)
     return { success: false }
+  }
+})
+
+// ============================================
+// DORSE (TRAILER) OPERATIONS
+// ============================================
+
+ipcMain.handle('db:getTrailers', async () => {
+  const db = getDB()
+  try {
+    const trailers = db.prepare('SELECT * FROM trailers WHERE aktif = 1 ORDER BY created_at DESC').all()
+    return trailers
+  } catch (error) {
+    console.error('Error getting trailers:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('db:getTrailer', async (_, id) => {
+  const db = getDB()
+  try {
+    const trailer = db.prepare('SELECT * FROM trailers WHERE id = ?').get(id)
+    return trailer
+  } catch (error) {
+    console.error('Error getting trailer:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('db:createTrailer', async (_, trailerData) => {
+  const db = getDB()
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO trailers (
+        dorse_no, musteri_adi, kapasite, kapasite_birimi, mevcut_yuk, 
+        lokasyon, durum, notlar, aktif, created_at, updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+    `)
+    
+    const result = stmt.run(
+      trailerData.dorseNo,
+      trailerData.musteriAdi,
+      trailerData.kapasite || 0,
+      trailerData.kapasiteBirimi || 'ton',
+      trailerData.mevcutYuk || 0,
+      trailerData.lokasyon || '',
+      trailerData.durum || 'Boş',
+      trailerData.notlar || ''
+    )
+    
+    return { id: result.lastInsertRowid, success: true }
+  } catch (error) {
+    console.error('Error creating trailer:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('db:updateTrailer', async (_, id, trailerData) => {
+  const db = getDB()
+  try {
+    const stmt = db.prepare(`
+      UPDATE trailers 
+      SET dorse_no = ?, musteri_adi = ?, kapasite = ?, kapasite_birimi = ?,
+          mevcut_yuk = ?, lokasyon = ?, durum = ?, notlar = ?,
+          updated_at = datetime('now')
+      WHERE id = ?
+    `)
+    
+    stmt.run(
+      trailerData.dorseNo,
+      trailerData.musteriAdi,
+      trailerData.kapasite || 0,
+      trailerData.kapasiteBirimi || 'ton',
+      trailerData.mevcutYuk || 0,
+      trailerData.lokasyon || '',
+      trailerData.durum || 'Boş',
+      trailerData.notlar || '',
+      id
+    )
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating trailer:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('db:deleteTrailer', async (_, id) => {
+  const db = getDB()
+  try {
+    // Soft delete
+    const stmt = db.prepare('UPDATE trailers SET aktif = 0, updated_at = datetime(\'now\') WHERE id = ?')
+    stmt.run(id)
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting trailer:', error)
+    throw error
   }
 })
 

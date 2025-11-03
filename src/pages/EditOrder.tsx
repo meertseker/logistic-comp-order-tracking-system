@@ -25,6 +25,7 @@ export default function EditOrder() {
   const [analyzing, setAnalyzing] = useState(false)
   const [vehicles, setVehicles] = useState<any[]>([])
   const [tripType, setTripType] = useState<'oneway' | 'roundtrip'>('oneway')
+  const [isSubcontractor, setIsSubcontractor] = useState(false)
   
   const [formData, setFormData] = useState({
     plaka: '',
@@ -39,6 +40,9 @@ export default function EditOrder() {
     returnLoadRate: '0',
     tahminiGun: '1',
     status: 'Bekliyor',
+    subcontractorCompany: '',
+    subcontractorVehicle: '',
+    subcontractorCost: '',
   })
   
   const [analysis, setAnalysis] = useState<any>(null)
@@ -60,6 +64,9 @@ export default function EditOrder() {
       const data = await window.electronAPI.db.getOrder(Number(id))
       const order = data.order
       
+      const isSubcon = order.is_subcontractor === 1
+      setIsSubcontractor(isSubcon)
+      
       setFormData({
         plaka: order.plaka || '',
         musteri: order.musteri || '',
@@ -73,6 +80,9 @@ export default function EditOrder() {
         returnLoadRate: ((order.return_load_rate || 0) * 100).toString(),
         tahminiGun: order.tahmini_gun?.toString() || '1',
         status: order.status || 'Bekliyor',
+        subcontractorCompany: order.subcontractor_company || '',
+        subcontractorVehicle: order.subcontractor_vehicle || '',
+        subcontractorCost: order.subcontractor_cost?.toString() || '',
       })
       
       setTripType(order.donus_km > 0 ? 'roundtrip' : 'oneway')
@@ -127,7 +137,15 @@ export default function EditOrder() {
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.plaka) newErrors.plaka = 'Araç seçimi zorunludur'
+    if (isSubcontractor) {
+      if (!formData.subcontractorCompany.trim()) newErrors.subcontractorCompany = 'Taşeron firma adı zorunludur'
+      if (!formData.subcontractorCost.trim() || Number(formData.subcontractorCost) <= 0) {
+        newErrors.subcontractorCost = 'Geçerli bir taşeron maliyeti giriniz'
+      }
+    } else {
+      if (!formData.plaka) newErrors.plaka = 'Araç seçimi zorunludur'
+    }
+    
     if (!formData.musteri.trim()) newErrors.musteri = 'Müşteri adı zorunludur'
     if (!formData.telefon.trim()) newErrors.telefon = 'Telefon numarası zorunludur'
     if (!formData.nereden.trim()) newErrors.nereden = 'Nereden bilgisi zorunludur'
@@ -153,8 +171,20 @@ export default function EditOrder() {
 
     try {
       setSaving(true)
+      
+      // Taşeron ise kar/zarar hesaplama
+      let karZarar = 0
+      let karZararYuzde = 0
+      
+      if (isSubcontractor) {
+        karZarar = Number(formData.baslangicFiyati) - Number(formData.subcontractorCost)
+        karZararYuzde = Number(formData.baslangicFiyati) > 0 
+          ? (karZarar / Number(formData.baslangicFiyati)) * 100 
+          : 0
+      }
+      
       await window.electronAPI.db.updateOrder(Number(id), {
-        plaka: formData.plaka.trim(),
+        plaka: isSubcontractor ? (formData.subcontractorCompany + ' (Taşeron)') : formData.plaka.trim(),
         musteri: formData.musteri.trim(),
         telefon: formData.telefon.trim(),
         nereden: formData.nereden.trim(),
@@ -164,19 +194,23 @@ export default function EditOrder() {
         gidisKm: Number(formData.gidisKm),
         donusKm: Number(formData.donusKm) || 0,
         returnLoadRate: Number(formData.returnLoadRate) / 100,
-        etkinKm: analysis?.etkinKm || 0,
+        etkinKm: isSubcontractor ? 0 : (analysis?.etkinKm || 0),
         tahminiGun: Number(formData.tahminiGun) || 1,
-        yakitLitre: analysis?.costBreakdown?.yakitLitre || 0,
-        yakitMaliyet: analysis?.costBreakdown?.yakitMaliyet || 0,
-        surucuMaliyet: analysis?.costBreakdown?.surucuMaliyet || 0,
-        yemekMaliyet: analysis?.costBreakdown?.yemekMaliyet || 0,
-        hgsMaliyet: analysis?.costBreakdown?.hgsMaliyet || 0,
-        bakimMaliyet: analysis?.costBreakdown?.toplamBakimMaliyet || 0,
-        toplamMaliyet: analysis?.toplamMaliyet || 0,
-        onerilenFiyat: analysis?.fiyatKdvli || 0,
-        karZarar: analysis?.karZarar || 0,
-        karZararYuzde: analysis?.karZararYuzde || 0,
+        yakitLitre: isSubcontractor ? 0 : (analysis?.costBreakdown?.yakitLitre || 0),
+        yakitMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.yakitMaliyet || 0),
+        surucuMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.surucuMaliyet || 0),
+        yemekMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.yemekMaliyet || 0),
+        hgsMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.hgsMaliyet || 0),
+        bakimMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.toplamBakimMaliyet || 0),
+        toplamMaliyet: isSubcontractor ? Number(formData.subcontractorCost) : (analysis?.toplamMaliyet || 0),
+        onerilenFiyat: isSubcontractor ? 0 : (analysis?.fiyatKdvli || 0),
+        karZarar: isSubcontractor ? karZarar : (analysis?.karZarar || 0),
+        karZararYuzde: isSubcontractor ? karZararYuzde : (analysis?.karZararYuzde || 0),
         status: formData.status,
+        isSubcontractor: isSubcontractor,
+        subcontractorCompany: isSubcontractor ? formData.subcontractorCompany.trim() : null,
+        subcontractorVehicle: isSubcontractor ? formData.subcontractorVehicle.trim() : null,
+        subcontractorCost: isSubcontractor ? Number(formData.subcontractorCost) : 0,
       })
 
       showToast('✅ Sipariş başarıyla güncellendi!', 'success')
@@ -209,22 +243,62 @@ export default function EditOrder() {
 
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Araç */}
-          <Select
-            label="Araç"
-            name="plaka"
-            value={formData.plaka}
-            onChange={handleChange}
-            error={errors.plaka}
-            required
-            options={[
-              { value: '', label: 'Araç Seçiniz...' },
-              ...vehicles.map(v => ({
-                value: v.plaka,
-                label: v.plaka
-              }))
-            ]}
-          />
+          {/* Taşeron Bilgisi */}
+          {isSubcontractor && (
+            <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 159, 10, 0.12)', border: '0.5px solid rgba(255, 159, 10, 0.3)' }}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(255, 159, 10, 0.2)' }}>
+                  <svg className="w-5 h-5" style={{ color: '#FF9F0A' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="font-semibold text-white">Taşeron Sipariş</p>
+              </div>
+              <Input
+                label="Taşeron Firma Adı *"
+                value={formData.subcontractorCompany}
+                onChange={(e) => setFormData(prev => ({ ...prev, subcontractorCompany: e.target.value }))}
+                error={errors.subcontractorCompany}
+                placeholder="Örn: ABC Lojistik"
+                className="mb-3"
+              />
+              <Input
+                label="Araç/Plaka Bilgisi"
+                value={formData.subcontractorVehicle}
+                onChange={(e) => setFormData(prev => ({ ...prev, subcontractorVehicle: e.target.value }))}
+                placeholder="Örn: 34 ABC 123"
+                className="mb-3"
+              />
+              <Input
+                label="Taşeron Maliyeti (₺) *"
+                type="number"
+                step="0.01"
+                value={formData.subcontractorCost}
+                onChange={(e) => setFormData(prev => ({ ...prev, subcontractorCost: e.target.value }))}
+                error={errors.subcontractorCost}
+                placeholder="Taşeron firmaya ödenecek tutar"
+              />
+            </div>
+          )}
+          
+          {/* Araç - Sadece taşeron değilse göster */}
+          {!isSubcontractor && (
+            <Select
+              label="Araç"
+              name="plaka"
+              value={formData.plaka}
+              onChange={handleChange}
+              error={errors.plaka}
+              required
+              options={[
+                { value: '', label: 'Araç Seçiniz...' },
+                ...vehicles.map(v => ({
+                  value: v.plaka,
+                  label: v.plaka
+                }))
+              ]}
+            />
+          )}
 
           {/* Müşteri */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
