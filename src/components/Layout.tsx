@@ -10,7 +10,8 @@ import {
   BarChart3,
   Menu,
   Sparkles,
-  Container
+  Container,
+  Navigation
 } from 'lucide-react'
 
 interface LayoutProps {
@@ -20,6 +21,7 @@ interface LayoutProps {
 const navigation = [
   { name: 'Ana Sayfa', href: '/', icon: Home, badge: null },
   { name: 'Siparişler', href: '/orders', icon: Package, badge: null },
+  { name: 'Aktif Araçlar', href: '/active-vehicles', icon: Navigation, badge: null },
   { name: 'Araçlar', href: '/vehicles', icon: Truck, badge: null },
   { name: 'Dorseler', href: '/trailers', icon: Container, badge: null },
   { name: 'Güzergahlar', href: '/routes', icon: MapPin, badge: null },
@@ -80,7 +82,8 @@ export default function Layout({ children }: LayoutProps) {
             {navigation.map((item, index) => {
               const Icon = item.icon
               const isActive = location.pathname === item.href ||
-                (item.href === '/orders' && location.pathname.startsWith('/orders'))
+                (item.href === '/orders' && location.pathname.startsWith('/orders')) ||
+                (item.href === '/active-vehicles' && location.pathname === '/active-vehicles')
               
               return (
                 <Link key={item.name} to={item.href}>
@@ -193,7 +196,8 @@ export default function Layout({ children }: LayoutProps) {
               >
                 {navigation.find(item => 
                   location.pathname === item.href ||
-                  (item.href === '/orders' && location.pathname.startsWith('/orders'))
+                  (item.href === '/orders' && location.pathname.startsWith('/orders')) ||
+                  (item.href === '/active-vehicles' && location.pathname === '/active-vehicles')
                 )?.name || 'Seymen Transport'}
               </motion.h2>
             </div>

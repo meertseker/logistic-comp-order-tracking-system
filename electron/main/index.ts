@@ -36,7 +36,10 @@ const createWindow = () => {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
     mainWindow.webContents.openDevTools()
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../../dist/index.html'))
+    const indexPath = path.join(__dirname, '../../dist/index.html')
+    console.log('Loading app from:', indexPath)
+    mainWindow.loadFile(indexPath)
+    mainWindow.webContents.openDevTools() // Dev tools'u production'da da aç
   }
 
   mainWindow.once('ready-to-show', () => {
@@ -1122,28 +1125,45 @@ ipcMain.handle('db:getTrailer', async (_, id) => {
 ipcMain.handle('db:createTrailer', async (_, trailerData) => {
   const db = getDB()
   try {
+    console.log('🚛 Creating trailer with data:', trailerData)
+    
+    // Hacim hesapla (cm³ to m³)
+    const hacim_m3 = (trailerData.enCm * trailerData.boyCm * trailerData.yukseklikCm) / 1000000
+    console.log('📊 Calculated hacim_m3:', hacim_m3)
+    
+    // Önce tablo yapısını kontrol et
+    const tableInfo = db.prepare("PRAGMA table_info(trailers)").all()
+    console.log('📋 Trailers table columns:', tableInfo.map((col: any) => col.name).join(', '))
+    
     const stmt = db.prepare(`
       INSERT INTO trailers (
-        dorse_no, musteri_adi, kapasite, kapasite_birimi, mevcut_yuk, 
-        lokasyon, durum, notlar, aktif, created_at, updated_at
+        dorse_no, en_cm, boy_cm, yukseklik_cm, hacim_m3,
+        max_agirlik_ton, mevcut_agirlik_ton, mevcut_hacim_m3,
+        durum, lokasyon, arac_plakasi, tip, notlar,
+        aktif, created_at, updated_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
+      VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
     `)
     
     const result = stmt.run(
       trailerData.dorseNo,
-      trailerData.musteriAdi,
-      trailerData.kapasite || 0,
-      trailerData.kapasiteBirimi || 'ton',
-      trailerData.mevcutYuk || 0,
-      trailerData.lokasyon || '',
+      trailerData.enCm,
+      trailerData.boyCm,
+      trailerData.yukseklikCm,
+      hacim_m3,
+      trailerData.maxAgirlikTon || 0,
       trailerData.durum || 'Boş',
+      trailerData.lokasyon || '',
+      trailerData.aracPlakasi || '',
+      trailerData.tip || 'Kapalı',
       trailerData.notlar || ''
     )
     
+    console.log('✅ Trailer created successfully with ID:', result.lastInsertRowid)
     return { id: result.lastInsertRowid, success: true }
   } catch (error) {
-    console.error('Error creating trailer:', error)
+    console.error('❌ Error creating trailer:', error)
+    console.error('Stack trace:', (error as Error).stack)
     throw error
   }
 })
@@ -1151,22 +1171,27 @@ ipcMain.handle('db:createTrailer', async (_, trailerData) => {
 ipcMain.handle('db:updateTrailer', async (_, id, trailerData) => {
   const db = getDB()
   try {
+    // Hacim hesapla (cm³ to m³)
+    const hacim_m3 = (trailerData.enCm * trailerData.boyCm * trailerData.yukseklikCm) / 1000000
+    
     const stmt = db.prepare(`
       UPDATE trailers 
-      SET dorse_no = ?, musteri_adi = ?, kapasite = ?, kapasite_birimi = ?,
-          mevcut_yuk = ?, lokasyon = ?, durum = ?, notlar = ?,
+      SET dorse_no = ?, en_cm = ?, boy_cm = ?, yukseklik_cm = ?, hacim_m3 = ?,
+          max_agirlik_ton = ?, lokasyon = ?, arac_plakasi = ?, tip = ?, notlar = ?,
           updated_at = datetime('now')
       WHERE id = ?
     `)
     
     stmt.run(
       trailerData.dorseNo,
-      trailerData.musteriAdi,
-      trailerData.kapasite || 0,
-      trailerData.kapasiteBirimi || 'ton',
-      trailerData.mevcutYuk || 0,
+      trailerData.enCm,
+      trailerData.boyCm,
+      trailerData.yukseklikCm,
+      hacim_m3,
+      trailerData.maxAgirlikTon || 0,
       trailerData.lokasyon || '',
-      trailerData.durum || 'Boş',
+      trailerData.aracPlakasi || '',
+      trailerData.tip || 'Kapalı',
       trailerData.notlar || '',
       id
     )
@@ -1187,6 +1212,170 @@ ipcMain.handle('db:deleteTrailer', async (_, id) => {
     return { success: true }
   } catch (error) {
     console.error('Error deleting trailer:', error)
+    throw error
+  }
+})
+
+// ============================================
+// TRAILER LOADS (Dorse Yükleri) OPERATIONS
+// ============================================
+
+ipcMain.handle('db:getTrailerLoads', async (_, trailerId) => {
+  const db = getDB()
+  try {
+    const loads = db.prepare('SELECT * FROM trailer_loads WHERE trailer_id = ? ORDER BY yukleme_sirasi, yukleme_tarihi').all(trailerId)
+    return loads
+  } catch (error) {
+    console.error('Error getting trailer loads:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('db:addTrailerLoad', async (_, loadData) => {
+  const db = getDB()
+  try {
+    // Hacim hesapla (cm³ to m³)
+    const hacim_m3 = (loadData.enCm * loadData.boyCm * loadData.yukseklikCm) / 1000000
+    
+    const stmt = db.prepare(`
+      INSERT INTO trailer_loads (
+        trailer_id, musteri_adi, yuk_aciklamasi,
+        en_cm, boy_cm, yukseklik_cm, hacim_m3,
+        agirlik_ton, yuk_tipi, bosaltma_noktasi, notlar
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+    
+    const result = stmt.run(
+      loadData.trailerId,
+      loadData.musteriAdi,
+      loadData.yukAciklamasi || '',
+      loadData.enCm,
+      loadData.boyCm,
+      loadData.yukseklikCm,
+      hacim_m3,
+      loadData.agirlikTon || 0,
+      loadData.yukTipi || 'Normal',
+      loadData.bosaltmaNoktasi || '',
+      loadData.notlar || ''
+    )
+    
+    // Dorse'nin mevcut hacim ve ağırlığını güncelle
+    // Önce mevcut değerleri al
+    const trailer = db.prepare('SELECT * FROM trailers WHERE id = ?').get(loadData.trailerId)
+    if (trailer) {
+      const yeniHacim = (trailer.mevcut_hacim_m3 || 0) + hacim_m3
+      const yeniAgirlik = (trailer.mevcut_agirlik_ton || 0) + (loadData.agirlikTon || 0)
+      const toplamHacim = trailer.hacim_m3 || 0
+      
+      let yeniDurum = 'Boş'
+      if (yeniHacim >= toplamHacim * 0.9) {
+        yeniDurum = 'Dolu'
+      } else if (yeniHacim > 0) {
+        yeniDurum = 'Kısmi Dolu'
+      }
+      
+      db.prepare(`
+        UPDATE trailers 
+        SET mevcut_hacim_m3 = ?,
+            mevcut_agirlik_ton = ?,
+            durum = ?,
+            updated_at = datetime('now')
+        WHERE id = ?
+      `).run(yeniHacim, yeniAgirlik, yeniDurum, loadData.trailerId)
+    }
+    
+    return { id: result.lastInsertRowid, success: true }
+  } catch (error) {
+    console.error('Error adding trailer load:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('db:deleteTrailerLoad', async (_, id) => {
+  const db = getDB()
+  try {
+    // Önce yük bilgisini al
+    const load = db.prepare('SELECT * FROM trailer_loads WHERE id = ?').get(id)
+    
+    if (load) {
+      // Yükü sil
+      db.prepare('DELETE FROM trailer_loads WHERE id = ?').run(id)
+      
+      // Dorse'nin mevcut hacim ve ağırlığını güncelle
+      const trailer = db.prepare('SELECT * FROM trailers WHERE id = ?').get(load.trailer_id)
+      if (trailer) {
+        const yeniHacim = Math.max(0, (trailer.mevcut_hacim_m3 || 0) - load.hacim_m3)
+        const yeniAgirlik = Math.max(0, (trailer.mevcut_agirlik_ton || 0) - load.agirlik_ton)
+        const toplamHacim = trailer.hacim_m3 || 0
+        
+        let yeniDurum = 'Boş'
+        if (yeniHacim <= 0) {
+          yeniDurum = 'Boş'
+        } else if (yeniHacim >= toplamHacim * 0.9) {
+          yeniDurum = 'Dolu'
+        } else {
+          yeniDurum = 'Kısmi Dolu'
+        }
+        
+        db.prepare(`
+          UPDATE trailers 
+          SET mevcut_hacim_m3 = ?,
+              mevcut_agirlik_ton = ?,
+              durum = ?,
+              updated_at = datetime('now')
+          WHERE id = ?
+        `).run(yeniHacim, yeniAgirlik, yeniDurum, load.trailer_id)
+      }
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting trailer load:', error)
+    throw error
+  }
+})
+
+ipcMain.handle('db:checkTrailerCapacity', async (_, trailerId, enCm, boyCm, yukseklikCm, agirlikTon) => {
+  const db = getDB()
+  try {
+    const trailer = db.prepare('SELECT * FROM trailers WHERE id = ?').get(trailerId)
+    
+    if (!trailer) {
+      return { fits: false, message: 'Dorse bulunamadı' }
+    }
+    
+    // Yeni yükün hacmini hesapla (m³)
+    const yeniHacim = (enCm * boyCm * yukseklikCm) / 1000000
+    
+    // Kontroller
+    const kalanHacim = trailer.hacim_m3 - trailer.mevcut_hacim_m3
+    const kalanAgirlik = trailer.max_agirlik_ton - trailer.mevcut_agirlik_ton
+    
+    const hacimSigar = yeniHacim <= kalanHacim
+    const agirlikSigar = agirlikTon <= kalanAgirlik
+    
+    const yuzdeHacimKullanim = ((trailer.mevcut_hacim_m3 + yeniHacim) / trailer.hacim_m3) * 100
+    const yuzdeAgirlikKullanim = ((trailer.mevcut_agirlik_ton + agirlikTon) / trailer.max_agirlik_ton) * 100
+    
+    return {
+      fits: hacimSigar && agirlikSigar,
+      hacimSigar,
+      agirlikSigar,
+      kalanHacim,
+      kalanAgirlik,
+      yuzdeHacimKullanim: Math.min(100, yuzdeHacimKullanim),
+      yuzdeAgirlikKullanim: Math.min(100, yuzdeAgirlikKullanim),
+      trailer: {
+        dorseNo: trailer.dorse_no,
+        toplamHacim: trailer.hacim_m3,
+        toplamAgirlik: trailer.max_agirlik_ton,
+        mevcutHacim: trailer.mevcut_hacim_m3,
+        mevcutAgirlik: trailer.mevcut_agirlik_ton
+      }
+    }
+  } catch (error) {
+    console.error('Error checking trailer capacity:', error)
     throw error
   }
 })

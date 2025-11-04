@@ -32,6 +32,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getRoute: (nereden: string, nereye: string) => ipcRenderer.invoke('db:getRoute', nereden, nereye),
     saveRoute: (routeData: any) => ipcRenderer.invoke('db:saveRoute', routeData),
     deleteRoute: (id: number) => ipcRenderer.invoke('db:deleteRoute', id),
+    
+    // Trailer operations
+    getTrailers: () => ipcRenderer.invoke('db:getTrailers'),
+    getTrailer: (id: number) => ipcRenderer.invoke('db:getTrailer', id),
+    createTrailer: (trailerData: any) => ipcRenderer.invoke('db:createTrailer', trailerData),
+    updateTrailer: (id: number, trailerData: any) => ipcRenderer.invoke('db:updateTrailer', id, trailerData),
+    deleteTrailer: (id: number) => ipcRenderer.invoke('db:deleteTrailer', id),
+    
+    // Trailer Loads
+    getTrailerLoads: (trailerId: number) => ipcRenderer.invoke('db:getTrailerLoads', trailerId),
+    addTrailerLoad: (loadData: any) => ipcRenderer.invoke('db:addTrailerLoad', loadData),
+    deleteTrailerLoad: (id: number) => ipcRenderer.invoke('db:deleteTrailerLoad', id),
+    checkTrailerCapacity: (trailerId: number, enCm: number, boyCm: number, yukseklikCm: number, agirlikTon: number) => 
+      ipcRenderer.invoke('db:checkTrailerCapacity', trailerId, enCm, boyCm, yukseklikCm, agirlikTon),
   },
   
   // Cost calculation operations

@@ -231,12 +231,10 @@ export default function OrderDetail() {
         <AlertCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#FF453A' }} />
         <p className="text-xl font-semibold mb-2" style={{ color: '#FFFFFF' }}>Sipariş bulunamadı</p>
         <p className="mb-6" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Bu sipariş silinmiş veya mevcut değil</p>
-        <Link to="/orders">
-          <Button>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Siparişlere Dön
-          </Button>
-        </Link>
+        <Button onClick={() => navigate(-1)}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Geri
+        </Button>
       </motion.div>
     )
   }
@@ -250,20 +248,19 @@ export default function OrderDetail() {
         className="flex items-center justify-between"
       >
         <div className="flex items-center gap-4">
-          <Link to="/orders">
-            <motion.button
-              whileHover={{ scale: 1.05, x: -4 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-xl"
-              style={{ 
-                backgroundColor: 'rgba(10, 132, 255, 0.15)', 
-                color: '#0A84FF',
-                border: '0.5px solid rgba(10, 132, 255, 0.3)'
-              }}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </motion.button>
-          </Link>
+          <motion.button
+            onClick={() => navigate(-1)}
+            whileHover={{ scale: 1.05, x: -4 }}
+            whileTap={{ scale: 0.95 }}
+            className="p-2 rounded-xl"
+            style={{ 
+              backgroundColor: 'rgba(10, 132, 255, 0.15)', 
+              color: '#0A84FF',
+              border: '0.5px solid rgba(10, 132, 255, 0.3)'
+            }}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </motion.button>
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-4xl font-bold" style={{ color: '#FFFFFF' }}>

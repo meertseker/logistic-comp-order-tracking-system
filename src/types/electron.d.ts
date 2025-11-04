@@ -27,6 +27,12 @@ export interface ElectronAPI {
     createTrailer: (trailerData: any) => Promise<{ id: number; success: boolean }>
     updateTrailer: (id: number, trailerData: any) => Promise<{ success: boolean }>
     deleteTrailer: (id: number) => Promise<{ success: boolean }>
+    
+    // Trailer Loads
+    getTrailerLoads: (trailerId: number) => Promise<any[]>
+    addTrailerLoad: (loadData: any) => Promise<{ id: number; success: boolean }>
+    deleteTrailerLoad: (id: number) => Promise<{ success: boolean }>
+    checkTrailerCapacity: (trailerId: number, enCm: number, boyCm: number, yukseklikCm: number, agirlikTon: number) => Promise<any>
   }
   
   cost: {

@@ -10,7 +10,8 @@ import Reports from './pages/Reports'
 import ChartsPage from './pages/ChartsPage'
 import VehiclesProfessional from './pages/VehiclesProfessional'
 import RoutesPage from './pages/Routes'
-import Trailers from './pages/Trailers'
+import TrailersPro from './pages/TrailersPro'
+import ActiveVehicles from './pages/ActiveVehicles'
 import { ToastProvider } from './context/ToastContext'
 import LicenseActivation from './components/LicenseActivation'
 
@@ -66,7 +67,8 @@ function App() {
             <Route path="/reports" element={<Reports />} />
             <Route path="/charts" element={<ChartsPage />} />
             <Route path="/vehicles" element={<VehiclesProfessional />} />
-            <Route path="/trailers" element={<Trailers />} />
+            <Route path="/active-vehicles" element={<ActiveVehicles />} />
+            <Route path="/trailers" element={<TrailersPro />} />
             <Route path="/routes" element={<RoutesPage />} />
           </Routes>
         </Layout>

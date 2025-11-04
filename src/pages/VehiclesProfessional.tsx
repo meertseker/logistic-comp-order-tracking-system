@@ -309,7 +309,7 @@ export default function VehiclesProfessional() {
             <p className="text-gray-500 text-lg mb-4">Henüz araç eklenmemiş</p>
             <p className="text-sm text-gray-600 mb-4">İlk aracınızı ekleyerek başlayın</p>
             <Button onClick={handleNew}>
-              <PlusIcon className="w-5 h-5 mr-2" />
+              <Plus className="w-5 h-5 mr-2" />
               İlk Aracı Ekle
             </Button>
           </div>

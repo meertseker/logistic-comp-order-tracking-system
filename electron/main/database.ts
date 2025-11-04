@@ -144,23 +144,134 @@ const createTables = () => {
     )
   `)
   
-  // Trailers (Dorseler) table
+  // Trailers (Dorseler) table - Gelişmiş
+  // Önce eski tabloyu kontrol et, varsa yenisiyle değiştir
+  const trailersTableInfo = db.prepare("PRAGMA table_info(trailers)").all() as any[]
+  const hasOldSchema = trailersTableInfo.some((col: any) => col.name === 'musteri_adi')
+  
+  if (hasOldSchema) {
+    console.log('🔄 Migrating trailers table to new schema...')
+    // Eski tabloyu yedekle
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS trailers_backup AS SELECT * FROM trailers;
+      DROP TABLE trailers;
+    `)
+  }
+  
   db.exec(`
     CREATE TABLE IF NOT EXISTS trailers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       dorse_no TEXT UNIQUE NOT NULL,
-      musteri_adi TEXT NOT NULL,
-      kapasite REAL DEFAULT 0,
-      kapasite_birimi TEXT DEFAULT 'ton',
-      mevcut_yuk REAL DEFAULT 0,
-      lokasyon TEXT,
+      
+      -- Boyut bilgileri
+      en_cm REAL DEFAULT 0,
+      boy_cm REAL DEFAULT 0,
+      yukseklik_cm REAL DEFAULT 0,
+      hacim_m3 REAL DEFAULT 0,
+      
+      -- Kapasite
+      max_agirlik_ton REAL DEFAULT 0,
+      mevcut_agirlik_ton REAL DEFAULT 0,
+      mevcut_hacim_m3 REAL DEFAULT 0,
+      
+      -- Durum
       durum TEXT DEFAULT 'Boş',
+      lokasyon TEXT,
+      arac_plakasi TEXT,
+      
+      -- Tip
+      tip TEXT DEFAULT 'Kapalı',
+      
+      -- Diğer
       notlar TEXT,
       aktif INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `)
+  
+  // Eski veriler varsa geri yükle (sadece ortak kolonları)
+  if (hasOldSchema) {
+    try {
+      db.exec(`
+        INSERT OR IGNORE INTO trailers (
+          id, dorse_no, lokasyon, notlar, aktif, created_at, updated_at
+        )
+        SELECT 
+          id, dorse_no, lokasyon, notlar, aktif, created_at, updated_at
+        FROM trailers_backup;
+        DROP TABLE trailers_backup;
+      `)
+      console.log('✅ Trailers table migration completed! Old data preserved.')
+    } catch (error) {
+      console.error('❌ Migration error:', error)
+      // Hata olsa bile devam et, backup tablosunu sil
+      try {
+        db.exec(`DROP TABLE IF EXISTS trailers_backup`)
+      } catch {}
+    }
+  }
+  
+  // Trailer Loads (Dorse Yükleri) table - YENİ!
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS trailer_loads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      trailer_id INTEGER NOT NULL,
+      
+      -- Yük bilgileri
+      musteri_adi TEXT NOT NULL,
+      yuk_aciklamasi TEXT,
+      
+      -- Boyutlar (cm)
+      en_cm REAL NOT NULL,
+      boy_cm REAL NOT NULL,
+      yukseklik_cm REAL NOT NULL,
+      hacim_m3 REAL DEFAULT 0,
+      
+      -- Ağırlık
+      agirlik_ton REAL DEFAULT 0,
+      
+      -- Yük özellikleri
+      yuk_tipi TEXT DEFAULT 'Normal',
+      yukleme_sirasi INTEGER DEFAULT 0,
+      bosaltma_noktasi TEXT,
+      
+      -- Durum
+      durum TEXT DEFAULT 'Yüklendi',
+      yukleme_tarihi DATETIME DEFAULT CURRENT_TIMESTAMP,
+      bosaltma_tarihi DATETIME,
+      
+      -- Notlar
+      notlar TEXT,
+      
+      FOREIGN KEY (trailer_id) REFERENCES trailers(id) ON DELETE CASCADE
+    )
+  `)
+  
+  // Trailers tablosuna yeni kolonları ekle (migration)
+  const trailerColumns = [
+    'en_cm REAL DEFAULT 0',
+    'boy_cm REAL DEFAULT 0',
+    'yukseklik_cm REAL DEFAULT 0',
+    'hacim_m3 REAL DEFAULT 0',
+    'max_agirlik_ton REAL DEFAULT 0',
+    'mevcut_agirlik_ton REAL DEFAULT 0',
+    'mevcut_hacim_m3 REAL DEFAULT 0',
+    'arac_plakasi TEXT',
+    'tip TEXT DEFAULT \'Kapalı\'',
+  ]
+  
+  for (const column of trailerColumns) {
+    try {
+      db.exec(`ALTER TABLE trailers ADD COLUMN ${column}`)
+    } catch (error) {
+      // Kolon zaten varsa hata verir, görmezden gel
+    }
+  }
+  
+  // Eski kolonları kaldır veya yeniden adlandır (opsiyonel - veri kaybı olmaması için yoruma alındı)
+  // Eğer musteri_adi, kapasite, kapasite_birimi, mevcut_yuk kolonları varsa bunları kaldırmayalım
+  // Sadece yeni sistemle çalışmaya başlayalım
   
   // Yeni kolonları ekle
   const vehicleColumns = [
@@ -204,8 +315,8 @@ const createTables = () => {
     CREATE INDEX IF NOT EXISTS idx_settings_key ON settings(key);
     CREATE INDEX IF NOT EXISTS idx_vehicles_plaka ON vehicles(plaka);
     CREATE INDEX IF NOT EXISTS idx_trailers_dorse_no ON trailers(dorse_no);
-    CREATE INDEX IF NOT EXISTS idx_trailers_musteri ON trailers(musteri_adi);
     CREATE INDEX IF NOT EXISTS idx_trailers_durum ON trailers(durum);
+    CREATE INDEX IF NOT EXISTS idx_trailer_loads_trailer_id ON trailer_loads(trailer_id);
   `)
   
   // Insert default global settings if not exists

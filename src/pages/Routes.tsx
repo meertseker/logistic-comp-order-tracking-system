@@ -234,7 +234,7 @@ export default function Routes() {
           <div className="text-center py-12">
             <p className="text-gray-500 mb-4">Henüz güzergah eklenmemiş</p>
             <Button onClick={handleNew}>
-              <PlusIcon className="w-5 h-5 mr-2" />
+              <Plus className="w-5 h-5 mr-2" />
               İlk Güzergahı Ekle
             </Button>
           </div>
