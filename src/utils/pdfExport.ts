@@ -2,7 +2,192 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { formatCurrency } from './formatters'
 
+/**
+ * Türkçe karakterleri PDF uyumlu hale getirir
+ */
+function sanitizeText(text: string): string {
+  if (!text) return ''
+  return String(text)
+    .replace(/İ/g, 'I')
+    .replace(/ı/g, 'i')
+    .replace(/Ğ/g, 'G')
+    .replace(/ğ/g, 'g')
+    .replace(/Ü/g, 'U')
+    .replace(/ü/g, 'u')
+    .replace(/Ş/g, 'S')
+    .replace(/ş/g, 's')
+    .replace(/Ö/g, 'O')
+    .replace(/ö/g, 'o')
+    .replace(/Ç/g, 'C')
+    .replace(/ç/g, 'c')
+    .replace(/₺/g, 'TL')
+}
+
+/**
+ * Currency değeri PDF için formatla
+ */
+function formatCurrencyForPDF(value: number): string {
+  return new Intl.NumberFormat('tr-TR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value) + ' TL'
+}
+
+/**
+ * PDF oluşturma helper fonksiyonu - hem download hem mail için kullanılır
+ */
+function generateOrderPDF(order: any): jsPDF {
+  const doc = new jsPDF()
+  
+  // Türkçe karakter desteği için font ayarları
+  doc.setFont('helvetica')
+  
+  // Başlık
+  doc.setFontSize(20)
+  doc.text('SEYMEN TRANSPORT', 105, 20, { align: 'center' })
+  
+  doc.setFontSize(16)
+  doc.text(`Siparis #${order.id}`, 105, 30, { align: 'center' })
+  
+  doc.setFontSize(10)
+  doc.text(`Tarih: ${new Date(order.created_at).toLocaleDateString('tr-TR')}`, 105, 38, { align: 'center' })
+  doc.text(`Durum: ${sanitizeText(order.status)}`, 105, 44, { align: 'center' })
+  
+  // Müşteri Bilgileri
+  doc.setFontSize(12)
+  doc.text('Musteri Bilgileri', 20, 55)
+  
+  autoTable(doc, {
+    startY: 60,
+    head: [['Alan', 'Deger']],
+    body: [
+      ['Musteri', sanitizeText(order.musteri)],
+      ['Telefon', order.telefon],
+      order.is_subcontractor === 1 
+        ? ['Taseron Firma', sanitizeText(order.subcontractor_company || '-')]
+        : ['Plaka', sanitizeText(order.plaka)],
+    ],
+    theme: 'grid',
+    headStyles: { fillColor: [0, 74, 173] },
+    styles: { font: 'helvetica' },
+  })
+  
+  // Güzergah Bilgileri
+  const lastY = (doc as any).lastAutoTable.finalY || 85
+  doc.text('Guzergah Bilgileri', 20, lastY + 10)
+  
+  const routeBody = [
+    ['Nereden', sanitizeText(order.nereden)],
+    ['Nereye', sanitizeText(order.nereye)],
+    ['Gidis Mesafesi', (order.gidis_km || 0) + ' km'],
+  ]
+  
+  if (order.donus_km && order.donus_km > 0) {
+    routeBody.push(['Donus Mesafesi', order.donus_km + ' km'])
+  }
+  
+  routeBody.push(['Tahmini Sure', (order.tahmini_gun || 1) + ' gun'])
+  
+  if (order.yuk_aciklamasi) {
+    routeBody.push(['Yuk Aciklamasi', sanitizeText(order.yuk_aciklamasi)])
+  }
+  
+  autoTable(doc, {
+    startY: lastY + 15,
+    head: [['Alan', 'Deger']],
+    body: routeBody,
+    theme: 'grid',
+    headStyles: { fillColor: [0, 74, 173] },
+    styles: { font: 'helvetica' },
+  })
+  
+  // Finansal Bilgiler
+  const lastY2 = (doc as any).lastAutoTable.finalY || 140
+  doc.text('Finansal Bilgiler', 20, lastY2 + 10)
+  
+  const financialBody = [
+    ['Musteri Odemesi', formatCurrencyForPDF(order.baslangic_fiyati)],
+  ]
+  
+  if (!order.is_subcontractor && order.toplam_maliyet > 0) {
+    financialBody.push(
+      ['Tahmini Maliyet', formatCurrencyForPDF(order.toplam_maliyet || 0)],
+      ['Onerilen Fiyat', formatCurrencyForPDF(order.onerilen_fiyat || 0)]
+    )
+  }
+  
+  // Kar hesaplaması: Gelir - Maliyet (doğru hesap)
+  const gercekKar = order.baslangic_fiyati - (order.toplam_maliyet || 0)
+  const gercekKarYuzde = order.baslangic_fiyati > 0 ? (gercekKar / order.baslangic_fiyati) * 100 : 0
+  const karRenk = gercekKar >= 0 ? [16, 185, 129] : [239, 68, 68]
+  
+  autoTable(doc, {
+    startY: lastY2 + 15,
+    head: [['Aciklama', 'Tutar']],
+    body: financialBody,
+    theme: 'grid',
+    headStyles: { fillColor: [0, 74, 173] },
+    styles: { font: 'helvetica' },
+  })
+  
+  // Kar/Zarar özel satır
+  const lastY2b = (doc as any).lastAutoTable.finalY || 180
+  doc.setFillColor(karRenk[0], karRenk[1], karRenk[2])
+  doc.rect(20, lastY2b + 2, 170, 10, 'F')
+  doc.setTextColor(255, 255, 255)
+  doc.setFontSize(12)
+  doc.text('Kar/Zarar', 25, lastY2b + 8)
+  doc.text(
+    formatCurrencyForPDF(gercekKar) + ` (%${gercekKarYuzde.toFixed(1)})`,
+    185,
+    lastY2b + 8,
+    { align: 'right' }
+  )
+  doc.setTextColor(0, 0, 0)
+  
+  // Maliyet Dökümü
+  if (!order.is_subcontractor && order.toplam_maliyet > 0) {
+    const lastY3 = lastY2b + 20
+    doc.setFontSize(12)
+    doc.text('Maliyet Dokumu', 20, lastY3)
+    
+    autoTable(doc, {
+      startY: lastY3 + 5,
+      head: [['Kalem', 'Tutar']],
+      body: [
+        ['Yakit', formatCurrencyForPDF(order.yakit_maliyet || 0) + ` (${(order.yakit_litre || 0).toFixed(1)} lt)`],
+        ['Surucu', formatCurrencyForPDF(order.surucu_maliyet || 0) + ` (${order.tahmini_gun || 0} gun)`],
+        ['Yemek', formatCurrencyForPDF(order.yemek_maliyet || 0)],
+        ['HGS/Kopru', formatCurrencyForPDF(order.hgs_maliyet || 0)],
+        ['Bakim', formatCurrencyForPDF(order.bakim_maliyet || 0)],
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [0, 74, 173] },
+      styles: { font: 'helvetica' },
+    })
+  }
+  
+  // Footer
+  doc.setFontSize(8)
+  doc.setTextColor(128, 128, 128)
+  doc.text('Seymen Transport - Lojistik Yonetim Sistemi', 105, 285, { align: 'center' })
+  doc.text(`Olusturulma: ${new Date().toLocaleString('tr-TR')}`, 105, 290, { align: 'center' })
+  
+  return doc
+}
+
+/**
+ * Sipariş PDF'ini indir (kullanıcı için)
+ */
 export function exportOrderToPDF(order: any) {
+  const doc = generateOrderPDF(order)
+  doc.save(`siparis_${order.id}_${Date.now()}.pdf`)
+}
+
+/**
+ * MÜŞTERİ için sipariş PDF'i oluştur (Maliyetler GİZLİ)
+ */
+function generateCustomerOrderPDF(order: any): jsPDF {
   const doc = new jsPDF()
   
   // Başlık
@@ -14,124 +199,160 @@ export function exportOrderToPDF(order: any) {
   
   doc.setFontSize(10)
   doc.text(`Tarih: ${new Date(order.created_at).toLocaleDateString('tr-TR')}`, 105, 38, { align: 'center' })
+  doc.text(`Durum: ${order.status}`, 105, 44, { align: 'center' })
   
   // Müşteri Bilgileri
   doc.setFontSize(12)
-  doc.text('Müşteri Bilgileri', 20, 50)
+  doc.text('Müşteri Bilgileri', 20, 55)
   
   autoTable(doc, {
-    startY: 55,
+    startY: 60,
     head: [['Alan', 'Değer']],
     body: [
       ['Müşteri', order.musteri],
       ['Telefon', order.telefon],
-      ['Plaka', order.plaka],
+      order.is_subcontractor === 1 
+        ? ['Taşeron Firma', order.subcontractor_company || '-']
+        : ['Plaka', order.plaka],
     ],
     theme: 'grid',
+    headStyles: { fillColor: [0, 74, 173] },
   })
   
   // Güzergah Bilgileri
-  const lastY = (doc as any).lastAutoTable.finalY || 80
+  const lastY = (doc as any).lastAutoTable.finalY || 85
   doc.text('Güzergah Bilgileri', 20, lastY + 10)
+  
+  const routeBody = [
+    ['Nereden', order.nereden],
+    ['Nereye', order.nereye],
+    ['Mesafe', (order.gidis_km || 0) + ' km'],
+  ]
+  
+  if (order.donus_km && order.donus_km > 0) {
+    routeBody.push(['Dönüş Mesafesi', order.donus_km + ' km'])
+  }
+  
+  routeBody.push(['Tahmini Süre', (order.tahmini_gun || 1) + ' gün'])
+  
+  if (order.yuk_aciklamasi) {
+    routeBody.push(['Yük Açıklaması', order.yuk_aciklamasi])
+  }
   
   autoTable(doc, {
     startY: lastY + 15,
     head: [['Alan', 'Değer']],
-    body: [
-      ['Nereden', order.nereden],
-      ['Nereye', order.nereye],
-      ['Gidiş Km', order.gidis_km || '-'],
-      ['Dönüş Km', order.donus_km || '-'],
-      ['Etkin Km', order.etkin_km || '-'],
-    ],
+    body: routeBody,
     theme: 'grid',
+    headStyles: { fillColor: [0, 74, 173] },
   })
   
-  // Finansal Bilgiler
-  const lastY2 = (doc as any).lastAutoTable.finalY || 130
-  doc.text('Finansal Bilgiler', 20, lastY2 + 10)
+  // Fiyat Bilgisi (MÜŞTERİ İÇİN - Maliyet yok!)
+  const lastY2 = (doc as any).lastAutoTable.finalY || 140
+  doc.text('Fiyat Bilgisi', 20, lastY2 + 10)
   
   autoTable(doc, {
     startY: lastY2 + 15,
     head: [['Açıklama', 'Tutar']],
     body: [
-      ['Müşteri Ödemesi', formatCurrency(order.baslangic_fiyati)],
-      ['Tahmini Maliyet', formatCurrency(order.toplam_maliyet || 0)],
-      ['Kar/Zarar', formatCurrency(order.kar_zarar || 0)],
-      ['Durum', order.status],
+      ['Toplam Ücret', formatCurrency(order.baslangic_fiyati)],
     ],
     theme: 'grid',
+    headStyles: { fillColor: [22, 163, 74] },
   })
   
-  // Maliyet Dökümü
-  if (order.toplam_maliyet > 0) {
-    const lastY3 = (doc as any).lastAutoTable.finalY || 180
-    doc.text('Maliyet Dökümü', 20, lastY3 + 10)
-    
-    autoTable(doc, {
-      startY: lastY3 + 15,
-      head: [['Kalem', 'Tutar']],
-      body: [
-        ['Yakıt', formatCurrency(order.yakit_maliyet || 0) + ` (${(order.yakit_litre || 0).toFixed(1)} lt)`],
-        ['Sürücü', formatCurrency(order.surucu_maliyet || 0) + ` (${order.tahmini_gun || 0} gün)`],
-        ['Yemek', formatCurrency(order.yemek_maliyet || 0)],
-        ['HGS/Köprü', formatCurrency(order.hgs_maliyet || 0)],
-        ['Bakım', formatCurrency(order.bakim_maliyet || 0)],
-      ],
-      theme: 'striped',
-    })
-  }
+  // Yeşil vurgu kutusu
+  const lastY3 = (doc as any).lastAutoTable.finalY || 180
+  doc.setFillColor(22, 163, 74)
+  doc.rect(20, lastY3 + 5, 170, 12, 'F')
+  doc.setTextColor(255, 255, 255)
+  doc.setFontSize(14)
+  doc.text('Toplam Ücret:', 25, lastY3 + 13)
+  doc.text(formatCurrency(order.baslangic_fiyati), 185, lastY3 + 13, { align: 'right' })
+  doc.setTextColor(0, 0, 0)
   
   // Footer
   doc.setFontSize(8)
-  doc.text('Seymen Transport - Lojistik Yönetim Sistemi', 105, 285, { align: 'center' })
+  doc.setTextColor(128, 128, 128)
+  doc.text('Seymen Transport - Lojistik Yönetim Sistemi', 105, 280, { align: 'center' })
+  doc.text(`Oluşturulma: ${new Date().toLocaleString('tr-TR')}`, 105, 285, { align: 'center' })
+  doc.text('Herhangi bir sorunuz için lütfen bizimle iletişime geçiniz.', 105, 290, { align: 'center' })
   
-  // PDF'i indir
-  doc.save(`siparis_${order.id}_${Date.now()}.pdf`)
+  return doc
+}
+
+/**
+ * Sipariş PDF'ini temp dosya olarak kaydet (mail eki için)
+ * MÜŞTERİ VERSİYONU - Maliyetler gizli!
+ * Returns: PDF file path
+ */
+export async function generateOrderPDFForEmail(order: any): Promise<string> {
+  const doc = generateCustomerOrderPDF(order) // Müşteri versiyonu kullan!
+  const pdfBlob = doc.output('blob')
+  
+  // Blob'u ArrayBuffer'a çevir
+  const arrayBuffer = await pdfBlob.arrayBuffer()
+  const uint8Array = new Uint8Array(arrayBuffer)
+  
+  // Electron API ile temp klasöre kaydet
+  const tempPath = await window.electronAPI.app.getPath('temp')
+  const fileName = `siparis_${order.id}_${Date.now()}.pdf`
+  
+  // File save API kullan
+  const result = await window.electronAPI.fs.saveFile({
+    path: `${tempPath}/${fileName}`,
+    data: Array.from(uint8Array),
+  })
+  
+  return result.filePath
 }
 
 export function exportReportToPDF(report: any, year: number, month: number) {
   const doc = new jsPDF()
+  doc.setFont('helvetica')
   
   // Başlık
   doc.setFontSize(20)
   doc.text('SEYMEN TRANSPORT', 105, 20, { align: 'center' })
   
   doc.setFontSize(14)
-  doc.text(`Aylık Rapor - ${month}/${year}`, 105, 30, { align: 'center' })
+  doc.text(`Aylik Rapor - ${month}/${year}`, 105, 30, { align: 'center' })
   
   // Finansal Özet
   doc.setFontSize(12)
-  doc.text('Finansal Özet', 20, 45)
+  doc.text('Finansal Ozet', 20, 45)
   
   autoTable(doc, {
     startY: 50,
-    head: [['Açıklama', 'Tutar']],
+    head: [['Aciklama', 'Tutar']],
     body: [
-      ['Toplam Gelir', formatCurrency(report.earnings)],
-      ['Tahmini Maliyet', formatCurrency(report.estimatedCosts || 0)],
-      ['Ek Giderler', formatCurrency(report.expenses)],
-      ['Net Kar/Zarar', formatCurrency(report.netIncome)],
+      ['Toplam Gelir', formatCurrencyForPDF(report.earnings)],
+      ['Tahmini Maliyet', formatCurrencyForPDF(report.estimatedCosts || 0)],
+      ['Ek Giderler', formatCurrencyForPDF(report.expenses)],
+      ['Net Kar/Zarar', formatCurrencyForPDF(report.netIncome)],
     ],
     theme: 'grid',
     headStyles: { fillColor: [59, 130, 246] },
+    styles: { font: 'helvetica' },
   })
   
   // Araç Performansı
   if (report.byVehicle && report.byVehicle.length > 0) {
     const lastY = (doc as any).lastAutoTable.finalY || 100
-    doc.text('Araç Performansı', 20, lastY + 10)
+    doc.text('Arac Performansi', 20, lastY + 10)
     
     autoTable(doc, {
       startY: lastY + 15,
-      head: [['Plaka', 'Sipariş', 'Gelir', 'Kar/Zarar']],
+      head: [['Plaka', 'Siparis', 'Gelir', 'Kar/Zarar']],
       body: report.byVehicle.map((v: any) => [
-        v.plaka,
+        sanitizeText(v.plaka),
         v.count,
-        formatCurrency(v.total),
-        formatCurrency(v.totalProfit || 0),
+        formatCurrencyForPDF(v.total),
+        formatCurrencyForPDF(v.totalProfit || 0),
       ]),
       theme: 'striped',
+      styles: { font: 'helvetica' },
+      headStyles: { fillColor: [59, 130, 246] },
     })
   }
   
@@ -142,37 +363,41 @@ export function exportReportToPDF(report: any, year: number, month: number) {
     // Sayfa sonu kontrolü
     if (lastY2 > 250) {
       doc.addPage()
-      doc.text('Müşteri Performansı', 20, 20)
+      doc.text('Musteri Performansi', 20, 20)
       autoTable(doc, {
         startY: 25,
-        head: [['Müşteri', 'Sipariş', 'Gelir', 'Ortalama']],
+        head: [['Musteri', 'Siparis', 'Gelir', 'Ortalama']],
         body: report.byCustomer.slice(0, 10).map((c: any) => [
-          c.musteri,
+          sanitizeText(c.musteri),
           c.count,
-          formatCurrency(c.total),
-          formatCurrency(c.total / c.count),
+          formatCurrencyForPDF(c.total),
+          formatCurrencyForPDF(c.total / c.count),
         ]),
         theme: 'striped',
+        styles: { font: 'helvetica' },
+        headStyles: { fillColor: [59, 130, 246] },
       })
     } else {
-      doc.text('Müşteri Performansı', 20, lastY2 + 10)
+      doc.text('Musteri Performansi', 20, lastY2 + 10)
       autoTable(doc, {
         startY: lastY2 + 15,
-        head: [['Müşteri', 'Sipariş', 'Gelir', 'Ortalama']],
+        head: [['Musteri', 'Siparis', 'Gelir', 'Ortalama']],
         body: report.byCustomer.slice(0, 10).map((c: any) => [
-          c.musteri,
+          sanitizeText(c.musteri),
           c.count,
-          formatCurrency(c.total),
-          formatCurrency(c.total / c.count),
+          formatCurrencyForPDF(c.total),
+          formatCurrencyForPDF(c.total / c.count),
         ]),
         theme: 'striped',
+        styles: { font: 'helvetica' },
+        headStyles: { fillColor: [59, 130, 246] },
       })
     }
   }
   
   // Footer
   doc.setFontSize(8)
-  doc.text('Seymen Transport - Lojistik Yönetim Sistemi', 105, 285, { align: 'center' })
+  doc.text('Seymen Transport - Lojistik Yonetim Sistemi', 105, 285, { align: 'center' })
   
   // PDF'i indir
   doc.save(`rapor_${year}_${month}.pdf`)

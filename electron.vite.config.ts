@@ -1,14 +1,24 @@
 import { defineConfig } from 'vite'
+import { builtinModules } from 'module'
 
 export default defineConfig({
   build: {
     outDir: 'dist-electron',
     lib: {
       entry: 'electron/main/index.ts',
-      formats: ['es'],
+      formats: ['cjs'],
     },
     rollupOptions: {
-      external: ['electron', 'better-sqlite3', 'fs', 'path'],
+      external: [
+        'electron',
+        'better-sqlite3',
+        'nodemailer',
+        'html-to-text',
+        'node-machine-id',
+        'systeminformation',
+        ...builtinModules,
+        ...builtinModules.map(m => `node:${m}`),
+      ],
     },
   },
 })

@@ -22,6 +22,8 @@ async function buildElectron() {
           external: [
             'electron', 
             'better-sqlite3', 
+            'nodemailer',
+            'html-to-text',
             'fs', 
             'fs/promises',
             'path', 
@@ -33,7 +35,13 @@ async function buildElectron() {
             'util',
             'https',
             'http',
-            'net'
+            'net',
+            'dns',
+            'tls',
+            'stream',
+            'events',
+            'url',
+            'zlib'
           ],
           output: {
             format: 'cjs',

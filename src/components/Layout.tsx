@@ -11,7 +11,8 @@ import {
   Menu,
   Sparkles,
   Container,
-  Navigation
+  Navigation,
+  Settings as SettingsIcon
 } from 'lucide-react'
 
 interface LayoutProps {
@@ -27,6 +28,7 @@ const navigation = [
   { name: 'Güzergahlar', href: '/routes', icon: MapPin, badge: null },
   { name: 'Raporlar', href: '/reports', icon: FileText, badge: null },
   { name: 'Grafikler', href: '/charts', icon: BarChart3, badge: null },
+  { name: 'Ayarlar', href: '/settings', icon: SettingsIcon, badge: null },
 ]
 
 export default function Layout({ children }: LayoutProps) {

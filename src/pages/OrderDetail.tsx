@@ -16,7 +16,10 @@ import {
   AlertCircle,
   FileText,
   MapPin,
-  Truck
+  Truck,
+  Mail,
+  Send,
+  Loader
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -25,7 +28,8 @@ import Select from '../components/Select'
 import Modal from '../components/Modal'
 import StatusTimeline from '../components/StatusTimeline'
 import { formatCurrency, formatDate } from '../utils/formatters'
-import { exportOrderToPDF } from '../utils/pdfExport'
+import { exportOrderToPDF, generateOrderPDFForEmail } from '../utils/pdfExport'
+import { useToast } from '../context/ToastContext'
 
 const STATUS_OPTIONS = [
   { value: 'Bekliyor', label: 'Bekliyor' },
@@ -47,6 +51,7 @@ const EXPENSE_TYPES = [
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const [loading, setLoading] = useState(true)
   const [order, setOrder] = useState<any>(null)
   const [expenses, setExpenses] = useState<any[]>([])
@@ -56,13 +61,20 @@ export default function OrderDetail() {
   const [showExpenseModal, setShowExpenseModal] = useState(false)
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [editingStatus, setEditingStatus] = useState(false)
+  const [showMailModal, setShowMailModal] = useState(false)
   
   // Forms
   const [expenseForm, setExpenseForm] = useState({ type: 'Yakıt', amount: '', description: '' })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  
+  // Mail states
+  const [recipientEmail, setRecipientEmail] = useState('')
+  const [sendingMail, setSendingMail] = useState(false)
+  const [mailSettings, setMailSettings] = useState<any>(null)
 
   useEffect(() => {
     loadOrderDetails()
+    loadMailSettings()
   }, [id])
 
   const loadOrderDetails = async () => {
@@ -76,6 +88,80 @@ export default function OrderDetail() {
       console.error('Failed to load order:', error)
     } finally {
       setLoading(false)
+    }
+  }
+  
+  const loadMailSettings = async () => {
+    try {
+      const settings = await window.electronAPI.mail.getSettings()
+      setMailSettings(settings)
+    } catch (error) {
+      console.error('Failed to load mail settings:', error)
+    }
+  }
+  
+  const handleSendEmail = async () => {
+    console.log('🔍 Mail gönderme başladı:', { recipientEmail, order: order?.id })
+    
+    // Validation
+    if (!recipientEmail || !recipientEmail.includes('@')) {
+      console.log('❌ Mail validation hatası:', recipientEmail)
+      showToast('Lütfen geçerli bir mail adresi giriniz', 'error')
+      return
+    }
+    
+    try {
+      setSendingMail(true)
+      console.log('📄 PDF oluşturuluyor...')
+      showToast('PDF oluşturuluyor...', 'info')
+      
+      // PDF oluştur
+      const pdfPath = await generateOrderPDFForEmail(order)
+      console.log('✅ PDF oluşturuldu:', pdfPath)
+      
+      // Mail gönder
+      console.log('📧 Mail gönderiliyor...')
+      showToast('Mail gönderiliyor...', 'info')
+      const orderData = {
+        orderId: order.id,
+        musteri: order.musteri,
+        telefon: order.telefon,
+        nereden: order.nereden,
+        nereye: order.nereye,
+        yukAciklamasi: order.yuk_aciklamasi || '',
+        plaka: order.plaka,
+        baslangicFiyati: order.baslangic_fiyati,
+        toplamMaliyet: order.toplam_maliyet || 0,
+        onerilenFiyat: order.onerilen_fiyat || 0,
+        karZarar: order.kar_zarar || 0,
+        karZararYuzde: order.kar_zarar_yuzde || 0,
+        gidisKm: order.gidis_km || 0,
+        donusKm: order.donus_km || 0,
+        tahminiGun: order.tahmini_gun || 1,
+        status: order.status,
+        createdAt: order.created_at,
+        isSubcontractor: order.is_subcontractor === 1,
+        subcontractorCompany: order.subcontractor_company,
+      }
+      
+      const result = await window.electronAPI.mail.sendOrderEmail(
+        recipientEmail,
+        orderData,
+        pdfPath
+      )
+      
+      if (result.success) {
+        showToast('Mail başarıyla gönderildi! ✅', 'success')
+        setShowMailModal(false)
+        setRecipientEmail('')
+      } else {
+        showToast(`Mail gönderilemedi: ${result.message}`, 'error')
+      }
+    } catch (error: any) {
+      console.error('Failed to send email:', error)
+      showToast(`Hata: ${error.message}`, 'error')
+    } finally {
+      setSendingMail(false)
     }
   }
 
@@ -287,6 +373,17 @@ export default function OrderDetail() {
           </div>
         </div>
         <div className="flex gap-2">
+          {mailSettings && mailSettings.enabled === 1 && (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                onClick={() => setShowMailModal(true)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Mail Gönder
+              </Button>
+            </motion.div>
+          )}
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button variant="secondary" onClick={() => exportOrderToPDF(order)}>
               <Download className="w-4 h-4 mr-2" />
@@ -807,6 +904,86 @@ export default function OrderDetail() {
               Seçili: {selectedFile.name}
             </p>
           )}
+        </div>
+      </Modal>
+      
+      {/* Mail Modal */}
+      <Modal
+        isOpen={showMailModal}
+        onClose={() => {
+          setShowMailModal(false)
+          setRecipientEmail('')
+        }}
+        title="📧 Sipariş Maili Gönder"
+        footer={
+          <>
+            <Button 
+              variant="secondary" 
+              onClick={() => {
+                setShowMailModal(false)
+                setRecipientEmail('')
+              }}
+            >
+              İptal
+            </Button>
+            <Button 
+              onClick={() => {
+                console.log('🖱️ Gönder butonuna tıklandı. recipientEmail:', recipientEmail)
+                handleSendEmail()
+              }}
+              disabled={sendingMail || !recipientEmail}
+              className={!recipientEmail ? 'opacity-50 cursor-not-allowed' : ''}
+            >
+              {sendingMail ? (
+                <>
+                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                  Gönderiliyor...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  {recipientEmail ? 'Gönder' : 'Önce mail adresi giriniz'}
+                </>
+              )}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Alıcı Mail Adresi
+            </label>
+            <Input
+              type="email"
+              value={recipientEmail}
+              onChange={(e) => {
+                console.log('📧 Mail adresi değişti:', e.target.value)
+                setRecipientEmail(e.target.value)
+              }}
+              placeholder="musteri@example.com"
+              disabled={sendingMail}
+              autoFocus
+            />
+          </div>
+          
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-semibold text-blue-900 mb-2">📄 Mail İçeriği</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Sipariş detayları (HTML format)</li>
+              <li>• Müşteri ve güzergah bilgileri</li>
+              <li>• Finansal özet</li>
+              <li>• PDF eki (Sipariş belgesi)</li>
+            </ul>
+          </div>
+          
+          {!mailSettings || mailSettings.enabled !== 1 ? (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                ⚠️ Mail servisi henüz yapılandırılmamış. Lütfen <Link to="/settings" className="underline font-semibold">Ayarlar</Link> sayfasından SMTP ayarlarını yapın.
+              </p>
+            </div>
+          ) : null}
         </div>
       </Modal>
     </div>

@@ -333,6 +333,48 @@ const createTables = () => {
     `).run(key, value, description)
   })
   
+  // Mail Settings table - SMTP yapılandırması
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS mail_settings (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      smtp_host TEXT,
+      smtp_port INTEGER DEFAULT 587,
+      smtp_secure INTEGER DEFAULT 0,
+      smtp_user TEXT,
+      smtp_password TEXT,
+      from_email TEXT,
+      from_name TEXT DEFAULT 'Seymen Transport',
+      enabled INTEGER DEFAULT 0,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+  
+  // Mail Logs table - Gönderilen maillerin kaydı
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS mail_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      order_id INTEGER,
+      recipient_email TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      status TEXT NOT NULL,
+      error_message TEXT,
+      sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL
+    )
+  `)
+  
+  // İndexler ekle
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_mail_logs_order_id ON mail_logs(order_id);
+    CREATE INDEX IF NOT EXISTS idx_mail_logs_status ON mail_logs(status);
+  `)
+  
+  // Default mail settings ekle (boş, kullanıcı dolduracak)
+  db.prepare(`
+    INSERT OR IGNORE INTO mail_settings (id, enabled)
+    VALUES (1, 0)
+  `).run()
+  
   // Varsayılan güzergahları ekle
   const defaultRoutes = [
     ['İstanbul', 'Ankara', 450, 450, 150, 6, 'Ana güzergah'],

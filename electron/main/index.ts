@@ -9,6 +9,7 @@ import {
 } from './professional-cost-calculator'
 import { BackupManager } from './backup'
 import { getAdvancedLicenseManager } from './advanced-license-manager'
+import { getMailService } from './mail-service'
 
 // __dirname is available in CommonJS (esbuild handles this)
 
@@ -386,7 +387,7 @@ ipcMain.handle('db:getMonthlyReport', async (_, year, month) => {
       SELECT plaka, COUNT(*) as count, 
              SUM(baslangic_fiyati) as total,
              SUM(toplam_maliyet) as totalCost,
-             SUM(kar_zarar) as totalProfit
+             (SUM(baslangic_fiyati) - SUM(toplam_maliyet)) as totalProfit
       FROM orders
       WHERE created_at >= ? AND created_at < ?
       GROUP BY plaka
@@ -1376,6 +1377,88 @@ ipcMain.handle('db:checkTrailerCapacity', async (_, trailerId, enCm, boyCm, yuks
     }
   } catch (error) {
     console.error('Error checking trailer capacity:', error)
+    throw error
+  }
+})
+
+// ============================================================================
+// MAIL OPERATIONS
+// ============================================================================
+
+// Mail ayarlarını getir
+ipcMain.handle('mail:getSettings', async () => {
+  const db = getDB()
+  try {
+    const settings = db.prepare('SELECT * FROM mail_settings WHERE id = 1').get()
+    return settings || null
+  } catch (error) {
+    console.error('Error getting mail settings:', error)
+    throw error
+  }
+})
+
+// Mail ayarlarını kaydet
+ipcMain.handle('mail:saveSettings', async (_, settings) => {
+  const db = getDB()
+  try {
+    db.prepare(`
+      INSERT OR REPLACE INTO mail_settings (
+        id, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_password,
+        from_email, from_name, enabled, updated_at
+      ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    `).run(
+      settings.smtp_host,
+      settings.smtp_port,
+      settings.smtp_secure ? 1 : 0,
+      settings.smtp_user,
+      settings.smtp_password,
+      settings.from_email,
+      settings.from_name,
+      settings.enabled ? 1 : 0
+    )
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error saving mail settings:', error)
+    throw error
+  }
+})
+
+// SMTP bağlantısını test et
+ipcMain.handle('mail:testConnection', async () => {
+  try {
+    const mailService = getMailService()
+    const result = await mailService.testConnection()
+    return result
+  } catch (error: any) {
+    console.error('Error testing mail connection:', error)
+    return { success: false, message: error.message }
+  }
+})
+
+// Sipariş maili gönder
+ipcMain.handle('mail:sendOrderEmail', async (_, recipientEmail, orderData, pdfPath) => {
+  try {
+    const mailService = getMailService()
+    const result = await mailService.sendOrderEmail(recipientEmail, orderData, pdfPath)
+    return result
+  } catch (error: any) {
+    console.error('Error sending order email:', error)
+    return { success: false, message: error.message }
+  }
+})
+
+// Mail loglarını getir
+ipcMain.handle('mail:getLogs', async (_, orderId) => {
+  const db = getDB()
+  try {
+    if (orderId) {
+      return db.prepare('SELECT * FROM mail_logs WHERE order_id = ? ORDER BY sent_at DESC').all(orderId)
+    } else {
+      return db.prepare('SELECT * FROM mail_logs ORDER BY sent_at DESC LIMIT 100').all()
+    }
+  } catch (error) {
+    console.error('Error getting mail logs:', error)
     throw error
   }
 })

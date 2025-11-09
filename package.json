@@ -10,6 +10,8 @@
     "build:renderer": "vite build",
     "build:electron": "node scripts/build-electron.js",
     "build:win": "npm run build && electron-builder --win --x64",
+    "build:win-installer": "npm run build && electron-builder --win nsis --x64",
+    "build:win-portable": "npm run build && electron-builder --win portable --x64",
     "build:mac": "npm run build && electron-builder --mac",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
@@ -33,10 +35,12 @@
     "chart.js": "^4.4.0",
     "date-fns": "^3.0.0",
     "framer-motion": "^12.23.24",
+    "html-to-text": "^9.0.5",
     "jspdf": "^2.5.0",
     "jspdf-autotable": "^3.8.0",
     "lucide-react": "^0.548.0",
     "node-machine-id": "^1.1.12",
+    "nodemailer": "^7.0.10",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
@@ -48,6 +52,7 @@
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^20.0.0",
+    "@types/nodemailer": "^7.0.3",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
@@ -81,12 +86,31 @@
     "win": {
       "target": [
         {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
-      "icon": "build/icon.ico",
-      "signingHashAlgorithms": []
+      "signingHashAlgorithms": [],
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "sign": null,
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Seymen Transport",
+      "perMachine": true,
+      "license": "LICENSE"
     },
     "mac": {
       "target": [

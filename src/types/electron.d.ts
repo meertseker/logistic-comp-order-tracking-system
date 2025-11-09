@@ -58,6 +58,14 @@ export interface ElectronAPI {
     getInfo: () => Promise<{ licensed: boolean; info?: any }>
     deactivate: () => Promise<{ success: boolean }>
   }
+  
+  mail: {
+    getSettings: () => Promise<any>
+    saveSettings: (settings: any) => Promise<{ success: boolean }>
+    testConnection: () => Promise<{ success: boolean; message: string }>
+    sendOrderEmail: (recipientEmail: string, orderData: any, pdfPath?: string) => Promise<{ success: boolean; message: string }>
+    getLogs: (orderId?: number) => Promise<any[]>
+  }
 }
 
 declare global {

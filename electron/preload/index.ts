@@ -84,5 +84,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getInfo: () => ipcRenderer.invoke('license:getInfo'),
     deactivate: () => ipcRenderer.invoke('license:deactivate'),
   },
+  
+  // Mail operations
+  mail: {
+    getSettings: () => ipcRenderer.invoke('mail:getSettings'),
+    saveSettings: (settings: any) => ipcRenderer.invoke('mail:saveSettings', settings),
+    testConnection: () => ipcRenderer.invoke('mail:testConnection'),
+    sendOrderEmail: (recipientEmail: string, orderData: any, pdfPath?: string) => 
+      ipcRenderer.invoke('mail:sendOrderEmail', recipientEmail, orderData, pdfPath),
+    getLogs: (orderId?: number) => ipcRenderer.invoke('mail:getLogs', orderId),
+  },
 })
 
