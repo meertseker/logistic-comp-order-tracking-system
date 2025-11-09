@@ -123,7 +123,9 @@ export class ProfessionalCostCalculator {
 
   // Yakıt maliyeti (lt/100km bazlı - PROFESYONEL YÖNTEM)
   calculateFuelCost(km: number): { litre: number; maliyet: number } {
-    const litre = (km / 100) * this.params.yakitTuketimi
+    // KRİTİK: Negatif KM kontrolü - data integrity için
+    const safeKm = Math.max(0, km)
+    const litre = (safeKm / 100) * this.params.yakitTuketimi
     const maliyet = litre * this.params.yakitFiyati
     return { litre, maliyet }
   }
