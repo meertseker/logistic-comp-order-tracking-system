@@ -3,6 +3,7 @@ import { getDB } from './database'
 import path from 'path'
 import fs from 'fs'
 import { app } from 'electron'
+import { generateEmailByStatus, type EmailTemplateData } from './mail-templates-professional'
 
 export interface MailSettings {
   smtp_host: string
@@ -19,6 +20,7 @@ export interface OrderMailData {
   orderId: number
   musteri: string
   telefon: string
+  customerEmail?: string
   nereden: string
   nereye: string
   yukAciklamasi: string
@@ -93,7 +95,7 @@ export class MailService {
   }
   
   /**
-   * Sipariş maili gönder
+   * Sipariş maili gönder (MODERN VERSION)
    */
   async sendOrderEmail(
     recipientEmail: string,
@@ -110,14 +112,45 @@ export class MailService {
       
       const settings = db.prepare('SELECT * FROM mail_settings WHERE id = 1').get() as any
       
-      // HTML template oluştur
-      const htmlContent = this.generateOrderEmailTemplate(orderData)
+      // MODERN HTML template oluştur (duruma göre)
+      const templateData: EmailTemplateData = {
+        orderId: orderData.orderId,
+        musteri: orderData.musteri,
+        telefon: orderData.telefon,
+        customerEmail: orderData.customerEmail,
+        nereden: orderData.nereden,
+        nereye: orderData.nereye,
+        yukAciklamasi: orderData.yukAciklamasi,
+        plaka: orderData.plaka,
+        baslangicFiyati: orderData.baslangicFiyati,
+        gidisKm: orderData.gidisKm,
+        donusKm: orderData.donusKm,
+        tahminiGun: orderData.tahminiGun,
+        status: orderData.status,
+        createdAt: orderData.createdAt,
+        isSubcontractor: orderData.isSubcontractor,
+        subcontractorCompany: orderData.subcontractorCompany,
+      }
+      
+      const htmlContent = generateEmailByStatus(orderData.status, templateData)
+      
+      // Mail subject'i duruma göre belirle
+      const subjects: Record<string, string> = {
+        'Bekliyor': 'Siparişiniz Alındı',
+        'Yüklendi': 'Yükleme Tamamlandı',
+        'Yolda': 'Aracınız Yola Çıktı',
+        'Teslim Edildi': 'Teslimat Tamamlandı',
+        'Faturalandı': 'Faturanız Hazır',
+        'İptal': 'Sipariş İptal Edildi',
+      }
+      
+      const subject = subjects[orderData.status] || 'Sipariş Durumu Güncellendi'
       
       // Mail seçenekleri
       const mailOptions: any = {
         from: `"${settings.from_name}" <${settings.from_email}>`,
         to: recipientEmail,
-        subject: `Sipariş Detayları - ${orderData.nereden} → ${orderData.nereye}`,
+        subject: `${subject} - Sipariş #${orderData.orderId}`,
         html: htmlContent,
         text: this.generatePlainTextEmail(orderData), // Fallback plain text
       }

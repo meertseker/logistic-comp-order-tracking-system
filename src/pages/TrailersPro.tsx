@@ -187,10 +187,12 @@ export default function TrailersPro() {
         notlar: loadForm.notlar
       })
 
-      setShowLoadModal(false)
+      // Form'u sıfırla ve yüklenmiş yükleri yeniden çek (modal kapanmadan)
       resetLoadForm()
+      await loadTrailerLoads(selectedTrailer.id)
+      
+      // Trailers listesini güncelle
       loadTrailers()
-      loadTrailerLoads(selectedTrailer.id)
     } catch (error) {
       console.error('Failed to add load:', error)
       alert('Yük eklenemedi')

@@ -10,6 +10,7 @@ import { useToast } from '../context/ToastContext'
 
 const STATUS_OPTIONS = [
   { value: 'Bekliyor', label: 'Bekliyor' },
+  { value: 'Yüklendi', label: 'Yüklendi' },
   { value: 'Yolda', label: 'Yolda' },
   { value: 'Teslim Edildi', label: 'Teslim Edildi' },
   { value: 'Faturalandı', label: 'Faturalandı' },
@@ -31,6 +32,7 @@ export default function EditOrder() {
     plaka: '',
     musteri: '',
     telefon: '',
+    customerEmail: '',
     nereden: '',
     nereye: '',
     yukAciklamasi: '',
@@ -71,6 +73,7 @@ export default function EditOrder() {
         plaka: order.plaka || '',
         musteri: order.musteri || '',
         telefon: order.telefon || '',
+        customerEmail: order.customer_email || '',
         nereden: order.nereden || '',
         nereye: order.nereye || '',
         yukAciklamasi: order.yuk_aciklamasi || '',
@@ -187,6 +190,7 @@ export default function EditOrder() {
         plaka: isSubcontractor ? (formData.subcontractorCompany + ' (Taşeron)') : formData.plaka.trim(),
         musteri: formData.musteri.trim(),
         telefon: formData.telefon.trim(),
+        customerEmail: formData.customerEmail.trim() || null,
         nereden: formData.nereden.trim(),
         nereye: formData.nereye.trim(),
         yukAciklamasi: formData.yukAciklamasi.trim(),
@@ -301,7 +305,7 @@ export default function EditOrder() {
           )}
 
           {/* Müşteri */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Input
               label="Müşteri Adı"
               name="musteri"
@@ -318,6 +322,15 @@ export default function EditOrder() {
               onChange={handleChange}
               error={errors.telefon}
               required
+            />
+            <Input
+              label="E-Posta"
+              name="customerEmail"
+              type="email"
+              value={formData.customerEmail}
+              onChange={handleChange}
+              error={errors.customerEmail}
+              placeholder="musteri@example.com"
             />
           </div>
 

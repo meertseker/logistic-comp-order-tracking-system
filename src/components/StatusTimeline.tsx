@@ -12,7 +12,7 @@ interface StatusTimelineProps {
   updatedAt: string
 }
 
-const STATUS_ORDER = ['Bekliyor', 'Yolda', 'Teslim Edildi', 'Faturalandı']
+const STATUS_ORDER = ['Bekliyor', 'Yüklendi', 'Yolda', 'Teslim Edildi', 'Faturalandı']
 
 export default function StatusTimeline({ currentStatus, createdAt, updatedAt }: StatusTimelineProps) {
   const currentIndex = STATUS_ORDER.indexOf(currentStatus)

@@ -68,6 +68,7 @@ const createTables = () => {
     'subcontractor_company TEXT',
     'subcontractor_vehicle TEXT',
     'subcontractor_cost REAL DEFAULT 0',
+    'customer_email TEXT',
   ]
   
   for (const column of ordersColumns) {

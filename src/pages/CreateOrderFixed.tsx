@@ -42,6 +42,7 @@ export default function CreateOrderFixed() {
     plaka: '',
     musteri: '',
     telefon: '',
+    customerEmail: '',
     nereden: '',
     nereye: '',
     yukAciklamasi: '',
@@ -270,6 +271,7 @@ export default function CreateOrderFixed() {
         plaka: isSubcontractor ? (formData.subcontractorCompany + ' (Taşeron)') : formData.plaka.trim(),
         musteri: formData.musteri.trim(),
         telefon: formData.telefon.trim(),
+        customerEmail: formData.customerEmail.trim() || null,
         nereden: normalizeCity(formData.nereden),
         nereye: normalizeCity(formData.nereye),
         yukAciklamasi: formData.yukAciklamasi.trim(),
@@ -529,6 +531,16 @@ export default function CreateOrderFixed() {
                     error={errors.telefon}
                     placeholder="0532 123 45 67"
                     required
+                    disabled={vehicles.length === 0}
+                  />
+                  <Input
+                    label="E-Posta (Otomatik mail için)"
+                    name="customerEmail"
+                    type="email"
+                    value={formData.customerEmail}
+                    onChange={handleChange}
+                    error={errors.customerEmail}
+                    placeholder="musteri@example.com"
                     disabled={vehicles.length === 0}
                   />
                 </div>

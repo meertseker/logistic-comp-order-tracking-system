@@ -30,6 +30,7 @@ import { formatCurrency, formatDate } from '../utils/formatters'
 
 const ALL_STATUS_OPTIONS = [
   { value: 'Bekliyor', label: '⏸️ Bekliyor', color: '#FFD60A' },
+  { value: 'Yüklendi', label: '📦 Yüklendi', color: '#FF9F0A' },
   { value: 'Yolda', label: '🚛 Yolda', color: '#0A84FF' },
   { value: 'Teslim Edildi', label: '✅ Teslim Edildi', color: '#30D158' },
   { value: 'Faturalandı', label: '💳 Faturalandı', color: '#BF5AF2' },

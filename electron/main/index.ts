@@ -140,20 +140,21 @@ ipcMain.handle('db:createOrder', async (_, orderData) => {
   try {
     const stmt = db.prepare(`
       INSERT INTO orders (
-        plaka, musteri, telefon, nereden, nereye, yuk_aciklamasi, baslangic_fiyati,
+        plaka, musteri, telefon, customer_email, nereden, nereye, yuk_aciklamasi, baslangic_fiyati,
         gidis_km, donus_km, return_load_rate, etkin_km, tahmini_gun,
         yakit_litre, yakit_maliyet, surucu_maliyet, yemek_maliyet, hgs_maliyet, bakim_maliyet,
         toplam_maliyet, onerilen_fiyat, kar_zarar, kar_zarar_yuzde,
         is_subcontractor, subcontractor_company, subcontractor_vehicle, subcontractor_cost,
         status, created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `)
     
     const result = stmt.run(
       orderData.plaka,
       orderData.musteri,
       orderData.telefon,
+      orderData.customerEmail || null,
       orderData.nereden,
       orderData.nereye,
       orderData.yukAciklamasi,
@@ -192,7 +193,7 @@ ipcMain.handle('db:updateOrder', async (_, id, orderData) => {
   try {
     const stmt = db.prepare(`
       UPDATE orders 
-      SET plaka = ?, musteri = ?, telefon = ?, nereden = ?, nereye = ?, 
+      SET plaka = ?, musteri = ?, telefon = ?, customer_email = ?, nereden = ?, nereye = ?, 
           yuk_aciklamasi = ?, baslangic_fiyati = ?,
           gidis_km = ?, donus_km = ?, return_load_rate = ?, etkin_km = ?, tahmini_gun = ?,
           yakit_litre = ?, yakit_maliyet = ?, surucu_maliyet = ?, yemek_maliyet = ?, 
@@ -207,6 +208,7 @@ ipcMain.handle('db:updateOrder', async (_, id, orderData) => {
       orderData.plaka,
       orderData.musteri,
       orderData.telefon,
+      orderData.customerEmail || null,
       orderData.nereden,
       orderData.nereye,
       orderData.yukAciklamasi,
