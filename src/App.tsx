@@ -15,6 +15,7 @@ import RoutesPage from './pages/Routes'
 import TrailersPro from './pages/TrailersPro'
 import ActiveVehicles from './pages/ActiveVehicles'
 import SettingsProfessional from './pages/SettingsProfessional'
+import MailProfessional from './pages/MailProfessional'
 import { ToastProvider } from './context/ToastContext'
 import LicenseActivation from './components/LicenseActivation'
 
@@ -73,6 +74,7 @@ function App() {
             <Route path="/active-vehicles" element={<ActiveVehicles />} />
             <Route path="/trailers" element={<TrailersPro />} />
             <Route path="/routes" element={<RoutesPage />} />
+            <Route path="/mail" element={<MailProfessional />} />
             <Route path="/settings" element={<SettingsProfessional />} />
           </Routes>
         </Layout>
