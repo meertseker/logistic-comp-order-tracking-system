@@ -20,13 +20,16 @@ import {
   MessageSquare,
   XCircle,
   PlayCircle,
-  Pause
+  Pause,
+  Mail
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 import TextArea from '../components/TextArea'
 import { formatCurrency, formatDate } from '../utils/formatters'
+import { generateOrderPDFForEmail } from '../utils/pdfExport'
+import { useToast } from '../context/ToastContext'
 
 const ALL_STATUS_OPTIONS = [
   { value: 'Bekliyor', label: '⏸️ Bekliyor', color: '#FFD60A' },
@@ -38,30 +41,46 @@ const ALL_STATUS_OPTIONS = [
 ]
 
 export default function ActiveVehicles() {
+  const { showToast } = useToast()
   const [activeOrders, setActiveOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [showStatusModal, setShowStatusModal] = useState(false)
+  const [showStatusConfirmModal, setShowStatusConfirmModal] = useState(false)
   const [showNoteModal, setShowNoteModal] = useState(false)
   const [statusNote, setStatusNote] = useState('')
   const [newStatus, setNewStatus] = useState('')
+  const [pendingStatus, setPendingStatus] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('all')
+  const [mailSettings, setMailSettings] = useState<any>(null)
+  const [invoices, setInvoices] = useState<any[]>([])
 
   useEffect(() => {
     loadActiveOrders()
+    loadMailSettings()
     // Her 30 saniyede bir otomatik yenile
     const interval = setInterval(loadActiveOrders, 30000)
     return () => clearInterval(interval)
   }, [])
 
+  const loadMailSettings = async () => {
+    try {
+      const settings = await window.electronAPI.mail.getSettings()
+      setMailSettings(settings)
+    } catch (error) {
+      console.error('Failed to load mail settings:', error)
+    }
+  }
+
   const loadActiveOrders = async () => {
     try {
       setLoading(true)
-      // Sadece Bekliyor ve Yolda durumundaki siparişleri getir
+      // Bekliyor, Yüklendi ve Yolda durumundaki siparişleri getir
       const data = await window.electronAPI.db.getOrders({})
       const active = data.filter((order: any) => 
         order.status === 'Bekliyor' || 
+        order.status === 'Yüklendi' ||
         order.status === 'Yolda'
       )
       setActiveOrders(active)
@@ -82,8 +101,9 @@ export default function ActiveVehicles() {
   const openStatusModal = (order: any, status: string) => {
     setSelectedOrder(order)
     setNewStatus(status)
+    setPendingStatus(status)
     setStatusNote('')
-    setShowStatusModal(true)
+    setShowStatusConfirmModal(true)
   }
 
   const openNoteModal = (order: any) => {
@@ -96,19 +116,81 @@ export default function ActiveVehicles() {
     if (!selectedOrder) return
     
     try {
-      await window.electronAPI.db.updateOrderStatus(selectedOrder.id, newStatus)
+      console.log('🔄 Durum güncelleniyor:', { orderId: selectedOrder.id, newStatus: pendingStatus })
       
-      // Not varsa sipariş detayına ekle (opsiyonel - gelecekte expense olarak eklenebilir)
-      if (statusNote.trim()) {
-        console.log(`Durum notu: ${statusNote}`)
-        // TODO: Not sistemini database'e ekleyebilirsiniz
+      // Durumu güncelle
+      await window.electronAPI.db.updateOrderStatus(selectedOrder.id, pendingStatus)
+      
+      setShowStatusConfirmModal(false)
+      showToast(`Durum "${pendingStatus}" olarak güncellendi`, 'success')
+      
+      // Otomatik mail gönder (eğer customer_email varsa ve mail sistemi aktifse)
+      if (selectedOrder.customer_email && mailSettings && mailSettings.enabled === 1) {
+        console.log('📧 Otomatik mail gönderiliyor...')
+        
+        try {
+          // Fatura listesini yükle
+          const orderData = await window.electronAPI.db.getOrder(selectedOrder.id)
+          const orderInvoices = orderData.invoices || []
+          
+          // PDF oluştur
+          const pdfPath = await generateOrderPDFForEmail(selectedOrder)
+          
+          // Mail data hazırla
+          const emailOrderData = {
+            orderId: selectedOrder.id,
+            musteri: selectedOrder.musteri,
+            telefon: selectedOrder.telefon,
+            customerEmail: selectedOrder.customer_email,
+            nereden: selectedOrder.nereden,
+            nereye: selectedOrder.nereye,
+            yukAciklamasi: selectedOrder.yuk_aciklamasi || '',
+            plaka: selectedOrder.plaka,
+            baslangicFiyati: selectedOrder.baslangic_fiyati,
+            toplamMaliyet: selectedOrder.toplam_maliyet || 0,
+            onerilenFiyat: selectedOrder.onerilen_fiyat || 0,
+            karZarar: selectedOrder.kar_zarar || 0,
+            karZararYuzde: selectedOrder.kar_zarar_yuzde || 0,
+            gidisKm: selectedOrder.gidis_km || 0,
+            donusKm: selectedOrder.donus_km || 0,
+            tahminiGun: selectedOrder.tahmini_gun || 1,
+            status: pendingStatus, // Yeni durum!
+            createdAt: selectedOrder.created_at,
+            isSubcontractor: selectedOrder.is_subcontractor === 1,
+            subcontractorCompany: selectedOrder.subcontractor_company,
+          }
+          
+          // Fatura listesini hazırla (sadece path ve file_name)
+          const invoiceFiles = orderInvoices.map((inv: any) => ({
+            filePath: inv.file_path,
+            fileName: inv.file_name
+          }))
+          
+          // Mail gönder
+          const result = await window.electronAPI.mail.sendOrderEmail(
+            selectedOrder.customer_email,
+            emailOrderData,
+            pdfPath,
+            invoiceFiles
+          )
+          
+          if (result.success) {
+            console.log('✅ Durum değişikliği maili gönderildi')
+            showToast('Müşteriye durum değişikliği maili gönderildi', 'success')
+          } else {
+            console.warn('⚠️ Mail gönderilemedi:', result.message)
+          }
+        } catch (emailError) {
+          console.error('Mail gönderme hatası:', emailError)
+          // Mail gönderilmese de durum güncellendi, hata gösterme
+        }
       }
       
-      setShowStatusModal(false)
+      // Listeyi yenile
       loadActiveOrders()
     } catch (error) {
       console.error('Failed to update status:', error)
-      alert('Durum güncellenirken hata oluştu')
+      showToast('Durum güncellenirken bir hata oluştu', 'error')
     }
   }
 
@@ -219,7 +301,7 @@ export default function ActiveVehicles() {
         >
           🌐 Tümü ({activeOrders.length})
         </motion.button>
-        {ALL_STATUS_OPTIONS.filter(s => ['Bekliyor', 'Yolda'].includes(s.value)).map((status) => {
+        {ALL_STATUS_OPTIONS.filter(s => ['Bekliyor', 'Yüklendi', 'Yolda'].includes(s.value)).map((status) => {
           const count = activeOrders.filter(o => o.status === status.value).length
           return (
             <motion.button
@@ -268,6 +350,29 @@ export default function ActiveVehicles() {
             </p>
             <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
               Yola çıkmadı
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Yüklendi */}
+        <motion.div
+          whileHover={{ scale: 1.02, y: -4 }}
+          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          style={{ background: 'rgba(255, 159, 10, 0.12)', border: '0.5px solid rgba(255, 159, 10, 0.3)' }}
+        >
+          <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#FF9F0A' }} />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-2">
+              <Package className="w-4 h-4" style={{ color: '#FF9F0A' }} />
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#FF9F0A' }}>
+                Yüklendi
+              </p>
+            </div>
+            <p className="text-3xl font-bold" style={{ color: '#FFFFFF' }}>
+              {activeOrders.filter(o => o.status === 'Yüklendi').length}
+            </p>
+            <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+              Yola çıkacak
             </p>
           </div>
         </motion.div>
@@ -570,18 +675,18 @@ export default function ActiveVehicles() {
         </motion.div>
       )}
 
-      {/* Durum Güncelleme Modal */}
+      {/* Durum Güncelleme Onay Modal */}
       <Modal
-        isOpen={showStatusModal}
-        onClose={() => setShowStatusModal(false)}
-        title={`Durum Güncelle: ${selectedOrder?.plaka || selectedOrder?.subcontractor_company}`}
+        isOpen={showStatusConfirmModal}
+        onClose={() => setShowStatusConfirmModal(false)}
+        title="Durum Değişikliği Onayı"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setShowStatusModal(false)}>
+            <Button variant="secondary" onClick={() => setShowStatusConfirmModal(false)}>
               İptal
             </Button>
             <Button onClick={handleStatusUpdate}>
-              Durumu Güncelle
+              Onayla ve {selectedOrder?.customer_email ? 'Mail Gönder' : 'Güncelle'}
             </Button>
           </>
         }
@@ -590,25 +695,31 @@ export default function ActiveVehicles() {
           <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)' }}>
             <p className="text-sm mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Mevcut Durum</p>
             <p className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
-              {ALL_STATUS_OPTIONS.find(s => s.value === selectedOrder?.status)?.label}
+              {selectedOrder?.status}
             </p>
           </div>
           <div className="flex items-center justify-center py-2">
             <ArrowRight className="w-8 h-8" style={{ color: '#0A84FF' }} />
           </div>
-          <div className="p-4 rounded-lg" style={{ backgroundColor: `${getStatusColor(newStatus)}22` }}>
+          <div className="p-4 rounded-lg" style={{ backgroundColor: `${getStatusColor(pendingStatus)}22` }}>
             <p className="text-sm mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Yeni Durum</p>
-            <p className="text-xl font-bold" style={{ color: getStatusColor(newStatus) }}>
-              {ALL_STATUS_OPTIONS.find(s => s.value === newStatus)?.label}
+            <p className="text-xl font-bold" style={{ color: getStatusColor(pendingStatus) }}>
+              {pendingStatus}
             </p>
           </div>
-          <TextArea
-            label="Not (Opsiyonel)"
-            placeholder="Durum değişikliği hakkında not ekleyin..."
-            value={statusNote}
-            onChange={(e) => setStatusNote(e.target.value)}
-            rows={3}
-          />
+          
+          {/* Otomatik mail bilgisi */}
+          {selectedOrder?.customer_email && mailSettings && mailSettings.enabled === 1 && (
+            <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Mail className="w-4 h-4 text-green-400" />
+                <p className="text-sm font-semibold text-green-300">Otomatik Mail Gönderilecek</p>
+              </div>
+              <p className="text-xs text-gray-400">
+                Müşteriye ({selectedOrder.customer_email}) durum değişikliği maili otomatik olarak gönderilecektir.
+              </p>
+            </div>
+          )}
         </div>
       </Modal>
     </div>

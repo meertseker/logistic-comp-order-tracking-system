@@ -147,13 +147,15 @@ export class MailService {
       
       const subject = subjects[orderData.status] || 'Sipariş Durumu Güncellendi'
       
-      // Mail seçenekleri
+      // Mail seçenekleri (Türkçe karakter desteği için charset ekle)
       const mailOptions: any = {
         from: `"${settings.from_name}" <${settings.from_email}>`,
         to: recipientEmail,
         subject: `${subject} - Sipariş #${orderData.orderId}`,
         html: htmlContent,
         text: this.generatePlainTextEmail(orderData), // Fallback plain text
+        charset: 'utf-8',
+        encoding: 'utf-8'
       }
       
       // Attachments dizisi oluştur
@@ -161,9 +163,13 @@ export class MailService {
       
       // PDF varsa ekle
       if (pdfPath && fs.existsSync(pdfPath)) {
+        // Türkçe karakter desteği için UTF-8 encoding ile filename oluştur
+        const pdfFilename = `Siparis_${orderData.orderId}.pdf`
         attachments.push({
-          filename: `Siparis_${orderData.orderId}.pdf`,
+          filename: pdfFilename,
           path: pdfPath,
+          contentType: 'application/pdf',
+          encoding: 'base64'
         })
       }
       
@@ -171,9 +177,27 @@ export class MailService {
       if (orderData.status === 'Faturalandı' && invoiceFiles && invoiceFiles.length > 0) {
         invoiceFiles.forEach((invoice) => {
           if (fs.existsSync(invoice.filePath)) {
+            // Türkçe karakter içeren dosya isimleri için encoding
+            // Nodemailer otomatik olarak RFC 2047 encoding yapar, ancak 
+            // contentType ve encoding'i açıkça belirtmek daha iyi
+            const ext = path.extname(invoice.fileName).toLowerCase()
+            let contentType = 'application/octet-stream'
+            
+            // Dosya tipine göre content type belirle
+            if (ext === '.pdf') contentType = 'application/pdf'
+            else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg'
+            else if (ext === '.png') contentType = 'image/png'
+            else if (ext === '.gif') contentType = 'image/gif'
+            else if (ext === '.doc') contentType = 'application/msword'
+            else if (ext === '.docx') contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            else if (ext === '.xls') contentType = 'application/vnd.ms-excel'
+            else if (ext === '.xlsx') contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            
             attachments.push({
-              filename: invoice.fileName,
+              filename: invoice.fileName, // Nodemailer otomatik olarak RFC 2047 encoding yapar
               path: invoice.filePath,
+              contentType: contentType,
+              encoding: 'base64'
             })
           }
         })

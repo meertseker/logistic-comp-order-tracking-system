@@ -23,25 +23,38 @@ code {
     monospace;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Ultra Modern iOS 26 Style */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1C1C1E;
+  background: rgba(255, 255, 255, 0.02);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(235, 235, 245, 0.3);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(235, 235, 245, 0.45);
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* Apple-style Dark Mode Utilities */

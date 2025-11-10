@@ -190,61 +190,66 @@ export function exportOrderToPDF(order: any) {
 function generateCustomerOrderPDF(order: any): jsPDF {
   const doc = new jsPDF()
   
+  // Türkçe karakter desteği için font ayarları
+  doc.setFont('helvetica')
+  
   // Başlık
   doc.setFontSize(20)
   doc.text('SEYMEN TRANSPORT', 105, 20, { align: 'center' })
   
   doc.setFontSize(16)
-  doc.text(`Sipariş #${order.id}`, 105, 30, { align: 'center' })
+  doc.text(`Siparis #${order.id}`, 105, 30, { align: 'center' })
   
   doc.setFontSize(10)
   doc.text(`Tarih: ${new Date(order.created_at).toLocaleDateString('tr-TR')}`, 105, 38, { align: 'center' })
-  doc.text(`Durum: ${order.status}`, 105, 44, { align: 'center' })
+  doc.text(`Durum: ${sanitizeText(order.status)}`, 105, 44, { align: 'center' })
   
   // Müşteri Bilgileri
   doc.setFontSize(12)
-  doc.text('Müşteri Bilgileri', 20, 55)
+  doc.text('Musteri Bilgileri', 20, 55)
   
   autoTable(doc, {
     startY: 60,
-    head: [['Alan', 'Değer']],
+    head: [['Alan', 'Deger']],
     body: [
-      ['Müşteri', order.musteri],
+      ['Musteri', sanitizeText(order.musteri)],
       ['Telefon', order.telefon],
       order.is_subcontractor === 1 
-        ? ['Taşeron Firma', order.subcontractor_company || '-']
-        : ['Plaka', order.plaka],
+        ? ['Taseron Firma', sanitizeText(order.subcontractor_company || '-')]
+        : ['Plaka', sanitizeText(order.plaka)],
     ],
     theme: 'grid',
     headStyles: { fillColor: [0, 74, 173] },
+    styles: { font: 'helvetica' },
   })
   
   // Güzergah Bilgileri
   const lastY = (doc as any).lastAutoTable.finalY || 85
-  doc.text('Güzergah Bilgileri', 20, lastY + 10)
+  doc.text('Guzergah Bilgileri', 20, lastY + 10)
   
   const routeBody = [
-    ['Nereden', order.nereden],
-    ['Nereye', order.nereye],
+    ['Nereden', sanitizeText(order.nereden)],
+    ['Nereye', sanitizeText(order.nereye)],
     ['Mesafe', (order.gidis_km || 0) + ' km'],
   ]
   
   if (order.donus_km && order.donus_km > 0) {
-    routeBody.push(['Dönüş Mesafesi', order.donus_km + ' km'])
+    routeBody.push(['Donus Mesafesi', order.donus_km + ' km'])
   }
   
-  routeBody.push(['Tahmini Süre', (order.tahmini_gun || 1) + ' gün'])
+  routeBody.push(['Tahmini Sure', (order.tahmini_gun || 1) + ' gun'])
   
   if (order.yuk_aciklamasi) {
-    routeBody.push(['Yük Açıklaması', order.yuk_aciklamasi])
+    routeBody.push(['Yuk Aciklamasi', sanitizeText(order.yuk_aciklamasi)])
   }
   
   autoTable(doc, {
     startY: lastY + 15,
-    head: [['Alan', 'Değer']],
+    head: [['Alan', 'Deger']],
     body: routeBody,
     theme: 'grid',
     headStyles: { fillColor: [0, 74, 173] },
+    styles: { font: 'helvetica' },
   })
   
   // Fiyat Bilgisi (MÜŞTERİ İÇİN - Maliyet yok!)
@@ -253,12 +258,13 @@ function generateCustomerOrderPDF(order: any): jsPDF {
   
   autoTable(doc, {
     startY: lastY2 + 15,
-    head: [['Açıklama', 'Tutar']],
+    head: [['Aciklama', 'Tutar']],
     body: [
-      ['Toplam Ücret', formatCurrency(order.baslangic_fiyati)],
+      ['Toplam Ucret', formatCurrencyForPDF(order.baslangic_fiyati)],
     ],
     theme: 'grid',
     headStyles: { fillColor: [22, 163, 74] },
+    styles: { font: 'helvetica' },
   })
   
   // Yeşil vurgu kutusu
@@ -267,16 +273,16 @@ function generateCustomerOrderPDF(order: any): jsPDF {
   doc.rect(20, lastY3 + 5, 170, 12, 'F')
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(14)
-  doc.text('Toplam Ücret:', 25, lastY3 + 13)
-  doc.text(formatCurrency(order.baslangic_fiyati), 185, lastY3 + 13, { align: 'right' })
+  doc.text('Toplam Ucret:', 25, lastY3 + 13)
+  doc.text(formatCurrencyForPDF(order.baslangic_fiyati), 185, lastY3 + 13, { align: 'right' })
   doc.setTextColor(0, 0, 0)
   
   // Footer
   doc.setFontSize(8)
   doc.setTextColor(128, 128, 128)
-  doc.text('Seymen Transport - Lojistik Yönetim Sistemi', 105, 280, { align: 'center' })
-  doc.text(`Oluşturulma: ${new Date().toLocaleString('tr-TR')}`, 105, 285, { align: 'center' })
-  doc.text('Herhangi bir sorunuz için lütfen bizimle iletişime geçiniz.', 105, 290, { align: 'center' })
+  doc.text('Seymen Transport - Lojistik Yonetim Sistemi', 105, 280, { align: 'center' })
+  doc.text(`Olusturulma: ${new Date().toLocaleString('tr-TR')}`, 105, 285, { align: 'center' })
+  doc.text('Herhangi bir sorunuz icin lutfen bizimle iletisime geciniz.', 105, 290, { align: 'center' })
   
   return doc
 }
