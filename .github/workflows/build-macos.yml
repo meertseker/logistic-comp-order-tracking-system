@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Rebuild native dependencies
+        run: npm run rebuild
+
       - name: Build Renderer
         run: npm run build:renderer
 
@@ -34,7 +37,7 @@ jobs:
         run: npm run build:electron
 
       - name: Build macOS DMG
-        run: electron-builder --mac dmg --x64 --arm64
+        run: npx electron-builder --mac dmg --x64 --arm64
         env:
           # Disable code signing for CI builds
           CSC_IDENTITY_AUTO_DISCOVERY: false
