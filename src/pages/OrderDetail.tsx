@@ -149,10 +149,17 @@ export default function OrderDetail() {
         subcontractorCompany: order.subcontractor_company,
       }
       
+      // Fatura listesini hazırla (sadece path ve file_name)
+      const invoiceFiles = invoices.map(inv => ({
+        filePath: inv.file_path,
+        fileName: inv.file_name
+      }))
+      
       const result = await window.electronAPI.mail.sendOrderEmail(
         recipientEmail,
         orderData,
-        pdfPath
+        pdfPath,
+        invoiceFiles
       )
       
       if (result.success) {
@@ -221,11 +228,18 @@ export default function OrderDetail() {
             subcontractorCompany: order.subcontractor_company,
           }
           
+          // Fatura listesini hazırla (sadece path ve file_name)
+          const invoiceFiles = invoices.map(inv => ({
+            filePath: inv.file_path,
+            fileName: inv.file_name
+          }))
+          
           // Mail gönder
           const result = await window.electronAPI.mail.sendOrderEmail(
             order.customer_email,
             orderData,
-            pdfPath
+            pdfPath,
+            invoiceFiles
           )
           
           if (result.success) {
@@ -329,6 +343,37 @@ export default function OrderDetail() {
     } catch (error) {
       console.error('Failed to read file:', error)
       alert('Dosya okunamadı')
+    }
+  }
+
+  const handleDownloadInvoice = async (invoice: any) => {
+    try {
+      // Dosyayı oku
+      const base64Data = await window.electronAPI.fs.readFile(invoice.file_path)
+      
+      // Base64'ü blob'a çevir
+      const byteCharacters = atob(base64Data)
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      }
+      const byteArray = new Uint8Array(byteNumbers)
+      const blob = new Blob([byteArray], { type: invoice.file_type || 'application/octet-stream' })
+      
+      // Download link oluştur
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = invoice.file_name
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+      
+      showToast('Fatura başarıyla indirildi', 'success')
+    } catch (error) {
+      console.error('Failed to download invoice:', error)
+      showToast('Fatura indirilirken bir hata oluştu', 'error')
     }
   }
 
@@ -894,15 +939,28 @@ export default function OrderDetail() {
                       {invoice.file_name}
                     </p>
                   </div>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleDeleteInvoice(invoice.id, invoice.file_path)}
-                    className="p-1.5 rounded-lg"
-                    style={{ color: '#FF453A', backgroundColor: 'rgba(255, 69, 58, 0.15)' }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </motion.button>
+                  <div className="flex gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleDownloadInvoice(invoice)}
+                      className="p-1.5 rounded-lg"
+                      style={{ color: '#30D158', backgroundColor: 'rgba(48, 209, 88, 0.15)' }}
+                      title="İndir"
+                    >
+                      <Download className="w-4 h-4" />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleDeleteInvoice(invoice.id, invoice.file_path)}
+                      className="p-1.5 rounded-lg"
+                      style={{ color: '#FF453A', backgroundColor: 'rgba(255, 69, 58, 0.15)' }}
+                      title="Sil"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </motion.button>
+                  </div>
                 </div>
                 <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>
                   {formatDate(invoice.uploaded_at)}

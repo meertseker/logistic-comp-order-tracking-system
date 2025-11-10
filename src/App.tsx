@@ -7,12 +7,14 @@ import OrderDetail from './pages/OrderDetail'
 import CreateOrderFixed from './pages/CreateOrderFixed'
 import EditOrder from './pages/EditOrder'
 import Reports from './pages/Reports'
+import ReportsProfessional from './pages/ReportsProfessional'
 import ChartsPage from './pages/ChartsPage'
+import ChartsProfessional from './pages/ChartsProfessional'
 import VehiclesProfessional from './pages/VehiclesProfessional'
 import RoutesPage from './pages/Routes'
 import TrailersPro from './pages/TrailersPro'
 import ActiveVehicles from './pages/ActiveVehicles'
-import Settings from './pages/Settings'
+import SettingsProfessional from './pages/SettingsProfessional'
 import { ToastProvider } from './context/ToastContext'
 import LicenseActivation from './components/LicenseActivation'
 
@@ -65,13 +67,13 @@ function App() {
             <Route path="/orders/new" element={<CreateOrderFixed />} />
             <Route path="/orders/:id" element={<OrderDetail />} />
             <Route path="/orders/:id/edit" element={<EditOrder />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/charts" element={<ChartsPage />} />
+            <Route path="/reports" element={<ReportsProfessional />} />
+            <Route path="/charts" element={<ChartsProfessional />} />
             <Route path="/vehicles" element={<VehiclesProfessional />} />
             <Route path="/active-vehicles" element={<ActiveVehicles />} />
             <Route path="/trailers" element={<TrailersPro />} />
             <Route path="/routes" element={<RoutesPage />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings" element={<SettingsProfessional />} />
           </Routes>
         </Layout>
       </Router>

@@ -90,9 +90,23 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getSettings: () => ipcRenderer.invoke('mail:getSettings'),
     saveSettings: (settings: any) => ipcRenderer.invoke('mail:saveSettings', settings),
     testConnection: () => ipcRenderer.invoke('mail:testConnection'),
-    sendOrderEmail: (recipientEmail: string, orderData: any, pdfPath?: string) => 
-      ipcRenderer.invoke('mail:sendOrderEmail', recipientEmail, orderData, pdfPath),
+    sendOrderEmail: (recipientEmail: string, orderData: any, pdfPath?: string, invoiceFiles?: any[]) => 
+      ipcRenderer.invoke('mail:sendOrderEmail', recipientEmail, orderData, pdfPath, invoiceFiles),
     getLogs: (orderId?: number) => ipcRenderer.invoke('mail:getLogs', orderId),
+  },
+  
+  // Export/Import operations
+  export: {
+    allData: () => ipcRenderer.invoke('export:allData'),
+    ordersCSV: () => ipcRenderer.invoke('export:ordersCSV'),
+    database: () => ipcRenderer.invoke('export:database'),
+    statistics: () => ipcRenderer.invoke('export:statistics'),
+    importData: (filePath: string) => ipcRenderer.invoke('export:importData', filePath),
+  },
+  
+  // System information
+  system: {
+    getInfo: () => ipcRenderer.invoke('system:getInfo'),
   },
 })
 

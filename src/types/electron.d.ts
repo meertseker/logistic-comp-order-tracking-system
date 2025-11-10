@@ -66,6 +66,27 @@ export interface ElectronAPI {
     sendOrderEmail: (recipientEmail: string, orderData: any, pdfPath?: string) => Promise<{ success: boolean; message: string }>
     getLogs: (orderId?: number) => Promise<any[]>
   }
+  
+  export: {
+    allData: () => Promise<{ success: boolean; path?: string; error?: string }>
+    ordersCSV: () => Promise<{ success: boolean; path?: string; error?: string }>
+    database: () => Promise<{ success: boolean; path?: string; error?: string }>
+    statistics: () => Promise<{ success: boolean; path?: string; error?: string }>
+    importData: (filePath: string) => Promise<{ success: boolean; imported?: number; error?: string }>
+  }
+  
+  system: {
+    getInfo: () => Promise<{
+      appVersion: string
+      appName: string
+      platform: string
+      arch: string
+      electronVersion: string
+      nodeVersion: string
+      chromeVersion: string
+      userDataPath: string
+    }>
+  }
 }
 
 declare global {

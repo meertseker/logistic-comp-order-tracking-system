@@ -10,6 +10,7 @@ import {
 import { BackupManager } from './backup'
 import { getAdvancedLicenseManager } from './advanced-license-manager'
 import { getMailService } from './mail-service'
+import { getExportManager } from './export-manager'
 
 // __dirname is available in CommonJS (esbuild handles this)
 
@@ -539,7 +540,7 @@ ipcMain.handle('db:getDashboardStats', async () => {
         COUNT(*) as orderCount,
         SUM(baslangic_fiyati) as totalEarnings,
         SUM(toplam_maliyet) as totalCosts,
-        SUM(kar_zarar) as totalProfit
+        SUM(baslangic_fiyati - toplam_maliyet) as totalProfit
       FROM orders
       WHERE created_at >= ?
       GROUP BY plaka
@@ -1439,10 +1440,10 @@ ipcMain.handle('mail:testConnection', async () => {
 })
 
 // Sipariş maili gönder
-ipcMain.handle('mail:sendOrderEmail', async (_, recipientEmail, orderData, pdfPath) => {
+ipcMain.handle('mail:sendOrderEmail', async (_, recipientEmail, orderData, pdfPath, invoiceFiles) => {
   try {
     const mailService = getMailService()
-    const result = await mailService.sendOrderEmail(recipientEmail, orderData, pdfPath)
+    const result = await mailService.sendOrderEmail(recipientEmail, orderData, pdfPath, invoiceFiles)
     return result
   } catch (error: any) {
     console.error('Error sending order email:', error)
@@ -1462,6 +1463,46 @@ ipcMain.handle('mail:getLogs', async (_, orderId) => {
   } catch (error) {
     console.error('Error getting mail logs:', error)
     throw error
+  }
+})
+
+// Export/Import IPC Handlers
+ipcMain.handle('export:allData', async () => {
+  const exportManager = getExportManager()
+  return await exportManager.exportAllData()
+})
+
+ipcMain.handle('export:ordersCSV', async () => {
+  const exportManager = getExportManager()
+  return await exportManager.exportOrdersToCSV()
+})
+
+ipcMain.handle('export:database', async () => {
+  const exportManager = getExportManager()
+  return await exportManager.exportDatabaseFile()
+})
+
+ipcMain.handle('export:statistics', async () => {
+  const exportManager = getExportManager()
+  return await exportManager.exportStatisticsReport()
+})
+
+ipcMain.handle('export:importData', async (_, filePath: string) => {
+  const exportManager = getExportManager()
+  return await exportManager.importData(filePath)
+})
+
+// System Info IPC Handlers
+ipcMain.handle('system:getInfo', async () => {
+  return {
+    appVersion: app.getVersion(),
+    appName: app.getName(),
+    platform: process.platform,
+    arch: process.arch,
+    electronVersion: process.versions.electron,
+    nodeVersion: process.versions.node,
+    chromeVersion: process.versions.chrome,
+    userDataPath: app.getPath('userData'),
   }
 })
 

@@ -47,8 +47,10 @@ export default function VehiclePerformance({ vehicles }: VehiclePerformanceProps
       </h3>
       <div className="space-y-4">
         {vehicles.map((vehicle, index) => {
+          // Gerçek kar: Gelir - Maliyet
+          const actualProfit = vehicle.totalEarnings - vehicle.totalCosts
           const profitMargin = vehicle.totalEarnings > 0 
-            ? ((vehicle.totalProfit / vehicle.totalEarnings) * 100).toFixed(1)
+            ? ((actualProfit / vehicle.totalEarnings) * 100).toFixed(1)
             : 0
           const progressWidth = (vehicle.orderCount / maxOrders) * 100
 
@@ -86,7 +88,7 @@ export default function VehiclePerformance({ vehicles }: VehiclePerformanceProps
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-sm" style={{ color: '#30D158' }}>
-                    {formatCurrency(vehicle.totalProfit)}
+                    {formatCurrency(actualProfit)}
                   </p>
                   <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
                     {profitMargin}% kar marjı

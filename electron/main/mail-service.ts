@@ -100,7 +100,8 @@ export class MailService {
   async sendOrderEmail(
     recipientEmail: string,
     orderData: OrderMailData,
-    pdfPath?: string
+    pdfPath?: string,
+    invoiceFiles?: Array<{ filePath: string; fileName: string }>
   ): Promise<{ success: boolean; message: string }> {
     const db = getDB()
     
@@ -155,14 +156,32 @@ export class MailService {
         text: this.generatePlainTextEmail(orderData), // Fallback plain text
       }
       
+      // Attachments dizisi oluştur
+      const attachments: any[] = []
+      
       // PDF varsa ekle
       if (pdfPath && fs.existsSync(pdfPath)) {
-        mailOptions.attachments = [
-          {
-            filename: `Siparis_${orderData.orderId}.pdf`,
-            path: pdfPath,
-          },
-        ]
+        attachments.push({
+          filename: `Siparis_${orderData.orderId}.pdf`,
+          path: pdfPath,
+        })
+      }
+      
+      // Eğer sipariş "Faturalandı" durumundaysa ve faturalar varsa onları da ekle
+      if (orderData.status === 'Faturalandı' && invoiceFiles && invoiceFiles.length > 0) {
+        invoiceFiles.forEach((invoice) => {
+          if (fs.existsSync(invoice.filePath)) {
+            attachments.push({
+              filename: invoice.fileName,
+              path: invoice.filePath,
+            })
+          }
+        })
+      }
+      
+      // Attachments varsa mail seçeneklerine ekle
+      if (attachments.length > 0) {
+        mailOptions.attachments = attachments
       }
       
       // Mail gönder

@@ -68,6 +68,28 @@ code {
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.25);
   }
 
+  /* Enhanced Liquid Glass Effects */
+  .glass-liquid {
+    background: rgba(20, 20, 22, 0.75);
+    backdrop-filter: saturate(180%) blur(30px);
+    -webkit-backdrop-filter: saturate(180%) blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+      0 20px 60px rgba(10, 132, 255, 0.15);
+  }
+
+  .glass-liquid-light {
+    background: rgba(20, 20, 22, 0.6);
+    backdrop-filter: saturate(180%) blur(25px);
+    -webkit-backdrop-filter: saturate(180%) blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 4px 24px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  }
+
   .glass-hover {
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -77,6 +99,18 @@ code {
     transform: scale(1.005);
     box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.35);
     border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .glass-float {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-float:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+      0 24px 70px rgba(10, 132, 255, 0.2);
   }
 
   .text-shadow {
@@ -168,6 +202,39 @@ code {
   }
 }
 
+@keyframes liquidFloat {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.01);
+  }
+}
+
+@keyframes liquidShine {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes morphGlow {
+  0%, 100% {
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+      0 20px 60px rgba(10, 132, 255, 0.15);
+  }
+  50% {
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+      0 24px 70px rgba(10, 132, 255, 0.25);
+  }
+}
+
 .animate-slide-in {
   animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -182,6 +249,18 @@ code {
 
 .animate-glow {
   animation: glow 2s ease-in-out infinite;
+}
+
+.animate-liquid-float {
+  animation: liquidFloat 4s ease-in-out infinite;
+}
+
+.animate-liquid-shine {
+  animation: liquidShine 3s linear infinite;
+}
+
+.animate-morph-glow {
+  animation: morphGlow 3s ease-in-out infinite;
 }
 
 /* Professional Table Styles */
