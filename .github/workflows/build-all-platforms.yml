@@ -1,0 +1,127 @@
+name: Build All Platforms
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rebuild native dependencies
+        run: npm run rebuild
+
+      - name: Build Renderer
+        run: npm run build:renderer
+
+      - name: Build Electron
+        run: npm run build:electron
+
+      - name: Build Windows Installer
+        run: npx electron-builder --win nsis --x64 --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: List release files
+        run: dir release
+
+      - name: Upload Windows Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer-${{ github.sha }}
+          path: release/*.exe
+          retention-days: 30
+          if-no-files-found: warn
+
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rebuild native dependencies
+        run: npm run rebuild
+
+      - name: Build Renderer
+        run: npm run build:renderer
+
+      - name: Build Electron
+        run: npm run build:electron
+
+      - name: Build macOS DMG
+        run: npx electron-builder --mac dmg --x64 --arm64 --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: List release files
+        run: ls -la release/
+
+      - name: Upload macOS DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg-${{ github.sha }}
+          path: release/*.dmg
+          retention-days: 30
+          if-no-files-found: warn
+
+  upload-combined:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installer-${{ github.sha }}
+          path: artifacts/windows
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-dmg-${{ github.sha }}
+          path: artifacts/macos
+
+      - name: List all artifacts
+        run: |
+          echo "=== Windows Artifacts ==="
+          ls -la artifacts/windows/
+          echo "=== macOS Artifacts ==="
+          ls -la artifacts/macos/
+
+      - name: Upload combined artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-platforms-latest
+          path: artifacts/
+          retention-days: 90
+

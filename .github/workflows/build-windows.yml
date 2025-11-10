@@ -1,0 +1,85 @@
+name: Build Windows App
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rebuild native dependencies
+        run: npm run rebuild
+
+      - name: Build Renderer
+        run: npm run build:renderer
+
+      - name: Build Electron
+        run: npm run build:electron
+
+      - name: Verify build output
+        run: |
+          echo "Checking dist directory..."
+          dir dist
+          echo "Checking dist-electron directory..."
+          dir dist-electron
+          echo "Checking dist-electron/main..."
+          dir dist-electron\main
+
+      - name: Build Windows Installer
+        run: npx electron-builder --win nsis --x64 --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: List release directory
+        run: dir release
+
+      - name: Upload Windows Installer
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer-${{ github.sha }}
+          path: release/*.exe
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload Windows Installer (latest)
+        if: success() && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer-latest
+          path: release/*.exe
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-windows-${{ github.sha }}
+          path: |
+            dist/
+            dist-electron/
+            *.log
+          retention-days: 7
+          if-no-files-found: ignore
+
