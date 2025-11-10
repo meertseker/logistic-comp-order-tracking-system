@@ -46,7 +46,7 @@ jobs:
           ls -la dist-electron/main/ || echo "dist-electron/main/ not found"
 
       - name: Build macOS DMG
-        run: npx electron-builder --mac dmg --x64 --arm64 --config.compression=store
+        run: npx electron-builder --mac dmg --x64 --arm64 --publish never
         env:
           # Disable code signing for CI builds
           CSC_IDENTITY_AUTO_DISCOVERY: false
