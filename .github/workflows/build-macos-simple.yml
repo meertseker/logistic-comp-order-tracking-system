@@ -1,0 +1,102 @@
+name: Build macOS App (Simple)
+
+# This is a simplified version for debugging
+# Use this if the main workflow keeps failing
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Python (for native deps)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          echo "Installing npm packages..."
+          npm ci
+          echo "✅ Dependencies installed"
+
+      - name: List installed packages
+        run: |
+          echo "Checking electron-builder..."
+          npm list electron-builder
+          echo "Checking electron..."
+          npm list electron
+
+      - name: Rebuild native dependencies
+        run: |
+          echo "Rebuilding native modules..."
+          npm run rebuild
+          echo "✅ Native modules rebuilt"
+
+      - name: Build Renderer (React/Vite)
+        run: |
+          echo "Building frontend..."
+          npm run build:renderer
+          echo "✅ Renderer built"
+          echo "Contents of dist/:"
+          ls -la dist/
+
+      - name: Build Electron (Main + Preload)
+        run: |
+          echo "Building Electron processes..."
+          npm run build:electron
+          echo "✅ Electron built"
+          echo "Contents of dist-electron/:"
+          ls -la dist-electron/
+          echo "Contents of dist-electron/main/:"
+          ls -la dist-electron/main/
+          echo "Contents of dist-electron/preload/:"
+          ls -la dist-electron/preload/
+
+      - name: Verify package.json
+        run: |
+          echo "Main entry point:"
+          node -e "console.log(require('./package.json').main)"
+          echo "Checking if main file exists:"
+          ls -la dist-electron/main/index.cjs
+
+      - name: Build macOS DMG (x64 only - for testing)
+        run: |
+          echo "Building DMG for Intel Macs only (faster)..."
+          npx electron-builder --mac dmg --x64
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          DEBUG: electron-builder
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      - name: List release directory
+        run: |
+          echo "Checking release directory..."
+          ls -lah release/
+          echo "DMG files:"
+          find release -name "*.dmg" -exec ls -lh {} \;
+
+      - name: Upload macOS DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg-simple-test
+          path: release/*.dmg
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Show success message
+        run: |
+          echo "✅ ✅ ✅ BUILD SUCCESSFUL! ✅ ✅ ✅"
+          echo "Download the DMG from the artifacts section above"
+
