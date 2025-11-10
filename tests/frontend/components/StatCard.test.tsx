@@ -10,7 +10,7 @@ import '@testing-library/jest-dom'
 import { describe, test, expect, jest } from '@jest/globals'
 
 // StatCard component'ini import et
-import { StatCard } from '../../../src/components/StatCard'
+import StatCard from '../../../src/components/StatCard'
 
 describe('StatCard Component Tests', () => {
   test('title render edilmeli', () => {

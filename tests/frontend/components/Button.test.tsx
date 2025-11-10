@@ -10,7 +10,7 @@ import '@testing-library/jest-dom'
 import { describe, test, expect, jest } from '@jest/globals'
 
 // Button component'ini import et
-import { Button } from '../../../src/components/Button'
+import Button from '../../../src/components/Button'
 
 describe('Button Component Tests', () => {
   test('button render edilmeli', () => {

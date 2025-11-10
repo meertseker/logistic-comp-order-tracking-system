@@ -10,7 +10,7 @@ import '@testing-library/jest-dom'
 import { describe, test, expect, jest } from '@jest/globals'
 
 // Input component'ini import et
-import { Input } from '../../../src/components/Input'
+import Input from '../../../src/components/Input'
 
 describe('Input Component Tests', () => {
   test('input render edilmeli', () => {

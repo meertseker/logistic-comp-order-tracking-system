@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react'
+import React, { ReactNode, useEffect } from 'react'
 import { XMarkIcon } from './Icons'
 import Button from './Button'
 

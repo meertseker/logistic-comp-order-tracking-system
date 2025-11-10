@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, forwardRef, useState } from 'react'
+import React, { InputHTMLAttributes, forwardRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {

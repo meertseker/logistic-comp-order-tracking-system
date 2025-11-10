@@ -10,7 +10,7 @@ import '@testing-library/jest-dom'
 import { describe, test, expect, jest } from '@jest/globals'
 
 // Modal component'ini import et
-import { Modal } from '../../../src/components/Modal'
+import Modal from '../../../src/components/Modal'
 
 describe('Modal Component Tests', () => {
   test('isOpen=true iken modal görünmeli', () => {
