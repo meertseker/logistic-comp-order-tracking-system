@@ -33,7 +33,8 @@
     "test:verbose": "jest --verbose",
     "test:all": "npm run test && npm run test:e2e",
     "security:audit": "npm audit --audit-level=moderate && npx snyk test",
-    "screenshots": "node scripts/take-screenshots.js"
+    "screenshots": "node scripts/take-screenshots.js",
+    "validate:ci": "node scripts/validate-ci-setup.js"
   },
   "keywords": [
     "electron",
@@ -139,10 +140,41 @@
     },
     "mac": {
       "target": [
-        "dmg"
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "category": "public.app-category.business",
-      "icon": "build/icon.icns"
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "entitlements": null,
+      "entitlementsInherit": null
+    },
+    "dmg": {
+      "title": "${productName} ${version}",
+      "icon": null,
+      "background": null,
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
     }
   }
 }

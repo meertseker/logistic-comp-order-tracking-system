@@ -1,6 +1,9 @@
 # Sekersoft - Taşımacılık Yönetim Sistemi
 
-Modern, offline-first masaüstü taşımacılık yönetim uygulaması. Mac bilgisayarlarda çalışmak üzere Electron, React, ve SQLite ile geliştirilmiştir.
+[![Build macOS](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-macos.yml/badge.svg)](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-macos.yml)
+[![Release Build](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/release-build.yml/badge.svg)](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/release-build.yml)
+
+Modern, offline-first masaüstü taşımacılık yönetim uygulaması. Windows ve macOS'ta çalışmak üzere Electron, React, ve SQLite ile geliştirilmiştir.
 
 ## 🚀 Özellikler
 
@@ -49,9 +52,15 @@ Modern, offline-first masaüstü taşımacılık yönetim uygulaması. Mac bilgi
 
 ## 📋 Gereksinimler
 
+### Geliştirme
 - **Node.js**: 18.x veya üzeri
 - **npm**: 9.x veya üzeri
+
+### Çalışma Ortamı
+- **Windows**: Windows 10/11 (64-bit)
 - **macOS**: 10.15 (Catalina) veya üzeri
+  - Intel Macs (x64)
+  - Apple Silicon Macs (M1/M2/M3)
 
 ## 🚀 Kurulum
 
@@ -79,11 +88,29 @@ Bu komut hem Vite dev server'ı hem de Electron uygulamasını başlatır.
 
 ### Production Build
 
+#### macOS
 ```bash
 npm run build:mac
 ```
 
-Bu komut `release` klasöründe Mac için `.dmg` installer oluşturur.
+Bu komut `release` klasöründe Mac için `.dmg` installer oluşturur (hem Intel hem Apple Silicon).
+
+#### Windows
+```bash
+npm run build:win-installer
+```
+
+Bu komut `release` klasöründe Windows için `.exe` installer oluşturur.
+
+### CI/CD (Otomatik Build)
+
+Projede GitHub Actions kullanarak otomatik build sistemi kurulmuştur:
+
+- **macOS**: Her push'ta otomatik .dmg oluşturulur
+- **Windows + macOS**: Tag (v1.0.0 gibi) ile Release build
+- **Artifact Storage**: Built dosyalar Actions sekmesinden indirilebilir
+
+Detaylar için: [.github/README.md](.github/README.md) ve [docs/setup/MACOS_CI_BUILD.md](docs/setup/MACOS_CI_BUILD.md)
 
 ### Sadece Vite Build
 
