@@ -6,8 +6,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // Windows AppData yolu
 const dbPath = process.env.APPDATA 
-  ? path.join(process.env.APPDATA, 'seymen-transport', 'transport.db')
-  : path.join(process.env.HOME || '', 'Library/Application Support/seymen-transport/transport.db')
+  ? path.join(process.env.APPDATA, 'sekersoft', 'transport.db')
+  : path.join(process.env.HOME || '', 'Library/Application Support/sekersoft/transport.db')
 
 console.log('🔧 Database Migration Script')
 console.log('Database path:', dbPath)

@@ -1,4 +1,4 @@
-# Seymen Transport - Taşımacılık Yönetim Sistemi
+# Sekersoft - Taşımacılık Yönetim Sistemi
 
 Modern, offline-first masaüstü taşımacılık yönetim uygulaması. Mac bilgisayarlarda çalışmak üzere Electron, React, ve SQLite ile geliştirilmiştir.
 
@@ -151,7 +151,7 @@ Uygulama electron-builder kullanılarak paketlenir:
 ```json
 {
   "appId": "com.seymen.transport",
-  "productName": "Seymen Transport",
+  "productName": "Sekersoft",
   "mac": {
     "target": ["dmg"],
     "category": "public.app-category.business"
@@ -189,15 +189,32 @@ Vite dev server varsayılan olarak 5173 portunu kullanır. Değiştirmek için `
 - [ ] E-posta entegrasyonu
 - [ ] WhatsApp bildirimleri
 
+## 📚 Dokümantasyon
+
+Tüm detaylı dokümantasyona **[docs/](docs/)** klasöründen ulaşabilirsiniz.
+
+### Hızlı Erişim
+
+- 🚀 **Kurulum**: [docs/setup/](docs/setup/) - Kurulum ve başlangıç rehberleri
+- 📖 **Kullanım**: [docs/user-guide/](docs/user-guide/) - Kullanıcı kılavuzları
+- 👨‍💻 **Geliştirici**: [docs/development/](docs/development/) - Geliştirici dokümantasyonu
+- 🔒 **Güvenlik**: [docs/security/](docs/security/) - Güvenlik ve lisans bilgileri
+- 📊 **Raporlar**: [docs/reports/](docs/reports/) - Proje raporları ve analizler
+- 🎯 **Pazarlama**: [docs/marketing/](docs/marketing/) - Pazarlama materyalleri
+
+**Dokümantasyon İndeksi:** [docs/INDEX.md](docs/INDEX.md)
+
 ## 📝 Lisans
 
 MIT License - Detaylar için LICENSE dosyasına bakınız.
 
 ## 👨‍💻 Geliştirici
 
-Seymen Transport ekibi tarafından geliştirilmiştir.
+Sekersoft ekibi tarafından geliştirilmiştir.
 
 ## 🤝 Katkıda Bulunma
+
+Katkıda bulunmak için [docs/development/CONTRIBUTING.md](docs/development/CONTRIBUTING.md) dosyasını inceleyiniz.
 
 1. Fork edin
 2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)

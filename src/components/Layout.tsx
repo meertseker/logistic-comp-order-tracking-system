@@ -159,7 +159,7 @@ export default function Layout({ children }: LayoutProps) {
                     fontWeight: 700
                   }}
                 >
-                  Seymen
+                  Sekersoft
                 </motion.h1>
                 <motion.p 
                   initial={{ opacity: 0, x: -10 }}
@@ -506,7 +506,7 @@ export default function Layout({ children }: LayoutProps) {
                 }}
               >
                 <Shield className="w-3 h-3" style={{ color: 'rgba(235, 235, 245, 0.4)' }} />
-                © 2025 Seymen Transport
+                © 2025 Sekersoft
               </motion.p>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -585,7 +585,7 @@ export default function Layout({ children }: LayoutProps) {
                     location.pathname === item.href ||
                     (item.href === '/orders' && location.pathname.startsWith('/orders')) ||
                     (item.href === '/active-vehicles' && location.pathname === '/active-vehicles')
-                  )?.name || 'Seymen Transport'}
+                  )?.name || 'Sekersoft'}
                 </motion.h2>
               </div>
               

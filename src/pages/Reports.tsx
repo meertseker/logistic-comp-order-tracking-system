@@ -64,7 +64,7 @@ export default function Reports() {
   const exportToCSV = () => {
     if (!report) return
 
-    let csv = 'Seymen Transport - Aylık Rapor\n'
+    let csv = 'Sekersoft - Aylık Rapor\n'
     csv += `Dönem: ${months.find(m => m.value === month.toString())?.label} ${year}\n\n`
     
     csv += 'Özet\n'

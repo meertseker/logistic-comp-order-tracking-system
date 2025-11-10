@@ -31,7 +31,7 @@ export class AdvancedLicenseManager {
     this.licensePath = path.join(app.getPath('userData'), 'license.dat')
     
     // Güçlü şifreleme anahtarları
-    const masterKey = 'seymen-ultra-secure-2025-key'
+    const masterKey = 'sekersoft-ultra-secure-2025-key'
     this.encryptionKey = crypto.scryptSync(masterKey, 'encryption-salt', 32)
     this.hmacKey = crypto.scryptSync(masterKey, 'hmac-salt', 32)
     
@@ -98,7 +98,7 @@ export class AdvancedLicenseManager {
   generateLicenseKey(hwFingerprint: string): string {
     const hash = crypto
       .createHash('sha256')
-      .update(`${hwFingerprint}-seymen-transport-pro-license-2025`)
+      .update(`${hwFingerprint}-sekersoft-pro-license-2025`)
       .digest('hex')
     
     return `${hash.substring(0, 4)}-${hash.substring(4, 8)}-${hash.substring(8, 12)}-${hash.substring(12, 16)}`.toUpperCase()

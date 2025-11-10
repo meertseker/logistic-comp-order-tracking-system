@@ -26,7 +26,7 @@ export class LicenseManager {
     // Makine ID'sini al (bu her bilgisayar için benzersiz)
     this.machineId = machineIdSync({ original: true })
     // Şifreleme anahtarı - TAM 32 byte olması garantili
-    const keyString = 'seymen-transport-2025-key-32c!' // 32 karakter
+    const keyString = 'sekersoft-2025-key-32-chars!!' // 32 karakter
     this.encryptionKey = crypto.scryptSync(keyString, 'salt', 32)
   }
 
@@ -66,7 +66,7 @@ export class LicenseManager {
   private createKey(machineId: string): string {
     const hash = crypto
       .createHash('sha256')
-      .update(`${machineId}-seymen-transport-license`)
+      .update(`${machineId}-sekersoft-license`)
       .digest('hex')
     
     // Daha okunabilir bir format (XXXX-XXXX-XXXX-XXXX)

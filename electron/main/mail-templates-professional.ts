@@ -78,7 +78,7 @@ function getBaseTemplate(content: string): string {
 }
 
 /**
- * HEADER - Seymen Transport Branding
+ * HEADER - Sekersoft Branding
  */
 function getHeader(title: string, subtitle: string, statusColor: string = '#0066FF'): string {
   return `
@@ -86,7 +86,7 @@ function getHeader(title: string, subtitle: string, statusColor: string = '#0066
       <td style="padding:32px 32px 24px;">
         <div style="text-align:center;margin-bottom:24px;">
           <div style="display:inline-block;padding:12px 24px;background:${statusColor};border-radius:6px;">
-            <span style="color:#ffffff;font-size:14px;font-weight:600;letter-spacing:0.5px;">SEYMEN TRANSPORT</span>
+            <span style="color:#ffffff;font-size:14px;font-weight:600;letter-spacing:0.5px;">SEKERSOFT</span>
           </div>
         </div>
         <h1 style="margin:0 0 8px;color:#1a1a1a;font-size:28px;font-weight:700;text-align:center;line-height:1.3;">
@@ -204,7 +204,7 @@ function getFooter(): string {
       <td style="padding:24px 32px 32px;">
         <div style="border-top:1px solid #e5e7eb;padding-top:24px;text-align:center;">
           <p style="margin:0 0 12px;color:#1a1a1a;font-size:14px;font-weight:600;">
-            Seymen Transport
+            Sekersoft
           </p>
           <p style="margin:0 0 8px;color:#6b7280;font-size:13px;">
             Profesyonel Lojistik Çözümleri

@@ -44,7 +44,7 @@ function generateOrderPDF(order: any): jsPDF {
   
   // Başlık
   doc.setFontSize(20)
-  doc.text('SEYMEN TRANSPORT', 105, 20, { align: 'center' })
+  doc.text('SEKERSOFT', 105, 20, { align: 'center' })
   
   doc.setFontSize(16)
   doc.text(`Siparis #${order.id}`, 105, 30, { align: 'center' })
@@ -170,7 +170,7 @@ function generateOrderPDF(order: any): jsPDF {
   // Footer
   doc.setFontSize(8)
   doc.setTextColor(128, 128, 128)
-  doc.text('Seymen Transport - Lojistik Yonetim Sistemi', 105, 285, { align: 'center' })
+  doc.text('Sekersoft - Lojistik Yonetim Sistemi', 105, 285, { align: 'center' })
   doc.text(`Olusturulma: ${new Date().toLocaleString('tr-TR')}`, 105, 290, { align: 'center' })
   
   return doc
@@ -195,7 +195,7 @@ function generateCustomerOrderPDF(order: any): jsPDF {
   
   // Başlık
   doc.setFontSize(20)
-  doc.text('SEYMEN TRANSPORT', 105, 20, { align: 'center' })
+  doc.text('SEKERSOFT', 105, 20, { align: 'center' })
   
   doc.setFontSize(16)
   doc.text(`Siparis #${order.id}`, 105, 30, { align: 'center' })
@@ -280,7 +280,7 @@ function generateCustomerOrderPDF(order: any): jsPDF {
   // Footer
   doc.setFontSize(8)
   doc.setTextColor(128, 128, 128)
-  doc.text('Seymen Transport - Lojistik Yonetim Sistemi', 105, 280, { align: 'center' })
+  doc.text('Sekersoft - Lojistik Yonetim Sistemi', 105, 280, { align: 'center' })
   doc.text(`Olusturulma: ${new Date().toLocaleString('tr-TR')}`, 105, 285, { align: 'center' })
   doc.text('Herhangi bir sorunuz icin lutfen bizimle iletisime geciniz.', 105, 290, { align: 'center' })
   
@@ -319,7 +319,7 @@ export function exportReportToPDF(report: any, year: number, month: number) {
   
   // Başlık
   doc.setFontSize(20)
-  doc.text('SEYMEN TRANSPORT', 105, 20, { align: 'center' })
+  doc.text('SEKERSOFT', 105, 20, { align: 'center' })
   
   doc.setFontSize(14)
   doc.text(`Aylik Rapor - ${month}/${year}`, 105, 30, { align: 'center' })
@@ -403,7 +403,7 @@ export function exportReportToPDF(report: any, year: number, month: number) {
   
   // Footer
   doc.setFontSize(8)
-  doc.text('Seymen Transport - Lojistik Yonetim Sistemi', 105, 285, { align: 'center' })
+  doc.text('Sekersoft - Lojistik Yonetim Sistemi', 105, 285, { align: 'center' })
   
   // PDF'i indir
   doc.save(`rapor_${year}_${month}.pdf`)

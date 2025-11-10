@@ -344,7 +344,7 @@ const createTables = () => {
       smtp_user TEXT,
       smtp_password TEXT,
       from_email TEXT,
-      from_name TEXT DEFAULT 'Seymen Transport',
+      from_name TEXT DEFAULT 'Sekersoft',
       enabled INTEGER DEFAULT 0,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )

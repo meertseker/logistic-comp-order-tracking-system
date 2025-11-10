@@ -6,7 +6,7 @@
 // Mock Electron
 jest.mock('electron', () => ({
   app: {
-    getPath: jest.fn((name: string) => {
+    getPath: jest.fn((name) => {
       if (name === 'userData') {
         return '/tmp/test-userdata'
       }

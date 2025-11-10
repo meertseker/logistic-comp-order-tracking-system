@@ -23,7 +23,7 @@ function generateAdvancedLicenseKey(hwFingerprint) {
   // Bu hash fonksiyonu advanced-license-manager.ts ile birebir aynı olmalı
   const hash = crypto
     .createHash('sha256')
-    .update(`${hwFingerprint}-seymen-transport-pro-license-2025`)
+    .update(`${hwFingerprint}-sekersoft-pro-license-2025`)
     .digest('hex')
   
   // Format: XXXX-XXXX-XXXX-XXXX
@@ -49,7 +49,7 @@ function main() {
   const licenseKey = generateAdvancedLicenseKey(hwFingerprint)
   
   console.log('\n' + '='.repeat(70))
-  console.log('🔐 SEYMEN TRANSPORT - GELİŞMİŞ LİSANS ANAHTARI (PRO)')
+  console.log('🔐 SEKERSOFT - GELİŞMİŞ LİSANS ANAHTARI (PRO)')
   console.log('='.repeat(70))
   console.log('\n🖥️  Hardware Fingerprint:')
   console.log(`   ${hwFingerprint}`)

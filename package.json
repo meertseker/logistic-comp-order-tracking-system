@@ -1,5 +1,5 @@
 {
-  "name": "seymen-transport",
+  "name": "sekersoft",
   "version": "1.0.0",
   "description": "Offline Desktop Transportation Management System",
   "main": "dist-electron/main/index.cjs",
@@ -23,12 +23,17 @@
     "test": "jest",
     "test:unit": "jest tests/unit",
     "test:integration": "jest tests/integration",
-    "test:e2e": "jest tests/e2e",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:critical": "jest -t KRİTİK",
     "test:verbose": "jest --verbose",
-    "security:audit": "npm audit --audit-level=moderate && npx snyk test"
+    "test:all": "npm run test && npm run test:e2e",
+    "security:audit": "npm audit --audit-level=moderate && npx snyk test",
+    "screenshots": "node scripts/take-screenshots.js"
   },
   "keywords": [
     "electron",
@@ -37,7 +42,7 @@
     "sqlite",
     "transportation"
   ],
-  "author": "Seymen Transport",
+  "author": "Sekersoft",
   "license": "MIT",
   "dependencies": {
     "better-sqlite3": "^9.2.0",
@@ -59,6 +64,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@types/better-sqlite3": "^7.6.0",
@@ -79,8 +85,12 @@
     "eslint": "^8.0.0",
     "eslint-plugin-react": "^7.33.0",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
     "jest-mock-extended": "^4.0.0",
+    "jsdom": "^27.0.1",
+    "playwright": "^1.56.1",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.4.0",
     "ts-jest": "^29.4.5",
@@ -89,8 +99,8 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.seymen.transport",
-    "productName": "Seymen Transport",
+    "appId": "com.sekersoft.transport",
+    "productName": "Sekersoft",
     "directories": {
       "output": "release"
     },
@@ -123,7 +133,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Seymen Transport",
+      "shortcutName": "Sekersoft",
       "perMachine": true,
       "license": "LICENSE"
     },

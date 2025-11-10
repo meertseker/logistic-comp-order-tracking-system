@@ -44,7 +44,7 @@ export default function SettingsProfessional() {
     smtp_user: '',
     smtp_password: '',
     from_email: '',
-    from_name: 'Seymen Transport',
+    from_name: 'Sekersoft',
     enabled: false,
   })
   
@@ -77,7 +77,7 @@ export default function SettingsProfessional() {
           smtp_user: settings.smtp_user || '',
           smtp_password: settings.smtp_password || '',
           from_email: settings.from_email || '',
-          from_name: settings.from_name || 'Seymen Transport',
+          from_name: settings.from_name || 'Sekersoft',
           enabled: settings.enabled === 1,
         })
         

@@ -23,7 +23,7 @@ function generateLicenseKey(machineId) {
   // Bu hash fonksiyonu license-manager.ts ile birebir aynı olmalı
   const hash = crypto
     .createHash('sha256')
-    .update(`${machineId}-seymen-transport-license`)
+    .update(`${machineId}-sekersoft-license`)
     .digest('hex')
   
   // Daha okunabilir bir format (XXXX-XXXX-XXXX-XXXX)
@@ -49,7 +49,7 @@ function main() {
   const licenseKey = generateLicenseKey(machineId)
   
   console.log('\n' + '='.repeat(60))
-  console.log('🔑 SEYMEN TRANSPORT - LİSANS ANAHTARI')
+  console.log('🔑 SEKERSOFT - LİSANS ANAHTARI')
   console.log('='.repeat(60))
   console.log('\n📋 Makine ID:')
   console.log(`   ${machineId}`)

@@ -453,7 +453,7 @@ export class MailService {
                     <tr>
                         <td style="padding: 30px; background-color: #f9fafb; text-align: center; border-top: 1px solid #e5e7eb;">
                             <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px;">
-                                <strong>Seymen Transport</strong>
+                                <strong>Sekersoft</strong>
                             </p>
                             <p style="margin: 0; color: #9ca3af; font-size: 12px;">
                                 Bu mail otomatik olarak oluşturulmuştur.
@@ -485,7 +485,7 @@ export class MailService {
     }
     
     return `
-SEYMEN TRANSPORT - SİPARİŞ DETAYLARI
+SEKERSOFT - SİPARİŞ DETAYLARI
 Sipariş #${data.orderId}
 
 MÜŞTERİ BİLGİLERİ
@@ -513,7 +513,7 @@ Toplam Ücret: ${formatCurrency(data.baslangicFiyati)}
 
 ---
 Bu mail otomatik olarak oluşturulmuştur.
-Seymen Transport
+Sekersoft
     `.trim()
   }
 }

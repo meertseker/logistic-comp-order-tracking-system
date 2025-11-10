@@ -51,7 +51,7 @@ describe('Mail Service Logic Tests', () => {
         smtp_user: 'test@gmail.com',
         smtp_password: 'password123',
         from_email: 'test@gmail.com',
-        from_name: 'Seymen Transport',
+        from_name: 'Sekersoft',
         enabled: true,
       }
       
@@ -168,7 +168,7 @@ describe('Mail Service Logic Tests', () => {
       }
       
       return `
-SEYMEN TRANSPORT - SİPARİŞ DETAYLARI
+SEKERSOFT - SİPARİŞ DETAYLARI
 Sipariş #${data.orderId}
 
 MÜŞTERİ BİLGİLERİ
@@ -196,7 +196,7 @@ Toplam Ücret: ${formatCurrency(data.baslangicFiyati)}
 
 ---
 Bu mail otomatik olarak oluşturulmuştur.
-Seymen Transport
+Sekersoft
       `.trim()
     }
     
@@ -461,7 +461,7 @@ Seymen Transport
   describe('Mail Options Logic', () => {
     it('mail options tüm gerekli alanları içermeli', () => {
       const mailOptions = {
-        from: '"Seymen Transport" <info@seymentransport.com>',
+        from: '"Sekersoft" <info@seymentransport.com>',
         to: 'musteri@example.com',
         subject: 'Siparişiniz Alındı - Sipariş #123',
         html: '<html>...</html>',
@@ -476,9 +476,9 @@ Seymen Transport
     })
     
     it('from adresi isim ve email içermeli', () => {
-      const from = '"Seymen Transport" <info@seymentransport.com>'
+      const from = '"Sekersoft" <info@seymentransport.com>'
       
-      expect(from).toContain('Seymen Transport')
+      expect(from).toContain('Sekersoft')
       expect(from).toContain('<')
       expect(from).toContain('>')
       expect(from).toContain('@')

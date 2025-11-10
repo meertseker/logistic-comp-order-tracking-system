@@ -1,0 +1,48 @@
+KONU: Nakliye İşinizi Dijitalleştirin - Sekersoft
+
+───────────────────────────────────────────────────────
+
+Merhaba,
+
+Nakliye sektöründe çalışan bir firma olarak sizinle paylaşmak istediğim bir çözüm var.
+
+Hepimizin bildiği sorunlar:
+❌ Sipariş defteri karışık, geçmiş kayıt bulmak zor
+❌ Maliyetleri hesaplarken bazı giderler unutuluyor
+❌ "Bu işten kar mı zarar mı ettik?" sorusu
+❌ Ay sonunda rapor hazırlamak saatler alıyor
+
+Bunları çözmek için SEYMEN TRANSPORT'u geliştirdik.
+
+✅ Tüm siparişleriniz dijital ortamda
+✅ Maliyetler otomatik hesaplanıyor (yakıt, sürücü, bakım, HGS...)
+✅ Her siparişin kar/zarar'ı anında görünüyor
+✅ Ay sonu raporu 2 dakikada hazır
+✅ Tamamen offline - internet gerektirmiyor
+✅ Verileriniz sadece sizde, hiç paylaşılmıyor
+
+📊 Örnek: 22.000₺'lik sipariş → Sistem tüm giderleri çıkarıyor → Net kar: 11.550₺ (%52.5 kar marjı)
+
+🚀 SONUÇ:
+- Sipariş girme: 30 saniye
+- Maliyet hesaplama: Otomatik
+- Rapor hazırlama: 2 dakika
+- Zaman tasarrufu: %80
+- Karlılık artışı: %25
+
+Detaylı bilgi için ekteki broşürü inceleyebilirsiniz.
+
+Demo görmek veya sorularınız için iletişime geçebilirsiniz:
+
+📧 Email: support@seymentransport.com
+☎️ Telefon: 0(5XX) XXX XX XX
+
+İyi çalışmalar dilerim,
+
+Sekersoft Ekibi
+🚛 Modern Nakliye Yönetim Çözümleri
+
+───────────────────────────────────────────────────────
+
+NOT: Bu mail'e NAKLIYECI_BROSUR.html dosyasını EK olarak ekleyin.
+Alıcı dosyayı açıp tarayıcıda görüntüleyebilecek.
