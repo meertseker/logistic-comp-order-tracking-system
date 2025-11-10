@@ -1,6 +1,8 @@
 # Sekersoft - Taşımacılık Yönetim Sistemi
 
 [![Build macOS](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-macos.yml/badge.svg)](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-macos.yml)
+[![Build Windows](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-windows.yml/badge.svg)](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-windows.yml)
+[![Build All Platforms](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-all-platforms.yml/badge.svg)](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-all-platforms.yml)
 [![Release Build](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/release-build.yml/badge.svg)](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/release-build.yml)
 
 Modern, offline-first masaüstü taşımacılık yönetim uygulaması. Windows ve macOS'ta çalışmak üzere Electron, React, ve SQLite ile geliştirilmiştir.
@@ -106,11 +108,16 @@ Bu komut `release` klasöründe Windows için `.exe` installer oluşturur.
 
 Projede GitHub Actions kullanarak otomatik build sistemi kurulmuştur:
 
-- **macOS**: Her push'ta otomatik .dmg oluşturulur
-- **Windows + macOS**: Tag (v1.0.0 gibi) ile Release build
-- **Artifact Storage**: Built dosyalar Actions sekmesinden indirilebilir
+- **Windows**: Her push'ta otomatik .exe installer oluşturulur
+- **macOS**: Her push'ta otomatik .dmg oluşturulur (Intel + Apple Silicon)
+- **Tüm Platformlar**: Tek workflow ile her ikisi birden
+- **Release Build**: Tag (v1.0.0 gibi) ile Windows + macOS
+- **Artifact Storage**: Built dosyalar Actions sekmesinden indirilebilir (30-90 gün)
 
-Detaylar için: [.github/README.md](.github/README.md) ve [docs/setup/MACOS_CI_BUILD.md](docs/setup/MACOS_CI_BUILD.md)
+**Detaylı Dokümantasyon:**
+- [Windows CI Build (Türkçe)](docs/setup/WINDOWS_CI_BUILD_TR.md)
+- [macOS CI Build](docs/setup/MACOS_CI_BUILD.md)
+- [Workflow Dokümantasyonu](.github/README.md)
 
 ### Sadece Vite Build
 
