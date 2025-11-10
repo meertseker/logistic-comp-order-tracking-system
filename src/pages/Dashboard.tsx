@@ -125,20 +125,20 @@ export default function Dashboard() {
   })
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8">
       {/* Hero Header with Animated Background */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-2xl p-8"
+        className="relative overflow-hidden rounded-xl sm:rounded-2xl p-5 sm:p-8"
         style={{
           background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.15) 0%, rgba(48, 209, 88, 0.15) 100%)',
           border: '0.5px solid rgba(10, 132, 255, 0.3)',
         }}
       >
         {/* Animated background circles */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full blur-3xl opacity-20 animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-green-500 rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-0 right-0 w-40 sm:w-64 h-40 sm:h-64 bg-blue-500 rounded-full blur-3xl opacity-20 animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-40 sm:w-64 h-40 sm:h-64 bg-green-500 rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
         
         <div className="relative z-10">
           <motion.div
@@ -146,15 +146,15 @@ export default function Dashboard() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <h1 className="text-4xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
               {greeting} 👋
             </h1>
-            <p className="text-lg mb-1" style={{ color: 'rgba(235, 235, 245, 0.8)' }}>
+            <p className="text-sm sm:text-base md:text-lg mb-1" style={{ color: 'rgba(235, 235, 245, 0.8)' }}>
               İşletmenizin anlık durumu
             </p>
             <div className="flex items-center gap-2 mt-2">
-              <Calendar className="w-4 h-4" style={{ color: 'rgba(235, 235, 245, 0.6)' }} />
-              <p className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: 'rgba(235, 235, 245, 0.6)' }} />
+              <p className="text-xs sm:text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
                 {currentDate}
               </p>
             </div>
@@ -205,28 +205,28 @@ export default function Dashboard() {
       </div>
 
       {/* Financial Overview - Big Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          className="glass-card rounded-xl p-4 sm:p-6 relative overflow-hidden"
           style={{ background: 'rgba(48, 209, 88, 0.12)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}
         >
-          <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#30D158' }} />
+          <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#30D158' }} />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="w-5 h-5" style={{ color: '#30D158' }} />
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#30D158' }}>
+              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#30D158' }} />
+              <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider" style={{ color: '#30D158' }}>
                 Bu Ay Gelir
               </p>
             </div>
-            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+            <p className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
               {formatCurrency(stats?.monthlyEarnings || 0)}
             </p>
             <div className="flex items-center gap-2 mt-2">
               <TrendingUp className="w-3 h-3" style={{ color: stats?.earningsTrend >= 0 ? '#30D158' : '#FF453A' }} />
-              <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+              <p className="text-[10px] sm:text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
                 {stats?.earningsTrend >= 0 ? '+' : ''}{stats?.earningsTrend.toFixed(1)}% geçen aya göre
               </p>
             </div>
@@ -237,21 +237,21 @@ export default function Dashboard() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          className="glass-card rounded-xl p-4 sm:p-6 relative overflow-hidden"
           style={{ background: 'rgba(255, 69, 58, 0.12)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}
         >
-          <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#FF453A' }} />
+          <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#FF453A' }} />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-5 h-5" style={{ color: '#FF453A' }} />
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#FF453A' }}>
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#FF453A' }} />
+              <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider" style={{ color: '#FF453A' }}>
                 Bu Ay Gider
               </p>
             </div>
-            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+            <p className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
               {formatCurrency((stats?.monthlyExpenses || 0) + (stats?.monthlyEstimatedCosts || 0))}
             </p>
-            <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+            <p className="text-[10px] sm:text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
               Ek + Tahmini maliyetler
             </p>
           </div>
@@ -261,23 +261,23 @@ export default function Dashboard() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          className="glass-card rounded-xl p-4 sm:p-6 relative overflow-hidden"
           style={{ background: 'rgba(10, 132, 255, 0.12)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}
         >
-          <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#0A84FF' }} />
+          <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#0A84FF' }} />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
-              <Activity className="w-5 h-5" style={{ color: '#0A84FF' }} />
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#0A84FF' }}>
+              <Activity className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#0A84FF' }} />
+              <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider" style={{ color: '#0A84FF' }}>
                 Net Kar
               </p>
             </div>
-            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+            <p className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
               {formatCurrency(stats?.monthlyNetIncome || 0)}
             </p>
             <div className="flex items-center gap-2 mt-2">
               <TrendingUp className="w-3 h-3" style={{ color: stats?.netIncomeTrend >= 0 ? '#30D158' : '#FF453A' }} />
-              <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+              <p className="text-[10px] sm:text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
                 {stats?.netIncomeTrend >= 0 ? '+' : ''}{stats?.netIncomeTrend.toFixed(1)}% geçen aya göre
               </p>
             </div>
@@ -288,24 +288,24 @@ export default function Dashboard() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}
-          className="glass-card rounded-xl p-6 relative overflow-hidden"
+          className="glass-card rounded-xl p-4 sm:p-6 relative overflow-hidden"
           style={{ background: 'rgba(191, 90, 242, 0.12)', border: '0.5px solid rgba(191, 90, 242, 0.3)' }}
         >
-          <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#BF5AF2' }} />
+          <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#BF5AF2' }} />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-5 h-5" style={{ color: '#BF5AF2' }} />
-              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#BF5AF2' }}>
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#BF5AF2' }} />
+              <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider" style={{ color: '#BF5AF2' }}>
                 Kar Marjı
               </p>
             </div>
-            <p className="text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+            <p className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
               {stats?.monthlyEarnings > 0 
                 ? `%${((stats?.monthlyNetIncome / stats?.monthlyEarnings) * 100).toFixed(1)}`
                 : '%0'
               }
             </p>
-            <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+            <p className="text-[10px] sm:text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
               Karlılık oranı
             </p>
           </div>
@@ -313,7 +313,7 @@ export default function Dashboard() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="lg:col-span-2">
           <EarningsChart
             data={stats?.dailyData || []}
@@ -327,7 +327,7 @@ export default function Dashboard() {
       </div>
 
       {/* Bottom Section - Vehicle Performance & Upcoming Deliveries */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <VehiclePerformance vehicles={stats?.topVehicles || []} />
         <UpcomingDeliveries orders={stats?.upcomingDeliveries || []} />
       </div>

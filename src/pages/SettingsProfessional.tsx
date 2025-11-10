@@ -388,10 +388,18 @@ export default function SettingsProfessional() {
                     {provider === 'gmail' && (
                       <div className="mt-4 p-4 bg-yellow-500/10 border-2 border-yellow-500/30 rounded-lg">
                         <p className="text-sm text-yellow-200 font-medium mb-2">⚠️ Gmail kullanıcılarına özel:</p>
-                        <p className="text-sm text-yellow-100">
+                        <p className="text-sm text-yellow-100 mb-3">
                           Gmail'de 2 adımlı doğrulama <strong>açıksa</strong>, normal şifreniz <strong>çalışmaz</strong>!
                           "Uygulama Şifresi" oluşturmalısınız.
                         </p>
+                        <a
+                          href="https://myaccount.google.com/apppasswords"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-sm text-yellow-300 hover:text-yellow-100 font-medium underline transition-colors"
+                        >
+                          🔗 Uygulama Şifresi Oluştur
+                        </a>
                       </div>
                     )}
                   </div>

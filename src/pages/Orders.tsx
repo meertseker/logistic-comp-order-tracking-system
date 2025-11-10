@@ -227,35 +227,35 @@ export default function Orders() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8">
       {/* Modern Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
       >
         <div>
-          <h1 className="text-4xl font-bold" style={{ color: '#FFFFFF' }}>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold" style={{ color: '#FFFFFF' }}>
             Siparişler
           </h1>
-          <p className="mt-2 text-lg" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base md:text-lg" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
             Tüm siparişlerinizi yönetin ve takip edin
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
           {orders.length > 0 && (
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="secondary" onClick={() => exportOrdersToExcel(orders)}>
-                <Download className="w-5 h-5 mr-2" />
-                Excel İndir
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex-1 sm:flex-none">
+              <Button variant="secondary" onClick={() => exportOrdersToExcel(orders)} className="w-full sm:w-auto">
+                <Download className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                <span className="hidden sm:inline">Excel İndir</span>
               </Button>
             </motion.div>
           )}
-          <Link to="/orders/new">
+          <Link to="/orders/new" className="flex-1 sm:flex-none">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button>
-                <Plus className="w-5 h-5 mr-2" />
-                Yeni Sipariş
+              <Button className="w-full sm:w-auto">
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                <span>Yeni Sipariş</span>
               </Button>
             </motion.div>
           </Link>
@@ -268,28 +268,28 @@ export default function Orders() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4"
         >
           {/* Toplam Gelir */}
           <motion.div
             whileHover={{ scale: 1.02, y: -4 }}
-            className="glass-card rounded-xl p-6 relative overflow-hidden"
+            className="glass-card rounded-xl p-4 sm:p-6 relative overflow-hidden"
             style={{ background: 'rgba(10, 132, 255, 0.12)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}
           >
-            <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#0A84FF' }} />
+            <div className="absolute top-0 right-0 w-16 sm:w-20 h-16 sm:h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#0A84FF' }} />
             <div className="relative">
               <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-4 h-4" style={{ color: '#0A84FF' }} />
-                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#0A84FF' }}>
+                <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: '#0A84FF' }} />
+                <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider" style={{ color: '#0A84FF' }}>
                   Toplam Gelir
                 </p>
               </div>
-              <p className="text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+              <p className="text-xl sm:text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
                 {formatCurrency(statistics.toplamGelir)}
               </p>
               <div className="flex items-center gap-2 mt-2">
                 <Package className="w-3 h-3" style={{ color: 'rgba(235, 235, 245, 0.6)' }} />
-                <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                <p className="text-[10px] sm:text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
                   {statistics.toplamSiparis} sipariş
                 </p>
               </div>
@@ -299,21 +299,21 @@ export default function Orders() {
           {/* Toplam Maliyet */}
           <motion.div
             whileHover={{ scale: 1.02, y: -4 }}
-            className="glass-card rounded-xl p-6 relative overflow-hidden"
+            className="glass-card rounded-xl p-4 sm:p-6 relative overflow-hidden"
             style={{ background: 'rgba(255, 69, 58, 0.12)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}
           >
-            <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#FF453A' }} />
+            <div className="absolute top-0 right-0 w-16 sm:w-20 h-16 sm:h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#FF453A' }} />
             <div className="relative">
               <div className="flex items-center gap-2 mb-2">
-                <TrendingDown className="w-4 h-4" style={{ color: '#FF453A' }} />
-                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#FF453A' }}>
+                <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: '#FF453A' }} />
+                <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider" style={{ color: '#FF453A' }}>
                   Toplam Maliyet
                 </p>
               </div>
-              <p className="text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+              <p className="text-xl sm:text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
                 {formatCurrency(statistics.toplamMaliyet)}
               </p>
-              <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+              <p className="text-[10px] sm:text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
                 Tahmini gider
               </p>
             </div>
@@ -322,35 +322,35 @@ export default function Orders() {
           {/* Gerçek Kâr */}
           <motion.div
             whileHover={{ scale: 1.02, y: -4 }}
-            className="glass-card rounded-xl p-6 relative overflow-hidden"
+            className="glass-card rounded-xl p-4 sm:p-6 relative overflow-hidden"
             style={{ 
               background: statistics.toplamKar >= 0 ? 'rgba(48, 209, 88, 0.12)' : 'rgba(255, 159, 10, 0.12)', 
               border: statistics.toplamKar >= 0 ? '0.5px solid rgba(48, 209, 88, 0.3)' : '0.5px solid rgba(255, 159, 10, 0.3)' 
             }}
           >
             <div 
-              className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" 
+              className="absolute top-0 right-0 w-16 sm:w-20 h-16 sm:h-20 rounded-full blur-2xl opacity-30" 
               style={{ backgroundColor: statistics.toplamKar >= 0 ? '#30D158' : '#FF9F0A' }} 
             />
             <div className="relative">
               <div className="flex items-center gap-2 mb-2">
                 {statistics.toplamKar >= 0 ? (
-                  <CheckCircle className="w-4 h-4" style={{ color: '#30D158' }} />
+                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: '#30D158' }} />
                 ) : (
-                  <AlertCircle className="w-4 h-4" style={{ color: '#FF9F0A' }} />
+                  <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: '#FF9F0A' }} />
                 )}
                 <p 
-                  className="text-xs font-medium uppercase tracking-wider" 
+                  className="text-[10px] sm:text-xs font-medium uppercase tracking-wider" 
                   style={{ color: statistics.toplamKar >= 0 ? '#30D158' : '#FF9F0A' }}
                 >
                   Gerçek Kâr
                 </p>
               </div>
-              <p className="text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+              <p className="text-xl sm:text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
                 {formatCurrency(statistics.toplamKar)}
               </p>
               <p 
-                className="text-xs" 
+                className="text-[10px] sm:text-xs" 
                 style={{ color: statistics.toplamKar >= 0 ? '#30D158' : '#FF9F0A' }}
               >
                 {statistics.toplamKar >= 0 ? '✓ Kârlı' : '⚠ Zararlı'}
@@ -361,24 +361,24 @@ export default function Orders() {
           {/* Kâr Marjı */}
           <motion.div
             whileHover={{ scale: 1.02, y: -4 }}
-            className="glass-card rounded-xl p-6 relative overflow-hidden"
+            className="glass-card rounded-xl p-4 sm:p-6 relative overflow-hidden"
             style={{ background: 'rgba(191, 90, 242, 0.12)', border: '0.5px solid rgba(191, 90, 242, 0.3)' }}
           >
-            <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#BF5AF2' }} />
+            <div className="absolute top-0 right-0 w-16 sm:w-20 h-16 sm:h-20 rounded-full blur-2xl opacity-30" style={{ backgroundColor: '#BF5AF2' }} />
             <div className="relative">
               <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4" style={{ color: '#BF5AF2' }} />
-                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#BF5AF2' }}>
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: '#BF5AF2' }} />
+                <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider" style={{ color: '#BF5AF2' }}>
                   Kâr Marjı
                 </p>
               </div>
-              <p className="text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+              <p className="text-xl sm:text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
                 {statistics.toplamGelir > 0 
                   ? `%${statistics.gercekKarMarji.toFixed(1)}`
                   : '-%'
                 }
               </p>
-              <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+              <p className="text-[10px] sm:text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
                 Gelir / Kâr oranı
               </p>
             </div>
@@ -387,31 +387,31 @@ export default function Orders() {
           {/* Hedef Sapması */}
           <motion.div
             whileHover={{ scale: 1.02, y: -4 }}
-            className="glass-card rounded-xl p-6 relative overflow-hidden"
+            className="glass-card rounded-xl p-4 sm:p-6 relative overflow-hidden"
             style={{ 
               background: statistics.hedefKarSapmasi >= 0 ? 'rgba(48, 209, 88, 0.12)' : 'rgba(255, 214, 10, 0.12)', 
               border: statistics.hedefKarSapmasi >= 0 ? '0.5px solid rgba(48, 209, 88, 0.3)' : '0.5px solid rgba(255, 214, 10, 0.3)' 
             }}
           >
             <div 
-              className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-30" 
+              className="absolute top-0 right-0 w-16 sm:w-20 h-16 sm:h-20 rounded-full blur-2xl opacity-30" 
               style={{ backgroundColor: statistics.hedefKarSapmasi >= 0 ? '#30D158' : '#FFD60A' }} 
             />
             <div className="relative">
               <div className="flex items-center gap-2 mb-2">
-                <Target className="w-4 h-4" style={{ color: statistics.hedefKarSapmasi >= 0 ? '#30D158' : '#FFD60A' }} />
+                <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: statistics.hedefKarSapmasi >= 0 ? '#30D158' : '#FFD60A' }} />
                 <p 
-                  className="text-xs font-medium uppercase tracking-wider" 
+                  className="text-[10px] sm:text-xs font-medium uppercase tracking-wider" 
                   style={{ color: statistics.hedefKarSapmasi >= 0 ? '#30D158' : '#FFD60A' }}
                 >
                   Hedef Sapma
                 </p>
               </div>
-              <p className="text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
+              <p className="text-xl sm:text-2xl font-bold mb-1" style={{ color: '#FFFFFF' }}>
                 {formatCurrency(statistics.hedefKarSapmasi)}
               </p>
               <p 
-                className="text-xs" 
+                className="text-[10px] sm:text-xs" 
                 style={{ color: statistics.hedefKarSapmasi >= 0 ? '#30D158' : '#FFD60A' }}
               >
                 {statistics.hedefKarSapmasi >= 0 ? '↑ Hedefin üstünde' : '↓ Hedefin altında'}
@@ -454,36 +454,38 @@ export default function Orders() {
             initial={{ opacity: 0, y: -10, height: 0 }}
             animate={{ opacity: 1, y: 0, height: 'auto' }}
             exit={{ opacity: 0, y: -10, height: 0 }}
-            className="glass-card rounded-xl p-4"
+            className="glass-card rounded-xl p-3 sm:p-4"
             style={{ background: 'rgba(10, 132, 255, 0.12)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-5 h-5" style={{ color: '#0A84FF' }} />
-                <p className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#0A84FF' }} />
+                <p className="text-xs sm:text-sm font-semibold" style={{ color: '#FFFFFF' }}>
                   {selectedOrders.length} sipariş seçildi
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Select
-                  options={[
-                    { value: '', label: 'Durum Değiştir...' },
-                    ...STATUS_OPTIONS.filter(s => s.value !== '')
-                  ]}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      handleBulkStatusUpdate(e.target.value)
-                      e.target.value = ''
-                    }
-                  }}
-                />
+              <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex-1 sm:flex-none">
+                  <Select
+                    options={[
+                      { value: '', label: 'Durum Değiştir...' },
+                      ...STATUS_OPTIONS.filter(s => s.value !== '')
+                    ]}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleBulkStatusUpdate(e.target.value)
+                        e.target.value = ''
+                      }
+                    }}
+                  />
+                </div>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button variant="danger" size="sm" onClick={handleBulkDelete}>
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Sil ({selectedOrders.length})
+                    <Trash2 className="w-4 h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Sil ({selectedOrders.length})</span>
                   </Button>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="hidden sm:block">
                   <Button variant="secondary" size="sm" onClick={() => setSelectedOrders([])}>
                     İptal
                   </Button>

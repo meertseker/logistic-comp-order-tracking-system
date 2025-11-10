@@ -332,42 +332,42 @@ export default function CreateOrderFixed() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-8">
+    <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-6 sm:pb-8">
       {/* Modern Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex items-start justify-between"
       >
-        <div>
-          <div className="flex items-center gap-4 mb-2">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 sm:gap-4 mb-2">
             <Link to="/orders">
               <motion.button
                 whileHover={{ scale: 1.05, x: -4 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2 rounded-xl"
+                className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl"
                 style={{ 
                   backgroundColor: 'rgba(10, 132, 255, 0.15)', 
                   color: '#0A84FF',
                   border: '0.5px solid rgba(10, 132, 255, 0.3)'
                 }}
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </motion.button>
             </Link>
             <div>
-              <h1 className="text-4xl font-bold" style={{ color: '#FFFFFF' }}>
+              <h1 className="text-xl sm:text-2xl md:text-4xl font-bold" style={{ color: '#FFFFFF' }}>
                 Yeni Sipariş Oluştur
               </h1>
             </div>
           </div>
-          <p className="text-lg ml-16" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+          <p className="text-sm sm:text-base md:text-lg ml-10 sm:ml-16" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
             🎯 Profesyonel maliyet analizi ile sipariş ekleyin
           </p>
       </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Form - Sol taraf */}
         <div className="lg:col-span-2">
           <Card>
