@@ -5,28 +5,22 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
   Title,
   Tooltip,
   Legend,
-  ArcElement,
 } from 'chart.js'
-import { Line, Bar, Pie } from 'react-chartjs-2'
+import { Bar } from 'react-chartjs-2'
 import Card from '../components/Card'
 import { formatCurrency } from '../utils/formatters'
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
   Title,
   Tooltip,
-  Legend,
-  ArcElement
+  Legend
 )
 
 export default function ChartsPage() {
@@ -83,34 +77,6 @@ export default function ChartsPage() {
 
   if (!monthlyData) return null
 
-  // Gelir-Gider Trend Grafiği (Çizgi)
-  const trendData = {
-    labels: monthlyData.map((m: any) => m.label),
-    datasets: [
-      {
-        label: 'Gelir',
-        data: monthlyData.map((m: any) => m.earnings),
-        borderColor: 'rgb(34, 197, 94)',
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-        tension: 0.3,
-      },
-      {
-        label: 'Maliyet',
-        data: monthlyData.map((m: any) => m.costs),
-        borderColor: 'rgb(249, 115, 22)',
-        backgroundColor: 'rgba(249, 115, 22, 0.1)',
-        tension: 0.3,
-      },
-      {
-        label: 'Ek Gider',
-        data: monthlyData.map((m: any) => m.expenses),
-        borderColor: 'rgb(239, 68, 68)',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        tension: 0.3,
-      },
-    ],
-  }
-
   // Kar Grafiği (Bar)
   const profitData = {
     labels: monthlyData.map((m: any) => m.label),
@@ -148,40 +114,7 @@ export default function ChartsPage() {
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Gelir-Gider Trend */}
-        <Card title="📈 Gelir-Gider Trendi">
-          <div className="h-80">
-            <Line
-              data={trendData}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    position: 'top' as const,
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: (context) => {
-                        return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`
-                      }
-                    }
-                  }
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    ticks: {
-                      callback: (value) => formatCurrency(Number(value))
-                    }
-                  }
-                }
-              }}
-            />
-          </div>
-        </Card>
-
+      <div className="grid grid-cols-1 gap-6">
         {/* Kar/Zarar Grafiği */}
         <Card title="💰 Aylık Kar/Zarar">
           <div className="h-80">

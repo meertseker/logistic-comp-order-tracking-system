@@ -302,3 +302,5 @@ Bu bilgilerle size özel çözüm üretebiliriz!
 
 **Not:** 2016 Mac'iniz Monterey'e güncellenebilir. Bu en iyi ve en basit çözümdür. ✅
 
+
+
