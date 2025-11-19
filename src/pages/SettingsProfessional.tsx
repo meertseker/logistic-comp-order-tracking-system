@@ -17,6 +17,9 @@ import {
   HardDrive,
   Package,
   FileSpreadsheet,
+  Building2,
+  Server,
+  Edit,
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -45,6 +48,7 @@ export default function SettingsProfessional() {
     smtp_password: '',
     from_email: '',
     from_name: 'Sekersoft',
+    company_name: 'Şirket Adı',
     enabled: false,
   })
   
@@ -78,6 +82,7 @@ export default function SettingsProfessional() {
           smtp_password: settings.smtp_password || '',
           from_email: settings.from_email || '',
           from_name: settings.from_name || 'Sekersoft',
+          company_name: settings.company_name || 'Şirket Adı',
           enabled: settings.enabled === 1,
         })
         
@@ -356,116 +361,163 @@ export default function SettingsProfessional() {
 
           {step === 2 && provider && (
             <>
-              <Card 
-                title={`📧 ${provider === 'gmail' ? 'Gmail' : 'Outlook'} Bilgilerinizi Girin`}
-                subtitle="Mail gönderme ayarları"
-              >
-                <div className="space-y-6">
-                  <div className="p-6 bg-gray-800/50 rounded-xl border-2 border-gray-700/50">
-                    <label className="block text-lg font-bold text-white mb-3">📧 Mail Adresiniz</label>
-                    <Input
-                      type="email"
-                      value={mailSettings.smtp_user}
-                      onChange={(e) => setMailSettings({ ...mailSettings, smtp_user: e.target.value, from_email: e.target.value })}
-                      placeholder={provider === 'gmail' ? 'ornek@gmail.com' : 'ornek@outlook.com'}
-                      className="text-lg py-3"
-                    />
-                    <p className="text-sm text-gray-400 mt-2">
-                      Müşterilerinize mail göndermek için kullanacağınız adres
-                    </p>
-                  </div>
-
-                  <div className="p-6 bg-gray-800/50 rounded-xl border-2 border-gray-700/50">
-                    <label className="block text-lg font-bold text-white mb-3">🔒 Şifre</label>
-                    <Input
-                      type="password"
-                      value={mailSettings.smtp_password}
-                      onChange={(e) => setMailSettings({ ...mailSettings, smtp_password: e.target.value })}
-                      placeholder="••••••••••••"
-                      className="text-lg py-3"
-                    />
-                    
-                    {provider === 'gmail' && (
-                      <div className="mt-4 p-4 bg-yellow-500/10 border-2 border-yellow-500/30 rounded-lg">
-                        <p className="text-sm text-yellow-200 font-medium mb-2">⚠️ Gmail kullanıcılarına özel:</p>
-                        <p className="text-sm text-yellow-100 mb-3">
-                          Gmail'de 2 adımlı doğrulama <strong>açıksa</strong>, normal şifreniz <strong>çalışmaz</strong>!
-                          "Uygulama Şifresi" oluşturmalısınız.
-                        </p>
-                        <a
-                          href="https://myaccount.google.com/apppasswords"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-sm text-yellow-300 hover:text-yellow-100 font-medium underline transition-colors"
-                        >
-                          🔗 Uygulama Şifresi Oluştur
-                        </a>
+              {mailSettings.enabled ? (
+                <Card title="✅ Mail Sistemi Yapılandırıldı">
+                  <div className="space-y-6">
+                    <div className="p-6 bg-green-500/10 border-2 border-green-500/30 rounded-xl">
+                      <div className="flex items-center gap-3 mb-4">
+                        <CheckCircle className="w-8 h-8 text-green-400" />
+                        <h3 className="text-xl font-bold text-white">Mail Sistemi Aktif!</h3>
                       </div>
-                    )}
-                  </div>
-                </div>
+                      
+                      <div className="space-y-3 text-gray-300">
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-5 h-5 text-green-400" />
+                          <span className="font-medium">Mail Adresi:</span>
+                          <span>{mailSettings.smtp_user}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-5 h-5 text-green-400" />
+                          <span className="font-medium">Şirket İsmi:</span>
+                          <span>{mailSettings.company_name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Server className="w-5 h-5 text-green-400" />
+                          <span className="font-medium">SMTP:</span>
+                          <span>{mailSettings.smtp_host}:{mailSettings.smtp_port}</span>
+                        </div>
+                      </div>
 
-                <div className="flex flex-col gap-3 mt-6">
-                  <Button
-                    onClick={handleTestConnection}
-                    disabled={testing || !mailSettings.smtp_user || !mailSettings.smtp_password}
-                    variant="secondary"
-                    className="w-full py-4 text-lg"
-                  >
-                    {testing ? (
-                      <>
-                        <Loader className="w-6 h-6 animate-spin mr-2" />
-                        Test ediliyor...
-                      </>
-                    ) : (
-                      <>
-                        <Shield className="w-6 h-6 mr-2" />
-                        Bağlantıyı Test Et
-                      </>
-                    )}
-                  </Button>
-                  
-                  <Button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="w-full py-4 text-lg bg-green-600 hover:bg-green-700"
-                  >
-                    {saving ? (
-                      <>
-                        <Loader className="w-6 h-6 animate-spin mr-2" />
-                        Kaydediliyor...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-6 h-6 mr-2" />
-                        Kaydet ve Kullanmaya Başla
-                      </>
-                    )}
-                  </Button>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setStep(1)
-                    setProvider(null)
-                  }}
-                  className="mt-4 text-gray-400 hover:text-white transition-colors"
-                >
-                  ← Geri dön
-                </button>
-              </Card>
-
-              {mailSettings.enabled && (
-                <Card title="✅ Mail Sistemi Aktif">
-                  <div className="p-6 bg-green-500/10 border-2 border-green-500/30 rounded-xl">
-                    <div className="flex items-center gap-3 mb-3">
-                      <CheckCircle className="w-8 h-8 text-green-400" />
-                      <h3 className="text-xl font-bold text-white">Mail Sistemi Hazır!</h3>
+                      <p className="text-gray-400 text-sm mt-4">
+                        Sipariş detay sayfalarında "Mail Gönder" butonu ile müşterilerinize otomatik mail gönderebilirsiniz.
+                      </p>
                     </div>
-                    <p className="text-gray-300">
-                      Sipariş detay sayfalarında "Mail Gönder" butonu ile müşterilerinize mail gönderebilirsiniz.
-                    </p>
+
+                    <Button
+                      onClick={() => {
+                        setMailSettings({ ...mailSettings, enabled: false })
+                        // Ayarları düzenle moduna geç ama enabled'ı false yap
+                      }}
+                      variant="secondary"
+                      className="w-full"
+                    >
+                      <Edit className="w-5 h-5 mr-2" />
+                      Ayarları Düzenle
+                    </Button>
                   </div>
+                </Card>
+              ) : (
+                <Card 
+                  title={`📧 ${provider === 'gmail' ? 'Gmail' : 'Outlook'} Bilgilerinizi Girin`}
+                  subtitle="Mail gönderme ayarları"
+                >
+                  <div className="space-y-6">
+                    <div className="p-6 bg-gray-800/50 rounded-xl border-2 border-gray-700/50">
+                      <label className="block text-lg font-bold text-white mb-3">📧 Mail Adresiniz</label>
+                      <Input
+                        type="email"
+                        value={mailSettings.smtp_user}
+                        onChange={(e) => setMailSettings({ ...mailSettings, smtp_user: e.target.value, from_email: e.target.value })}
+                        placeholder={provider === 'gmail' ? 'ornek@gmail.com' : 'ornek@outlook.com'}
+                        className="text-lg py-3"
+                      />
+                      <p className="text-sm text-gray-400 mt-2">
+                        Müşterilerinize mail göndermek için kullanacağınız adres
+                      </p>
+                    </div>
+
+                    <div className="p-6 bg-gray-800/50 rounded-xl border-2 border-gray-700/50">
+                      <label className="block text-lg font-bold text-white mb-3">🔒 Şifre</label>
+                      <Input
+                        type="password"
+                        value={mailSettings.smtp_password}
+                        onChange={(e) => setMailSettings({ ...mailSettings, smtp_password: e.target.value })}
+                        placeholder="••••••••••••"
+                        className="text-lg py-3"
+                      />
+                      
+                      {provider === 'gmail' && (
+                        <div className="mt-4 p-4 bg-yellow-500/10 border-2 border-yellow-500/30 rounded-lg">
+                          <p className="text-sm text-yellow-200 font-medium mb-2">⚠️ Gmail kullanıcılarına özel:</p>
+                          <p className="text-sm text-yellow-100 mb-3">
+                            Gmail'de 2 adımlı doğrulama <strong>açıksa</strong>, normal şifreniz <strong>çalışmaz</strong>!
+                            "Uygulama Şifresi" oluşturmalısınız.
+                          </p>
+                          <a
+                            href="https://myaccount.google.com/apppasswords"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm text-yellow-300 hover:text-yellow-100 font-medium underline transition-colors"
+                          >
+                            🔗 Uygulama Şifresi Oluştur
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-6 bg-gray-800/50 rounded-xl border-2 border-gray-700/50">
+                      <label className="block text-lg font-bold text-white mb-3">🏢 Şirket İsmi</label>
+                      <Input
+                        type="text"
+                        value={mailSettings.company_name}
+                        onChange={(e) => setMailSettings({ ...mailSettings, company_name: e.target.value })}
+                        placeholder="Şirket Adı"
+                        className="text-lg py-3"
+                      />
+                      <p className="text-sm text-gray-400 mt-2">
+                        E-maillerde görünecek şirket ismi (ör: ACME Lojistik)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 mt-6">
+                    <Button
+                      onClick={handleTestConnection}
+                      disabled={testing || !mailSettings.smtp_user || !mailSettings.smtp_password}
+                      variant="secondary"
+                      className="w-full py-4 text-lg"
+                    >
+                      {testing ? (
+                        <>
+                          <Loader className="w-6 h-6 animate-spin mr-2" />
+                          Test ediliyor...
+                        </>
+                      ) : (
+                        <>
+                          <Shield className="w-6 h-6 mr-2" />
+                          Bağlantıyı Test Et
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="w-full py-4 text-lg bg-green-600 hover:bg-green-700"
+                    >
+                      {saving ? (
+                        <>
+                          <Loader className="w-6 h-6 animate-spin mr-2" />
+                          Kaydediliyor...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-6 h-6 mr-2" />
+                          Kaydet ve Kullanmaya Başla
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setStep(1)
+                      setProvider(null)
+                    }}
+                    className="mt-4 text-gray-400 hover:text-white transition-colors"
+                  >
+                    ← Geri dön
+                  </button>
                 </Card>
               )}
             </>

@@ -46,6 +46,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     deleteTrailerLoad: (id: number) => ipcRenderer.invoke('db:deleteTrailerLoad', id),
     checkTrailerCapacity: (trailerId: number, enCm: number, boyCm: number, yukseklikCm: number, agirlikTon: number) => 
       ipcRenderer.invoke('db:checkTrailerCapacity', trailerId, enCm, boyCm, yukseklikCm, agirlikTon),
+    
+    // Sample data seeding (sadece demo/screenshot için)
+    seedSampleData: () => ipcRenderer.invoke('db:seedSampleData'),
   },
   
   // Cost calculation operations

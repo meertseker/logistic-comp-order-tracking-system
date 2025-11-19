@@ -13,6 +13,7 @@ export interface MailSettings {
   smtp_password: string
   from_email: string
   from_name: string
+  company_name: string
   enabled: boolean
 }
 
@@ -131,6 +132,7 @@ export class MailService {
         createdAt: orderData.createdAt,
         isSubcontractor: orderData.isSubcontractor,
         subcontractorCompany: orderData.subcontractorCompany,
+        companyName: settings.company_name || 'Şirket Adı',
       }
       
       const htmlContent = generateEmailByStatus(orderData.status, templateData)

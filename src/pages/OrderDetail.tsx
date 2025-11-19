@@ -581,6 +581,12 @@ export default function OrderDetail() {
             <p className="text-sm font-medium text-gray-600">Telefon</p>
             <p className="text-lg font-semibold">{order.telefon}</p>
           </div>
+          {order.customer_email && (
+            <div>
+              <p className="text-sm font-medium text-gray-600">E-posta</p>
+              <p className="text-lg font-semibold">{order.customer_email}</p>
+            </div>
+          )}
           <div>
             <p className="text-sm font-medium text-gray-600">Durum</p>
             <div className="flex items-center space-x-2">

@@ -27,6 +27,7 @@ export interface EmailTemplateData {
   createdAt: string
   isSubcontractor?: boolean
   subcontractorCompany?: string
+  companyName?: string
 }
 
 const formatCurrency = (amount: number) => {
@@ -78,15 +79,15 @@ function getBaseTemplate(content: string): string {
 }
 
 /**
- * HEADER - Sekersoft Branding
+ * HEADER - Company Branding
  */
-function getHeader(title: string, subtitle: string, statusColor: string = '#0066FF'): string {
+function getHeader(title: string, subtitle: string, companyName: string = 'Şirket Adı', statusColor: string = '#0066FF'): string {
   return `
     <tr>
       <td style="padding:32px 32px 24px;">
         <div style="text-align:center;margin-bottom:24px;">
           <div style="display:inline-block;padding:12px 24px;background:${statusColor};border-radius:6px;">
-            <span style="color:#ffffff;font-size:14px;font-weight:600;letter-spacing:0.5px;">SEKERSOFT</span>
+            <span style="color:#ffffff;font-size:14px;font-weight:600;letter-spacing:0.5px;">${companyName.toUpperCase()}</span>
           </div>
         </div>
         <h1 style="margin:0 0 8px;color:#1a1a1a;font-size:28px;font-weight:700;text-align:center;line-height:1.3;">
@@ -198,13 +199,13 @@ function getStatusBadge(status: string, icon: string): string {
 /**
  * FOOTER - Professional closing
  */
-function getFooter(): string {
+function getFooter(companyName: string = 'Şirket Adı'): string {
   return `
     <tr>
       <td style="padding:24px 32px 32px;">
         <div style="border-top:1px solid #e5e7eb;padding-top:24px;text-align:center;">
           <p style="margin:0 0 12px;color:#1a1a1a;font-size:14px;font-weight:600;">
-            Sekersoft
+            ${companyName}
           </p>
           <p style="margin:0 0 8px;color:#6b7280;font-size:13px;">
             Profesyonel Lojistik Çözümleri
@@ -251,6 +252,8 @@ function getNotificationBox(message: string, type: 'info' | 'success' | 'warning
  * YENİ SİPARİŞ - Professional & Welcoming
  */
 export function generateNewOrderEmail(data: EmailTemplateData): string {
+  const companyName = data.companyName || 'Şirket Adı'
+  
   const rows = [
     { label: 'Sipariş No', value: `#${data.orderId}` },
     { label: 'Tarih', value: formatDate(data.createdAt) },
@@ -270,7 +273,7 @@ export function generateNewOrderEmail(data: EmailTemplateData): string {
   })
   
   const content = `
-    ${getHeader('Siparişiniz Alındı', 'Sipariş başarıyla oluşturuldu', '#0066FF')}
+    ${getHeader('Siparişiniz Alındı', 'Sipariş başarıyla oluşturuldu', companyName, '#0066FF')}
     ${getGreeting(data.musteri)}
     
     <tr>
@@ -285,7 +288,7 @@ export function generateNewOrderEmail(data: EmailTemplateData): string {
     ${getInfoCard('Sipariş Detayları', rows)}
     ${getPriceBox(data.baslangicFiyati)}
     ${getNotificationBox('📎 Ek olarak sipariş belgesi gönderilmiştir. Herhangi bir sorunuz için lütfen bizimle iletişime geçin.', 'info')}
-    ${getFooter()}
+    ${getFooter(companyName)}
   `
   
   return getBaseTemplate(content)
@@ -295,6 +298,8 @@ export function generateNewOrderEmail(data: EmailTemplateData): string {
  * YÜKLEME TAMAMLANDI - Professional progress update
  */
 export function generateLoadedEmail(data: EmailTemplateData): string {
+  const companyName = data.companyName || 'Şirket Adı'
+  
   const rows = [
     { label: 'Sipariş No', value: `#${data.orderId}` },
     { label: 'Nereden', value: data.nereden },
@@ -312,7 +317,7 @@ export function generateLoadedEmail(data: EmailTemplateData): string {
   })
   
   const content = `
-    ${getHeader('Yükleme Tamamlandı', 'Araç yüklenmiştir, yakında yola çıkacak', '#F97316')}
+    ${getHeader('Yükleme Tamamlandı', 'Araç yüklenmiştir, yakında yola çıkacak', companyName, '#F97316')}
     ${getGreeting(data.musteri)}
     
     <tr>
@@ -340,7 +345,7 @@ export function generateLoadedEmail(data: EmailTemplateData): string {
     
     ${getInfoCard('Sipariş Detayları', rows)}
     ${getNotificationBox('🚀 <strong>Sıradaki Adım:</strong> Araç yola çıktığında size SMS ve email ile bilgi vereceğiz.', 'info')}
-    ${getFooter()}
+    ${getFooter(companyName)}
   `
   
   return getBaseTemplate(content)
@@ -350,6 +355,8 @@ export function generateLoadedEmail(data: EmailTemplateData): string {
  * YOLDA - Clean and informative
  */
 export function generateOnRouteEmail(data: EmailTemplateData): string {
+  const companyName = data.companyName || 'Şirket Adı'
+  
   const rows = [
     { label: 'Sipariş No', value: `#${data.orderId}` },
     { label: 'Çıkış Noktası', value: data.nereden },
@@ -368,7 +375,7 @@ export function generateOnRouteEmail(data: EmailTemplateData): string {
   })
   
   const content = `
-    ${getHeader('Araç Yola Çıktı', 'Siparişiniz şu anda yolda', '#3B82F6')}
+    ${getHeader('Araç Yola Çıktı', 'Siparişiniz şu anda yolda', companyName, '#3B82F6')}
     ${getGreeting(data.musteri)}
     
     <tr>
@@ -406,7 +413,7 @@ export function generateOnRouteEmail(data: EmailTemplateData): string {
     
     ${getInfoCard('Detaylı Bilgiler', rows.slice(3))}
     ${getNotificationBox('<strong>Bilgi:</strong> Varış yapıldığında size otomatik olarak bildirim gönderilecektir.', 'info')}
-    ${getFooter()}
+    ${getFooter(companyName)}
   `
   
   return getBaseTemplate(content)
@@ -416,6 +423,8 @@ export function generateOnRouteEmail(data: EmailTemplateData): string {
  * TESLİM EDİLDİ - Professional completion
  */
 export function generateDeliveredEmail(data: EmailTemplateData): string {
+  const companyName = data.companyName || 'Şirket Adı'
+  
   const rows = [
     { label: 'Sipariş No', value: `#${data.orderId}` },
     { label: 'Güzergah', value: `${data.nereden} → ${data.nereye}` },
@@ -427,7 +436,7 @@ export function generateDeliveredEmail(data: EmailTemplateData): string {
   }
   
   const content = `
-    ${getHeader('Teslimat Tamamlandı', 'Siparişiniz başarıyla teslim edilmiştir', '#10B981')}
+    ${getHeader('Teslimat Tamamlandı', 'Siparişiniz başarıyla teslim edilmiştir', companyName, '#10B981')}
     ${getGreeting(data.musteri)}
     
     <tr>
@@ -455,7 +464,7 @@ export function generateDeliveredEmail(data: EmailTemplateData): string {
       </td>
     </tr>
     
-    ${getFooter()}
+    ${getFooter(companyName)}
   `
   
   return getBaseTemplate(content)
@@ -465,6 +474,8 @@ export function generateDeliveredEmail(data: EmailTemplateData): string {
  * FATURALANDIRILDI - Professional invoice notification
  */
 export function generateInvoicedEmail(data: EmailTemplateData): string {
+  const companyName = data.companyName || 'Şirket Adı'
+  
   const rows = [
     { label: 'Sipariş No', value: `#${data.orderId}` },
     { label: 'Güzergah', value: `${data.nereden} → ${data.nereye}` },
@@ -476,7 +487,7 @@ export function generateInvoicedEmail(data: EmailTemplateData): string {
   }
   
   const content = `
-    ${getHeader('Fatura Hazır', 'Siparişiniz faturalandırılmıştır', '#8B5CF6')}
+    ${getHeader('Fatura Hazır', 'Siparişiniz faturalandırılmıştır', companyName, '#8B5CF6')}
     ${getGreeting(data.musteri)}
     
     <tr>
@@ -491,7 +502,7 @@ export function generateInvoicedEmail(data: EmailTemplateData): string {
     ${getInfoCard('Fatura Detayları', rows)}
     ${getPriceBox(data.baslangicFiyati, 'Fatura Tutarı')}
     ${getNotificationBox('💼 <strong>Ödeme:</strong> Ödeme detayları ve hesap bilgileri için lütfen muhasebe departmanımız ile iletişime geçiniz.', 'warning')}
-    ${getFooter()}
+    ${getFooter(companyName)}
   `
   
   return getBaseTemplate(content)
@@ -501,6 +512,8 @@ export function generateInvoicedEmail(data: EmailTemplateData): string {
  * İPTAL - Professional cancellation
  */
 export function generateCancelledEmail(data: EmailTemplateData): string {
+  const companyName = data.companyName || 'Şirket Adı'
+  
   const rows = [
     { label: 'Sipariş No', value: `#${data.orderId}` },
     { label: 'Güzergah', value: `${data.nereden} → ${data.nereye}` },
@@ -514,7 +527,7 @@ export function generateCancelledEmail(data: EmailTemplateData): string {
   rows.push({ label: 'Tutar', value: formatCurrency(data.baslangicFiyati) })
   
   const content = `
-    ${getHeader('Sipariş İptal Edildi', 'İptal işlemi gerçekleştirilmiştir', '#EF4444')}
+    ${getHeader('Sipariş İptal Edildi', 'İptal işlemi gerçekleştirilmiştir', companyName, '#EF4444')}
     ${getGreeting(data.musteri)}
     
     <tr>
@@ -528,7 +541,7 @@ export function generateCancelledEmail(data: EmailTemplateData): string {
     ${getStatusBadge('İptal', '❌')}
     ${getInfoCard('İptal Edilen Sipariş', rows)}
     ${getNotificationBox('📞 <strong>Destek:</strong> Herhangi bir sorunuz için ${data.telefon} numarasından bize ulaşabilirsiniz. Size yardımcı olmaktan mutluluk duyarız.', 'warning')}
-    ${getFooter()}
+    ${getFooter(companyName)}
   `
   
   return getBaseTemplate(content)
@@ -538,6 +551,8 @@ export function generateCancelledEmail(data: EmailTemplateData): string {
  * GENEL DURUM GÜNCELLEMESİ - Fallback for any status
  */
 export function generateStatusUpdateEmail(data: EmailTemplateData): string {
+  const companyName = data.companyName || 'Şirket Adı'
+  
   const statusConfig: Record<string, { icon: string; color: string; message: string }> = {
     'Bekliyor': { 
       icon: '📋', 
@@ -579,7 +594,7 @@ export function generateStatusUpdateEmail(data: EmailTemplateData): string {
   }
   
   const content = `
-    ${getHeader('Durum Güncellendi', `Sipariş durumunuz: ${data.status}`, config.color)}
+    ${getHeader('Durum Güncellendi', `Sipariş durumunuz: ${data.status}`, companyName, config.color)}
     ${getGreeting(data.musteri)}
     
     <tr>
@@ -593,7 +608,7 @@ export function generateStatusUpdateEmail(data: EmailTemplateData): string {
     ${getStatusBadge(data.status, config.icon)}
     ${getInfoCard('Sipariş Detayları', rows)}
     ${getPriceBox(data.baslangicFiyati)}
-    ${getFooter()}
+    ${getFooter(companyName)}
   `
   
   return getBaseTemplate(content)

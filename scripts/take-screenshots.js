@@ -35,7 +35,8 @@ async function takeScreenshots() {
     args: [join(__dirname, '../dist-electron/main/index.cjs')],
     env: {
       ...process.env,
-      NODE_ENV: 'production'
+      NODE_ENV: 'production',
+      SCREENSHOT_MODE: 'true'  // Lisans kontrolünü bypass et
     }
   });
 
@@ -48,8 +49,42 @@ async function takeScreenshots() {
     // Pencere boyutunu ayarla
     await window.setViewportSize({ width: 1920, height: 1080 });
     
-    // Uygulamanın yüklenmesini bekle
-    await window.waitForTimeout(5000);
+    // Uygulamanın tamamen yüklenmesini bekle
+    console.log('⏳ Uygulama yükleniyor...');
+    await window.waitForLoadState('domcontentloaded');
+    await window.waitForLoadState('networkidle');
+    await window.waitForTimeout(3000);
+    
+    // React'in mount olmasını bekle
+    await window.waitForSelector('body', { state: 'attached' });
+    await window.waitForTimeout(2000);
+    
+    console.log('✅ Uygulama hazır!\n');
+    
+    // Örnek verileri ekle
+    console.log('📊 Örnek veriler ekleniyor...\n');
+    try {
+      const seedResult = await window.evaluate(async () => {
+        if (window.electronAPI && window.electronAPI.db && window.electronAPI.db.seedSampleData) {
+          return await window.electronAPI.db.seedSampleData();
+        }
+        return { success: false, error: 'API not available' };
+      });
+      
+      if (seedResult.success) {
+        console.log(`✅ ${seedResult.ordersAdded} sipariş ve diğer örnek veriler eklendi!\n`);
+      } else {
+        console.warn('⚠️  Örnek veri ekleme hatası:', seedResult.error, '\n');
+      }
+      
+      // Sayfayı yenile
+      console.log('🔄 Sayfa yenileniyor...\n');
+      await window.reload();
+      await window.waitForLoadState('networkidle');
+      await window.waitForTimeout(2000);
+    } catch (error) {
+      console.warn('⚠️  Örnek veri eklenirken hata oluştu, devam ediliyor...\n');
+    }
 
     // Her sayfa için screenshot al
     for (let i = 0; i < pages.length; i++) {
@@ -63,7 +98,8 @@ async function takeScreenshots() {
         }, pageInfo.path);
 
         // Sayfanın yüklenmesini bekle
-        await window.waitForTimeout(3000);
+        await window.waitForLoadState('networkidle');
+        await window.waitForTimeout(2000);
 
         // Scroll yaparak lazy-loaded içerikleri yükle
         await window.evaluate(() => {

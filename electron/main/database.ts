@@ -370,6 +370,13 @@ const createTables = () => {
     CREATE INDEX IF NOT EXISTS idx_mail_logs_status ON mail_logs(status);
   `)
   
+  // Mail settings'e company_name kolonu ekle (migration)
+  try {
+    db.exec(`ALTER TABLE mail_settings ADD COLUMN company_name TEXT DEFAULT 'Şirket Adı'`)
+  } catch (error) {
+    // Kolon zaten varsa hata verir, görmezden gel
+  }
+  
   // Default mail settings ekle (boş, kullanıcı dolduracak)
   db.prepare(`
     INSERT OR IGNORE INTO mail_settings (id, enabled)
