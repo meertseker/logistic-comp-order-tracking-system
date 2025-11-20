@@ -11,6 +11,8 @@ export default defineConfig({
     rollupOptions: {
       external: [
         'electron',
+        'electron-updater',
+        'electron-log',
         'better-sqlite3',
         'nodemailer',
         'html-to-text',
