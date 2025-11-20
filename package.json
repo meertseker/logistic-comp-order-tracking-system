@@ -49,6 +49,8 @@
     "better-sqlite3": "^9.2.0",
     "chart.js": "^4.4.0",
     "date-fns": "^3.0.0",
+    "electron-log": "^5.0.1",
+    "electron-updater": "^6.1.8",
     "framer-motion": "^12.23.24",
     "html-to-text": "^9.0.5",
     "jspdf": "^2.5.0",
@@ -110,6 +112,12 @@
       "dist/**/*",
       "dist-electron/**/*"
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "meertseker",
+      "repo": "logistic-comp-order-tracking-system",
+      "releaseType": "release"
+    },
     "win": {
       "target": [
         {
