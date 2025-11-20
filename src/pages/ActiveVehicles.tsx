@@ -54,11 +54,13 @@ export default function ActiveVehicles() {
   const [pendingStatus, setPendingStatus] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [mailSettings, setMailSettings] = useState<any>(null)
+  const [whatsappSettings, setWhatsappSettings] = useState<any>(null)
   const [invoices, setInvoices] = useState<any[]>([])
 
   useEffect(() => {
     loadActiveOrders()
     loadMailSettings()
+    loadWhatsAppSettings()
     // Her 30 saniyede bir otomatik yenile
     const interval = setInterval(loadActiveOrders, 30000)
     return () => clearInterval(interval)
@@ -70,6 +72,15 @@ export default function ActiveVehicles() {
       setMailSettings(settings)
     } catch (error) {
       console.error('Failed to load mail settings:', error)
+    }
+  }
+  
+  const loadWhatsAppSettings = async () => {
+    try {
+      const settings = await window.electronAPI.whatsapp.getSettings()
+      setWhatsappSettings(settings)
+    } catch (error) {
+      console.error('Failed to load WhatsApp settings:', error)
     }
   }
 
@@ -183,6 +194,60 @@ export default function ActiveVehicles() {
         } catch (emailError) {
           console.error('Mail gönderme hatası:', emailError)
           // Mail gönderilmese de durum güncellendi, hata gösterme
+        }
+      }
+      
+      // Otomatik WhatsApp gönder
+      if (selectedOrder.telefon && whatsappSettings && whatsappSettings.enabled === 1 && whatsappSettings.auto_send_on_status_change === 1) {
+        console.log('🟢 Otomatik WhatsApp gönderiliyor...')
+        
+        try {
+          const whatsappOrderData = {
+            orderId: selectedOrder.id,
+            musteri: selectedOrder.musteri,
+            telefon: selectedOrder.telefon,
+            nereden: selectedOrder.nereden,
+            nereye: selectedOrder.nereye,
+            yukAciklamasi: selectedOrder.yuk_aciklamasi || '',
+            plaka: selectedOrder.plaka,
+            baslangicFiyati: selectedOrder.baslangic_fiyati,
+            toplamMaliyet: selectedOrder.toplam_maliyet || 0,
+            onerilenFiyat: selectedOrder.onerilen_fiyat || 0,
+            karZarar: selectedOrder.kar_zarar || 0,
+            karZararYuzde: selectedOrder.kar_zarar_yuzde || 0,
+            gidisKm: selectedOrder.gidis_km || 0,
+            donusKm: selectedOrder.donus_km || 0,
+            tahminiGun: selectedOrder.tahmini_gun || 1,
+            status: pendingStatus,
+            createdAt: selectedOrder.created_at,
+            isSubcontractor: selectedOrder.is_subcontractor === 1,
+            subcontractorCompany: selectedOrder.subcontractor_company,
+          }
+          
+          let messageType: 'created' | 'on_way' | 'delivered' | 'invoiced' | 'cancelled' | 'custom' = 'custom'
+          if (pendingStatus === 'Yolda') {
+            messageType = 'on_way'
+          } else if (pendingStatus === 'Teslim Edildi') {
+            messageType = 'delivered'
+          } else if (pendingStatus === 'Faturalandı') {
+            messageType = 'invoiced'
+          } else if (pendingStatus === 'İptal') {
+            messageType = 'cancelled'
+          }
+          
+          const whatsappResult = await window.electronAPI.whatsapp.sendOrderMessage(
+            selectedOrder.telefon,
+            whatsappOrderData,
+            messageType
+          )
+          
+          if (whatsappResult.success) {
+            console.log('✅ Durum değişikliği WhatsApp mesajı gönderildi')
+          } else {
+            console.warn('⚠️ WhatsApp mesajı gönderilemedi:', whatsappResult.message)
+          }
+        } catch (whatsappError) {
+          console.error('WhatsApp gönderme hatası:', whatsappError)
         }
       }
       

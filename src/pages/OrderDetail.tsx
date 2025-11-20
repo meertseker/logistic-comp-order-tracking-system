@@ -18,14 +18,20 @@ import {
   MapPin,
   Truck,
   Mail,
+  MessageCircle,
   Send,
   Loader,
-  ArrowRight
+  ArrowRight,
+  Receipt,
+  Building2,
+  User,
+  CreditCard
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import Select from '../components/Select'
+import TextArea from '../components/TextArea'
 import Modal from '../components/Modal'
 import StatusTimeline from '../components/StatusTimeline'
 import { formatCurrency, formatDate } from '../utils/formatters'
@@ -64,8 +70,11 @@ export default function OrderDetail() {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [editingStatus, setEditingStatus] = useState(false)
   const [showMailModal, setShowMailModal] = useState(false)
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
   const [showStatusConfirmModal, setShowStatusConfirmModal] = useState(false)
   const [pendingStatus, setPendingStatus] = useState('')
+  const [showUyumsoftModal, setShowUyumsoftModal] = useState(false)
+  const [invoiceType, setInvoiceType] = useState<'EARCHIVE' | 'EINVOICE'>('EARCHIVE')
   
   // Forms
   const [expenseForm, setExpenseForm] = useState({ type: 'Yakıt', amount: '', description: '' })
@@ -77,10 +86,38 @@ export default function OrderDetail() {
   const [mailMessage, setMailMessage] = useState('')
   const [sendingMail, setSendingMail] = useState(false)
   const [mailSettings, setMailSettings] = useState<any>(null)
+  
+  // WhatsApp states
+  const [whatsappSettings, setWhatsappSettings] = useState<any>(null)
+  const [recipientPhone, setRecipientPhone] = useState('')
+  const [whatsappMessage, setWhatsappMessage] = useState('')
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false)
+  
+  // Uyumsoft states
+  const [uyumsoftSettings, setUyumsoftSettings] = useState<any>(null)
+  const [uyumsoftInvoices, setUyumsoftInvoices] = useState<any[]>([])
+  const [creatingInvoice, setCreatingInvoice] = useState(false)
+  const [invoiceForm, setInvoiceForm] = useState({
+    customerName: '',
+    customerType: 'INDIVIDUAL' as 'INDIVIDUAL' | 'CORPORATE',
+    customerTaxNumber: '',
+    customerTaxOffice: '',
+    customerIdNumber: '',
+    customerEmail: '',
+    customerPhone: '',
+    customerAddress: '',
+    description: '',
+    amount: '',
+    vatRate: '20',
+    autoSendEmail: true,
+  })
 
   useEffect(() => {
     loadOrderDetails()
     loadMailSettings()
+    loadWhatsAppSettings()
+    loadUyumsoftSettings()
+    loadUyumsoftInvoices()
   }, [id])
 
   const loadOrderDetails = async () => {
@@ -90,6 +127,19 @@ export default function OrderDetail() {
       setOrder(data.order)
       setExpenses(data.expenses || [])
       setInvoices(data.invoices || [])
+      
+      // Form'u doldur
+      if (data.order) {
+        setInvoiceForm({
+          ...invoiceForm,
+          customerName: data.order.musteri || '',
+          customerEmail: data.order.customer_email || '',
+          customerPhone: data.order.telefon || '',
+          description: `${data.order.nereden} - ${data.order.nereye} Nakliye Hizmeti`,
+          amount: data.order.baslangic_fiyati?.toString() || '',
+        })
+        setRecipientEmail(data.order.customer_email || '')
+      }
     } catch (error) {
       console.error('Failed to load order:', error)
     } finally {
@@ -103,6 +153,33 @@ export default function OrderDetail() {
       setMailSettings(settings)
     } catch (error) {
       console.error('Failed to load mail settings:', error)
+    }
+  }
+  
+  const loadWhatsAppSettings = async () => {
+    try {
+      const settings = await window.electronAPI.whatsapp.getSettings()
+      setWhatsappSettings(settings)
+    } catch (error) {
+      console.error('Failed to load WhatsApp settings:', error)
+    }
+  }
+  
+  const loadUyumsoftSettings = async () => {
+    try {
+      const settings = await window.electronAPI.uyumsoft.getSettings()
+      setUyumsoftSettings(settings)
+    } catch (error) {
+      console.error('Failed to load Uyumsoft settings:', error)
+    }
+  }
+  
+  const loadUyumsoftInvoices = async () => {
+    try {
+      const invoices = await window.electronAPI.uyumsoft.getInvoicesByOrder(Number(id))
+      setUyumsoftInvoices(invoices || [])
+    } catch (error) {
+      console.error('Failed to load Uyumsoft invoices:', error)
     }
   }
   
@@ -180,6 +257,65 @@ export default function OrderDetail() {
       showToast(`Hata: ${error.message}`, 'error')
     } finally {
       setSendingMail(false)
+    }
+  }
+  
+  const handleSendWhatsApp = async () => {
+    console.log('🟢 WhatsApp gönderme başladı:', { recipientPhone, order: order?.id })
+    
+    // Validation
+    if (!recipientPhone || recipientPhone.length < 10) {
+      console.log('❌ Telefon validation hatası:', recipientPhone)
+      showToast('Lütfen geçerli bir telefon numarası giriniz', 'error')
+      return
+    }
+    
+    try {
+      setSendingWhatsApp(true)
+      showToast('WhatsApp mesajı gönderiliyor...', 'info')
+      
+      const whatsappOrderData = {
+        orderId: order.id,
+        musteri: order.musteri,
+        telefon: order.telefon,
+        nereden: order.nereden,
+        nereye: order.nereye,
+        yukAciklamasi: order.yuk_aciklamasi || '',
+        plaka: order.plaka,
+        baslangicFiyati: order.baslangic_fiyati,
+        toplamMaliyet: order.toplam_maliyet || 0,
+        onerilenFiyat: order.onerilen_fiyat || 0,
+        karZarar: order.kar_zarar || 0,
+        karZararYuzde: order.kar_zarar_yuzde || 0,
+        gidisKm: order.gidis_km || 0,
+        donusKm: order.donus_km || 0,
+        tahminiGun: order.tahmini_gun || 1,
+        status: order.status,
+        createdAt: order.created_at,
+        isSubcontractor: order.is_subcontractor === 1,
+        subcontractorCompany: order.subcontractor_company,
+      }
+      
+      const result = await window.electronAPI.whatsapp.sendOrderMessage(
+        recipientPhone,
+        whatsappOrderData,
+        'custom',
+        whatsappMessage || undefined
+      )
+      
+      if (result.success) {
+        showToast('WhatsApp mesajı başarıyla gönderildi! ✅', 'success')
+        setShowWhatsAppModal(false)
+        setRecipientPhone('')
+        setWhatsappMessage('')
+      } else {
+        showToast(`WhatsApp mesajı gönderilemedi: ${result.message}`, 'error')
+      }
+    } catch (error: any) {
+      console.error('Failed to send WhatsApp:', error)
+      showToast('WhatsApp mesajı gönderilemedi', 'error')
+    } finally {
+      setSendingWhatsApp(false)
     }
   }
 
@@ -260,9 +396,197 @@ export default function OrderDetail() {
         }
       }
       
+      // Otomatik WhatsApp gönder (eğer telefon varsa ve WhatsApp sistemi aktifse)
+      if (order.telefon && whatsappSettings && whatsappSettings.enabled === 1 && whatsappSettings.auto_send_on_status_change === 1) {
+        console.log('🟢 Otomatik WhatsApp gönderiliyor...')
+        
+        try {
+          // WhatsApp data hazırla
+          const whatsappOrderData = {
+            orderId: order.id,
+            musteri: order.musteri,
+            telefon: order.telefon,
+            nereden: order.nereden,
+            nereye: order.nereye,
+            yukAciklamasi: order.yuk_aciklamasi || '',
+            plaka: order.plaka,
+            baslangicFiyati: order.baslangic_fiyati,
+            toplamMaliyet: order.toplam_maliyet || 0,
+            onerilenFiyat: order.onerilen_fiyat || 0,
+            karZarar: order.kar_zarar || 0,
+            karZararYuzde: order.kar_zarar_yuzde || 0,
+            gidisKm: order.gidis_km || 0,
+            donusKm: order.donus_km || 0,
+            tahminiGun: order.tahmini_gun || 1,
+            status: pendingStatus, // Yeni durum!
+            createdAt: order.created_at,
+            isSubcontractor: order.is_subcontractor === 1,
+            subcontractorCompany: order.subcontractor_company,
+          }
+          
+          // Mesaj tipini belirle
+          let messageType: 'created' | 'on_way' | 'delivered' | 'invoiced' | 'cancelled' | 'custom' = 'custom'
+          if (pendingStatus === 'Yolda') {
+            messageType = 'on_way'
+          } else if (pendingStatus === 'Teslim Edildi') {
+            messageType = 'delivered'
+          } else if (pendingStatus === 'Faturalandı') {
+            messageType = 'invoiced'
+          } else if (pendingStatus === 'İptal') {
+            messageType = 'cancelled'
+          }
+          
+          // WhatsApp mesajı gönder
+          const whatsappResult = await window.electronAPI.whatsapp.sendOrderMessage(
+            order.telefon,
+            whatsappOrderData,
+            messageType
+          )
+          
+          if (whatsappResult.success) {
+            console.log('✅ Durum değişikliği WhatsApp mesajı gönderildi')
+          } else {
+            console.warn('⚠️ WhatsApp mesajı gönderilemedi:', whatsappResult.message)
+          }
+        } catch (whatsappError) {
+          console.error('WhatsApp gönderme hatası:', whatsappError)
+          // WhatsApp gönderilmese de durum güncellendi, hata gösterme
+        }
+      }
+      
     } catch (error) {
       console.error('Failed to update status:', error)
       showToast('Durum güncellenirken bir hata oluştu', 'error')
+    }
+  }
+  
+  const handleCreateInvoice = async () => {
+    // Validasyon
+    if (!invoiceForm.customerName) {
+      showToast('Müşteri adı zorunludur', 'error')
+      return
+    }
+    
+    if (!invoiceForm.amount || parseFloat(invoiceForm.amount) <= 0) {
+      showToast('Geçerli bir tutar giriniz', 'error')
+      return
+    }
+    
+    if (invoiceForm.customerType === 'CORPORATE' && !invoiceForm.customerTaxNumber) {
+      showToast('Kurumsal müşteriler için vergi numarası zorunludur', 'error')
+      return
+    }
+    
+    if (invoiceForm.customerType === 'INDIVIDUAL' && !invoiceForm.customerIdNumber) {
+      showToast('Bireysel müşteriler için TC kimlik numarası zorunludur', 'error')
+      return
+    }
+    
+    try {
+      setCreatingInvoice(true)
+      
+      const invoiceData = {
+        customerName: invoiceForm.customerName,
+        customerType: invoiceForm.customerType,
+        customerTaxNumber: invoiceForm.customerTaxNumber || undefined,
+        customerTaxOffice: invoiceForm.customerTaxOffice || undefined,
+        customerIdNumber: invoiceForm.customerIdNumber || undefined,
+        customerEmail: invoiceForm.customerEmail || undefined,
+        customerPhone: invoiceForm.customerPhone || undefined,
+        customerAddress: invoiceForm.customerAddress || undefined,
+        items: [
+          {
+            description: invoiceForm.description || `${order.nereden} - ${order.nereye} Nakliye Hizmeti`,
+            quantity: 1,
+            unitPrice: parseFloat(invoiceForm.amount),
+            vatRate: parseFloat(invoiceForm.vatRate),
+          }
+        ],
+        notes: `Araç: ${order.plaka}\nYük: ${order.yuk_aciklamasi || '-'}`,
+        autoSendEmail: invoiceForm.autoSendEmail,
+      }
+      
+      let result
+      if (invoiceType === 'EARCHIVE') {
+        result = await window.electronAPI.uyumsoft.createEArchiveInvoice(Number(id), invoiceData)
+      } else {
+        result = await window.electronAPI.uyumsoft.createEInvoice(Number(id), invoiceData)
+      }
+      
+      if (result.success) {
+        showToast(`✅ ${invoiceType === 'EARCHIVE' ? 'E-Arşiv' : 'E-Fatura'} başarıyla oluşturuldu!`, 'success')
+        setShowUyumsoftModal(false)
+        loadOrderDetails()
+        loadUyumsoftInvoices()
+      } else {
+        showToast(`❌ Fatura oluşturulamadı: ${result.message || 'Bilinmeyen hata'}`, 'error')
+      }
+    } catch (error: any) {
+      console.error('Failed to create invoice:', error)
+      showToast(`Hata: ${error.message || 'Fatura oluşturulamadı'}`, 'error')
+    } finally {
+      setCreatingInvoice(false)
+    }
+  }
+  
+  const handleCancelInvoice = async (invoiceId: number) => {
+    if (!confirm('Bu faturayı iptal etmek istediğinize emin misiniz?')) {
+      return
+    }
+    
+    const reason = prompt('İptal sebebi:')
+    if (!reason) {
+      return
+    }
+    
+    try {
+      const result = await window.electronAPI.uyumsoft.cancelInvoice(invoiceId, reason)
+      
+      if (result.success) {
+        showToast('✅ Fatura başarıyla iptal edildi', 'success')
+        loadUyumsoftInvoices()
+      } else {
+        showToast(`❌ ${result.message}`, 'error')
+      }
+    } catch (error: any) {
+      console.error('Failed to cancel invoice:', error)
+      showToast(`Hata: ${error.message}`, 'error')
+    }
+  }
+  
+  const handleDownloadInvoicePDF = async (invoiceId: number) => {
+    try {
+      const result = await window.electronAPI.uyumsoft.downloadInvoicePDF(invoiceId)
+      
+      if (result.success && result.path) {
+        // Tarayıcıda aç
+        window.open(result.path, '_blank')
+      } else {
+        showToast(`❌ ${result.error || 'PDF indirilemedi'}`, 'error')
+      }
+    } catch (error: any) {
+      console.error('Failed to download PDF:', error)
+      showToast(`Hata: ${error.message}`, 'error')
+    }
+  }
+  
+  const handleResendInvoiceEmail = async (invoiceId: number) => {
+    const email = prompt('E-posta adresi:', invoiceForm.customerEmail || '')
+    if (!email) {
+      return
+    }
+    
+    try {
+      const result = await window.electronAPI.uyumsoft.resendInvoiceEmail(invoiceId, email)
+      
+      if (result.success) {
+        showToast('✅ Fatura e-postası başarıyla gönderildi', 'success')
+      } else {
+        showToast(`❌ ${result.message}`, 'error')
+      }
+    } catch (error: any) {
+      console.error('Failed to resend email:', error)
+      showToast(`Hata: ${error.message}`, 'error')
     }
   }
 
@@ -509,6 +833,36 @@ export default function OrderDetail() {
               </Button>
             </motion.div>
           )}
+          
+          {/* WhatsApp Gönder Butonu */}
+          {whatsappSettings && whatsappSettings.enabled === 1 && (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                onClick={() => {
+                  setRecipientPhone(order.telefon || '')
+                  setShowWhatsAppModal(true)
+                }}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                WhatsApp Gönder
+              </Button>
+            </motion.div>
+          )}
+          
+          {/* Uyumsoft Fatura Butonu */}
+          {uyumsoftSettings && uyumsoftSettings.enabled === 1 && order.status !== 'Faturalandı' && (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                onClick={() => setShowUyumsoftModal(true)}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Receipt className="w-4 h-4 mr-2" />
+                Faturala
+              </Button>
+            </motion.div>
+          )}
+          
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button variant="secondary" onClick={() => exportOrderToPDF(order)}>
               <Download className="w-4 h-4 mr-2" />
@@ -987,6 +1341,158 @@ export default function OrderDetail() {
           </div>
         )}
       </Card>
+      
+      {/* Uyumsoft E-Fatura Section */}
+      {uyumsoftSettings && uyumsoftSettings.enabled === 1 && (
+        <Card
+          title="🧾 E-Fatura / E-Arşiv Faturaları"
+          subtitle="Uyumsoft ile oluşturulan yasal faturalar"
+        >
+          {uyumsoftInvoices.length > 0 ? (
+            <div className="space-y-3">
+              {uyumsoftInvoices.map((invoice, index) => (
+                <motion.div
+                  key={invoice.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="p-4 rounded-xl border"
+                  style={{
+                    backgroundColor: invoice.invoice_status === 'APPROVED' 
+                      ? 'rgba(48, 209, 88, 0.1)' 
+                      : invoice.invoice_status === 'CANCELLED'
+                      ? 'rgba(255, 69, 58, 0.1)'
+                      : 'rgba(10, 132, 255, 0.1)',
+                    borderColor: invoice.invoice_status === 'APPROVED'
+                      ? 'rgba(48, 209, 88, 0.3)'
+                      : invoice.invoice_status === 'CANCELLED'
+                      ? 'rgba(255, 69, 58, 0.3)'
+                      : 'rgba(10, 132, 255, 0.3)'
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Receipt className="w-5 h-5 text-blue-400" />
+                        <span className="font-semibold text-white">
+                          {invoice.invoice_number || 'Fatura No Bekleniyor...'}
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          invoice.invoice_type === 'EARCHIVE'
+                            ? 'bg-green-500/20 text-green-300'
+                            : 'bg-blue-500/20 text-blue-300'
+                        }`}>
+                          {invoice.invoice_type === 'EARCHIVE' ? 'E-Arşiv' : 'E-Fatura'}
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          invoice.invoice_status === 'APPROVED'
+                            ? 'bg-green-500/20 text-green-300'
+                            : invoice.invoice_status === 'CANCELLED'
+                            ? 'bg-red-500/20 text-red-300'
+                            : invoice.invoice_status === 'FAILED'
+                            ? 'bg-red-500/20 text-red-300'
+                            : 'bg-yellow-500/20 text-yellow-300'
+                        }`}>
+                          {invoice.invoice_status === 'APPROVED' && '✓ Onaylandı'}
+                          {invoice.invoice_status === 'DRAFT' && '⏳ Taslak'}
+                          {invoice.invoice_status === 'CANCELLED' && '❌ İptal'}
+                          {invoice.invoice_status === 'FAILED' && '❌ Hata'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-400">
+                        {invoice.customer_name}
+                        {invoice.customer_tax_number && ` • VKN: ${invoice.customer_tax_number}`}
+                        {invoice.customer_id_number && ` • TC: ${invoice.customer_id_number}`}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-white">
+                        {formatCurrency(invoice.grand_total)}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        KDV Dahil
+                      </p>
+                    </div>
+                  </div>
+
+                  {invoice.error_message && (
+                    <div className="mb-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                      <p className="text-sm text-red-300">
+                        <AlertCircle className="w-4 h-4 inline mr-1" />
+                        {invoice.error_message}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-400 mb-3">
+                    <div>
+                      <span className="block">Tarih:</span>
+                      <span className="text-white">{formatDate(invoice.invoice_date)}</span>
+                    </div>
+                    <div>
+                      <span className="block">Oluşturulma:</span>
+                      <span className="text-white">{formatDate(invoice.created_at)}</span>
+                    </div>
+                    {invoice.sent_to_email && (
+                      <div className="col-span-2">
+                        <span className="block">Gönderildi:</span>
+                        <span className="text-green-300">
+                          <Mail className="w-3 h-3 inline mr-1" />
+                          {invoice.sent_to_email} ({formatDate(invoice.sent_at)})
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {invoice.invoice_status === 'APPROVED' && (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleDownloadInvoicePDF(invoice.id)}
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        PDF İndir
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleResendInvoiceEmail(invoice.id)}
+                      >
+                        <Mail className="w-4 h-4 mr-1" />
+                        E-posta Gönder
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleCancelInvoice(invoice.id)}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        İptal Et
+                      </Button>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Receipt className="w-12 h-12 mx-auto mb-3 text-gray-500" />
+              <p className="text-gray-400 mb-4">Henüz e-fatura oluşturulmamış</p>
+              {order.status !== 'Faturalandı' && (
+                <Button
+                  size="sm"
+                  onClick={() => setShowUyumsoftModal(true)}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Receipt className="w-4 h-4 mr-2" />
+                  İlk Faturayı Oluştur
+                </Button>
+              )}
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Expense Modal */}
       <Modal
@@ -1214,6 +1720,294 @@ export default function OrderDetail() {
               </p>
             </div>
           )}
+        </div>
+      </Modal>
+      
+      {/* Uyumsoft Fatura Modal */}
+      <Modal
+        isOpen={showUyumsoftModal}
+        onClose={() => setShowUyumsoftModal(false)}
+        title={`🧾 ${invoiceType === 'EARCHIVE' ? 'E-Arşiv' : 'E-Fatura'} Oluştur`}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowUyumsoftModal(false)} disabled={creatingInvoice}>
+              İptal
+            </Button>
+            <Button onClick={handleCreateInvoice} disabled={creatingInvoice}>
+              {creatingInvoice ? (
+                <>
+                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                  Oluşturuluyor...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Fatura Oluştur
+                </>
+              )}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-6">
+          {/* Fatura Tipi Seçimi */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => setInvoiceType('EARCHIVE')}
+              className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                invoiceType === 'EARCHIVE'
+                  ? 'bg-green-500/20 border-green-500 text-green-300'
+                  : 'bg-gray-800/50 border-gray-700 text-gray-400 hover:border-gray-600'
+              }`}
+            >
+              <Receipt className="w-6 h-6 mx-auto mb-2" />
+              <p className="font-semibold text-sm">E-Arşiv</p>
+              <p className="text-xs mt-1">Bireysel Müşteri</p>
+            </button>
+            <button
+              onClick={() => setInvoiceType('EINVOICE')}
+              className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                invoiceType === 'EINVOICE'
+                  ? 'bg-blue-500/20 border-blue-500 text-blue-300'
+                  : 'bg-gray-800/50 border-gray-700 text-gray-400 hover:border-gray-600'
+              }`}
+            >
+              <Building2 className="w-6 h-6 mx-auto mb-2" />
+              <p className="font-semibold text-sm">E-Fatura</p>
+              <p className="text-xs mt-1">Kurumsal Müşteri</p>
+            </button>
+          </div>
+
+          {/* Müşteri Bilgileri */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-white flex items-center gap-2">
+              {invoiceType === 'EARCHIVE' ? <User className="w-5 h-5" /> : <Building2 className="w-5 h-5" />}
+              Müşteri Bilgileri
+            </h3>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Müşteri Adı *</label>
+              <Input
+                type="text"
+                value={invoiceForm.customerName}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, customerName: e.target.value })}
+                placeholder="ABC Nakliyat"
+              />
+            </div>
+
+            {invoiceType === 'EINVOICE' ? (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Vergi Numarası *</label>
+                  <Input
+                    type="text"
+                    value={invoiceForm.customerTaxNumber}
+                    onChange={(e) => setInvoiceForm({ ...invoiceForm, customerTaxNumber: e.target.value })}
+                    placeholder="1234567890"
+                    maxLength={10}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Vergi Dairesi *</label>
+                  <Input
+                    type="text"
+                    value={invoiceForm.customerTaxOffice}
+                    onChange={(e) => setInvoiceForm({ ...invoiceForm, customerTaxOffice: e.target.value })}
+                    placeholder="Kadıköy"
+                  />
+                </div>
+              </>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">TC Kimlik No (Opsiyonel)</label>
+                <Input
+                  type="text"
+                  value={invoiceForm.customerIdNumber}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, customerIdNumber: e.target.value })}
+                  placeholder="12345678901"
+                  maxLength={11}
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  TC kimlik no girmezseniz genel fatura kesilir
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">E-posta</label>
+                <Input
+                  type="email"
+                  value={invoiceForm.customerEmail}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, customerEmail: e.target.value })}
+                  placeholder="musteri@email.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Telefon</label>
+                <Input
+                  type="tel"
+                  value={invoiceForm.customerPhone}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, customerPhone: e.target.value })}
+                  placeholder="0532 xxx xx xx"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Adres (Opsiyonel)</label>
+              <Input
+                type="text"
+                value={invoiceForm.customerAddress}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, customerAddress: e.target.value })}
+                placeholder="Müşteri adresi"
+              />
+            </div>
+          </div>
+
+          {/* Fatura Bilgileri */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-white flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Fatura Bilgileri
+            </h3>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Hizmet Açıklaması *</label>
+              <Input
+                type="text"
+                value={invoiceForm.description}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, description: e.target.value })}
+                placeholder="Nakliye hizmeti"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Tutar (KDV Hariç) *</label>
+                <Input
+                  type="number"
+                  value={invoiceForm.amount}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, amount: e.target.value })}
+                  placeholder="15000"
+                  step="0.01"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">KDV Oranı (%)</label>
+                <select
+                  value={invoiceForm.vatRate}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, vatRate: e.target.value })}
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white"
+                >
+                  <option value="0">%0</option>
+                  <option value="1">%1</option>
+                  <option value="10">%10</option>
+                  <option value="20">%20</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Toplam Hesaplama */}
+            {invoiceForm.amount && parseFloat(invoiceForm.amount) > 0 && (
+              <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-400">Ara Toplam:</span>
+                  <span className="text-white">{formatCurrency(parseFloat(invoiceForm.amount))}</span>
+                </div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-400">KDV ({invoiceForm.vatRate}%):</span>
+                  <span className="text-white">
+                    {formatCurrency(parseFloat(invoiceForm.amount) * parseFloat(invoiceForm.vatRate) / 100)}
+                  </span>
+                </div>
+                <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-700">
+                  <span className="text-white">TOPLAM:</span>
+                  <span className="text-green-400">
+                    {formatCurrency(parseFloat(invoiceForm.amount) * (1 + parseFloat(invoiceForm.vatRate) / 100))}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Otomatik E-posta */}
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={invoiceForm.autoSendEmail}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, autoSendEmail: e.target.checked })}
+                className="w-5 h-5 rounded border-gray-600 bg-gray-800 text-blue-600"
+              />
+              <span className="text-gray-300">Faturayı müşteriye otomatik olarak e-posta ile gönder</span>
+            </label>
+          </div>
+        </div>
+      </Modal>
+
+      {/* WhatsApp Modal */}
+      <Modal
+        isOpen={showWhatsAppModal}
+        onClose={() => setShowWhatsAppModal(false)}
+        title="💬 WhatsApp Mesajı Gönder"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Alıcı Telefon Numarası
+            </label>
+            <Input
+              value={recipientPhone}
+              onChange={(e) => setRecipientPhone(e.target.value)}
+              placeholder="+90 555 123 4567"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Başında +90 ile yazın
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Mesaj (Opsiyonel)
+            </label>
+            <TextArea
+              value={whatsappMessage}
+              onChange={(e) => setWhatsappMessage(e.target.value)}
+              placeholder="Özel mesaj yazabilirsiniz veya boş bırakarak varsayılan şablonu kullanabilirsiniz..."
+              rows={4}
+            />
+          </div>
+
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+            <p className="text-xs text-gray-400">
+              💡 Boş bırakırsanız varsayılan sipariş bilgilendirme mesajı gönderilir
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="secondary"
+              onClick={() => setShowWhatsAppModal(false)}
+            >
+              İptal
+            </Button>
+            <Button
+              onClick={handleSendWhatsApp}
+              disabled={sendingWhatsApp}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {sendingWhatsApp ? (
+                <>
+                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                  Gönderiliyor...
+                </>
+              ) : (
+                <>
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  WhatsApp Gönder
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

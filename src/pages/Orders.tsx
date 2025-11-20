@@ -13,7 +13,8 @@ import {
   Package,
   AlertCircle,
   CheckCircle,
-  Target
+  Target,
+  MessageCircle
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -223,6 +224,67 @@ export default function Orders() {
     } catch (error) {
       console.error('Failed to bulk delete:', error)
       alert('Toplu silme başarısız')
+    }
+  }
+
+  const handleBulkWhatsApp = async () => {
+    if (selectedOrders.length === 0) return
+    
+    const message = prompt(`${selectedOrders.length} müşteriye WhatsApp mesajı göndermek üzeresiniz.\n\nMesaj içeriği (boş bırakırsanız varsayılan şablon kullanılır):`)
+    if (message === null) return // İptal edildi
+    
+    try {
+      // Seçili siparişlerin detaylarını al
+      const recipients = []
+      for (const orderId of selectedOrders) {
+        const order = allOrders.find(o => o.id === orderId)
+        if (order && order.telefon) {
+          recipients.push({
+            phone: order.telefon,
+            orderData: {
+              orderId: order.id,
+              musteri: order.musteri,
+              telefon: order.telefon,
+              nereden: order.nereden,
+              nereye: order.nereye,
+              yukAciklamasi: order.yuk_aciklamasi || '',
+              plaka: order.plaka,
+              baslangicFiyati: order.baslangic_fiyati,
+              toplamMaliyet: order.toplam_maliyet || 0,
+              onerilenFiyat: order.onerilen_fiyat || 0,
+              karZarar: order.kar_zarar || 0,
+              karZararYuzde: order.kar_zarar_yuzde || 0,
+              gidisKm: order.gidis_km || 0,
+              donusKm: order.donus_km || 0,
+              tahminiGun: order.tahmini_gun || 1,
+              status: order.status,
+              createdAt: order.created_at,
+              isSubcontractor: order.is_subcontractor === 1,
+              subcontractorCompany: order.subcontractor_company,
+            }
+          })
+        }
+      }
+      
+      if (recipients.length === 0) {
+        alert('Seçili siparişlerde telefon numarası bulunamadı')
+        return
+      }
+      
+      if (!confirm(`${recipients.length} müşteriye WhatsApp mesajı gönderilecek. Onaylıyor musunuz?`)) return
+      
+      // Toplu gönder
+      const result = await window.electronAPI.whatsapp.sendBulkMessages(
+        recipients,
+        'custom',
+        message || undefined
+      )
+      
+      setSelectedOrders([])
+      alert(`✅ ${result.success} mesaj başarıyla gönderildi\n${result.failed > 0 ? `❌ ${result.failed} mesaj gönderilemedi` : ''}`)
+    } catch (error) {
+      console.error('Failed to send bulk WhatsApp:', error)
+      alert('Toplu WhatsApp gönderimi başarısız')
     }
   }
 
@@ -479,6 +541,16 @@ export default function Orders() {
                     }}
                   />
                 </div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button 
+                    size="sm" 
+                    onClick={handleBulkWhatsApp}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <MessageCircle className="w-4 h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">WhatsApp ({selectedOrders.length})</span>
+                  </Button>
+                </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button variant="danger" size="sm" onClick={handleBulkDelete}>
                     <Trash2 className="w-4 h-4 sm:mr-1" />
