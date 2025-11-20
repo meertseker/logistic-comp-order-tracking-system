@@ -1,0 +1,111 @@
+import { autoUpdater } from 'electron-updater'
+import { BrowserWindow, dialog } from 'electron'
+import log from 'electron-log'
+
+// Configure logging
+log.transports.file.level = 'info'
+autoUpdater.logger = log
+
+export class UpdateManager {
+  private mainWindow: BrowserWindow | null
+
+  constructor(window: BrowserWindow) {
+    this.mainWindow = window
+    this.setupAutoUpdater()
+  }
+
+  setupAutoUpdater() {
+    // Configure auto-updater
+    autoUpdater.autoDownload = false // Kullanıcıya sor
+    autoUpdater.autoInstallOnAppQuit = true // Kapanırken otomatik kur
+
+    // Development modda güncelleme kontrolü yapma
+    if (process.env.NODE_ENV === 'development') {
+      log.info('Development mode - auto-update disabled')
+      return
+    }
+
+    // Event Handlers
+    autoUpdater.on('checking-for-update', () => {
+      log.info('Checking for updates...')
+      this.sendStatusToWindow('Güncelleme kontrol ediliyor...')
+    })
+
+    autoUpdater.on('update-available', (info) => {
+      log.info('Update available:', info)
+      this.sendStatusToWindow(`Yeni güncelleme mevcut: v${info.version}`)
+      this.mainWindow?.webContents.send('update-available', info)
+    })
+
+    autoUpdater.on('update-not-available', (info) => {
+      log.info('Update not available:', info)
+      this.sendStatusToWindow('Uygulama güncel')
+      this.mainWindow?.webContents.send('update-not-available', info)
+    })
+
+    autoUpdater.on('error', (err) => {
+      log.error('Auto-updater error:', err)
+      this.sendStatusToWindow(`Güncelleme hatası: ${err.message}`)
+      this.mainWindow?.webContents.send('update-error', err.message)
+    })
+
+    autoUpdater.on('download-progress', (progressObj) => {
+      const message = `İndiriliyor: ${Math.round(progressObj.percent)}%`
+      log.info(message)
+      this.sendStatusToWindow(message)
+      this.mainWindow?.webContents.send('download-progress', progressObj)
+    })
+
+    autoUpdater.on('update-downloaded', (info) => {
+      log.info('Update downloaded:', info)
+      this.sendStatusToWindow('Güncelleme indirildi - yüklenmeye hazır')
+      this.mainWindow?.webContents.send('update-downloaded', info)
+    })
+  }
+
+  /**
+   * Güncellemeleri kontrol et
+   */
+  async checkForUpdates(): Promise<void> {
+    if (process.env.NODE_ENV === 'development') {
+      log.info('Development mode - skipping update check')
+      return
+    }
+
+    try {
+      await autoUpdater.checkForUpdates()
+    } catch (error) {
+      log.error('Error checking for updates:', error)
+    }
+  }
+
+  /**
+   * Güncellemeyi indir
+   */
+  async downloadUpdate(): Promise<void> {
+    try {
+      await autoUpdater.downloadUpdate()
+    } catch (error) {
+      log.error('Error downloading update:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Güncellemeyi yükle ve uygulamayı yeniden başlat
+   */
+  quitAndInstall(): void {
+    // isSilent: false -> Kullanıcıya göster
+    // isForceRunAfter: true -> Kurulumdan sonra yeniden başlat
+    autoUpdater.quitAndInstall(false, true)
+  }
+
+  /**
+   * Renderer process'e durum mesajı gönder
+   */
+  private sendStatusToWindow(message: string): void {
+    log.info(message)
+    this.mainWindow?.webContents.send('update-status', message)
+  }
+}
+
