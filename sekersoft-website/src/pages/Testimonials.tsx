@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
-import { Star, Quote, Truck, Building2, Package } from 'lucide-react'
+import { Star, Quote, Truck, Building2, Package, Play } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { screenshotPaths } from '../data/screenshots'
 
 const Testimonials = () => {
   const testimonials = [
@@ -168,8 +169,19 @@ const Testimonials = () => {
             Müşterilerimizin video yorumları yakında burada olacak. 
             Siz de Sekersoft deneyiminizi paylaşmak isterseniz bizimle iletişime geçin.
           </p>
-          <div className="aspect-video rounded-2xl bg-gradient-to-br from-blue-900/50 to-cyan-900/50 flex items-center justify-center">
-            <p className="text-gray-500">Video yorumları yakında...</p>
+          <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10">
+            <img
+              src={screenshotPaths.orderDetail}
+              alt="Sekersoft müşteri deneyimi ekranı"
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3">
+              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center border border-white/40">
+                <Play className="w-8 h-8 text-white" />
+              </div>
+              <p className="text-sm text-gray-200">Video yorumları yakında...</p>
+            </div>
           </div>
         </motion.div>
 

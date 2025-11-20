@@ -1,32 +1,26 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { CheckCircle2, Download, Mail, Phone, User, Building2, Send } from 'lucide-react'
+import { siteConfig } from '../config/site'
+import { submitLeadForm } from '../lib/forms'
+
+type FormStatus = 'idle' | 'loading' | 'success' | 'error'
+
+const initialFormState = {
+  name: '',
+  email: '',
+  phone: '',
+  company: '',
+  vehicleCount: '',
+  message: '',
+}
 
 const Demo = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    vehicleCount: '',
-    message: ''
-  })
-
+  const [formData, setFormData] = useState(initialFormState)
   const [submitted, setSubmitted] = useState(false)
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Burada form gönderme işlemi yapılabilir
-    console.log('Form submitted:', formData)
-    setSubmitted(true)
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+  const [status, setStatus] = useState<FormStatus>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [botField, setBotField] = useState('')
 
   const features = [
     'Sipariş yönetimi sistemini test edin',
@@ -34,29 +28,63 @@ const Demo = () => {
     'Araç ve güzergah yönetimini deneyin',
     'Raporlama ve analiz araçlarını keşfedin',
     'Offline çalışma avantajını yaşayın',
-    'Türkçe arayüzü inceleyin'
+    'Türkçe arayüzü inceleyin',
   ]
 
-  if (submitted) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (botField) {
+      return
+    }
+
+    setStatus('loading')
+    setErrorMessage('')
+
+    try {
+      if (siteConfig.forms.demo) {
+        await submitLeadForm({
+          endpoint: siteConfig.forms.demo,
+          payload: {
+            ...formData,
+            formName: 'demo',
+          },
+        })
+      } else {
+        console.info('Demo form submission (development only):', formData)
+      }
+
+      setSubmitted(true)
+      setStatus('success')
+      setFormData(initialFormState)
+    } catch (error) {
+      setStatus('error')
+      setErrorMessage(error instanceof Error ? error.message : 'Talebiniz gönderilirken bir sorun oluştu. Lütfen tekrar deneyin.')
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const target = e.target
+    const value = target instanceof HTMLInputElement && target.type === 'checkbox' ? target.checked : target.value
+
+    setFormData((prev) => ({
+      ...prev,
+      [target.name]: value,
+    }))
+  }
+
+  if (submitted && status === 'success') {
     return (
       <div className="min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass rounded-3xl p-12 text-center max-w-2xl"
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass rounded-3xl p-12 text-center max-w-2xl">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center">
             <CheckCircle2 className="w-10 h-10 text-green-400" />
           </div>
           <h2 className="text-3xl font-bold mb-4">Talebiniz Alındı!</h2>
           <p className="text-gray-400 mb-8">
-            Demo talebiniz başarıyla alındı. Ekibimiz en kısa sürede sizinle iletişime geçecektir.
-            Genellikle 24 saat içinde geri dönüş yapıyoruz.
+            Demo talebiniz başarıyla alındı. {siteConfig.name} ekibi genellikle 24 saat içerisinde sizinle iletişime geçer ve uzaktan kurulum randevunuzu planlar.
           </p>
-          <button
-            onClick={() => setSubmitted(false)}
-            className="px-6 py-3 rounded-xl glass glass-hover font-semibold transition-all hover:scale-105"
-          >
+          <button onClick={() => setSubmitted(false)} className="px-6 py-3 rounded-xl glass glass-hover font-semibold transition-all hover:scale-105">
             Yeni Talep Gönder
           </button>
         </motion.div>
@@ -68,27 +96,26 @@ const Demo = () => {
     <div className="min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
             Demo <span className="gradient-text">Talep Edin</span>
           </h1>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Sekersoft'u satın almadan önce deneyebilir, tüm özellikleri test edebilirsiniz.
-            Formu doldurun, sizinle iletişime geçelim.
+            14 gün boyunca tüm özellikleri sınırsız test edin. Uzaktan kurulum desteği ve canlı onboarding görüşmesi dahil. Formu doldurun, 24 saat içinde randevunuzu oluşturalım.
           </p>
+          <div className="mt-8 grid md:grid-cols-3 gap-4 text-left">
+            {['14 Gün Full Sürüm', 'Uzaktan Kurulum & Eğitim', 'WhatsApp Destek + Video Kılavuz'].map((item) => (
+              <motion.div key={item} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-4 flex items-center gap-3 justify-center md:justify-start">
+                <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
+                <span className="text-gray-200 text-sm">{item}</span>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-12 mb-20">
           {/* Form */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="glass rounded-3xl p-8"
-          >
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="glass rounded-3xl p-8">
             <h2 className="text-2xl font-bold mb-6">İletişim Bilgileriniz</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -173,10 +200,21 @@ const Demo = () => {
                 </select>
               </div>
 
+              <div className="hidden" aria-hidden="true">
+                <label htmlFor="demoWebsite">Web siteniz</label>
+                <input
+                  id="demoWebsite"
+                  type="text"
+                  name="demoWebsite"
+                  autoComplete="off"
+                  tabIndex={-1}
+                  value={botField}
+                  onChange={(event) => setBotField(event.target.value)}
+                />
+              </div>
+
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Mesajınız (İsteğe bağlı)
-                </label>
+                <label className="block text-sm font-medium mb-2">Mesajınız (İsteğe bağlı)</label>
                 <textarea
                   name="message"
                   value={formData.message}
@@ -189,26 +227,25 @@ const Demo = () => {
 
               <button
                 type="submit"
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold shadow-2xl shadow-blue-500/30 transition-all hover:shadow-blue-500/50 hover:scale-105 flex items-center justify-center gap-2"
+                disabled={status === 'loading'}
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold shadow-2xl shadow-blue-500/30 transition-all hover:shadow-blue-500/50 hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-70"
               >
                 <Send className="w-5 h-5" />
-                Demo Talep Et
+                {status === 'loading' ? 'Gönderiliyor...' : 'Demo Talep Et'}
               </button>
 
-              <p className="text-sm text-gray-400 text-center">
-                * Zorunlu alanlar. Bilgileriniz gizli tutulacaktır.
-              </p>
+              <p className="text-sm text-gray-400 text-center">* Zorunlu alanlar. Bilgileriniz gizli tutulacaktır.</p>
+
+              {status === 'error' && (
+                <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/30 rounded-xl p-3">{errorMessage || 'Talebiniz gönderilirken bir sorun oluştu. Lütfen tekrar deneyin.'}</p>
+              )}
             </form>
           </motion.div>
 
           {/* Info */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-8"
-          >
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
             <div className="glass rounded-3xl p-8">
-              <h2 className="text-2xl font-bold mb-6">Demo'da Neler Var?</h2>
+              <h2 className="text-2xl font-bold mb-6">Demo&apos;da Neler Var?</h2>
               <ul className="space-y-4">
                 {features.map((feature) => (
                   <li key={feature} className="flex items-start gap-3">
@@ -222,42 +259,22 @@ const Demo = () => {
             <div className="glass rounded-3xl p-8">
               <h3 className="text-xl font-bold mb-4">Demo Süreci</h3>
               <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-blue-400 font-semibold">1</span>
+                {[
+                  { step: 1, title: 'Formu Doldurun', text: 'İletişim bilgilerinizi ve ihtiyaçlarınızı iletin' },
+                  { step: 2, title: 'Geri Dönüş', text: '24 saat içinde size ulaşıp randevunuzu planlıyoruz' },
+                  { step: 3, title: 'Kurulum', text: 'Uzaktan bağlantı ile yazılımı bilgisayarınıza kuruyoruz' },
+                  { step: 4, title: 'Test Süreci', text: 'Gerçek verilerinizle tüm özellikleri deneyin' },
+                ].map((item) => (
+                  <div key={item.step} className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-blue-400 font-semibold">{item.step}</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold mb-1">{item.title}</p>
+                      <p className="text-sm text-gray-400">{item.text}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold mb-1">Formu Doldurun</p>
-                    <p className="text-sm text-gray-400">İletişim bilgilerinizi girin</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-blue-400 font-semibold">2</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold mb-1">Geri Dönüş Bekleyin</p>
-                    <p className="text-sm text-gray-400">24 saat içinde sizinle iletişime geçiyoruz</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-blue-400 font-semibold">3</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold mb-1">Demo Kurulumu</p>
-                    <p className="text-sm text-gray-400">Yazılımı bilgisayarınıza kuruyoruz</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-blue-400 font-semibold">4</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold mb-1">Test Edin</p>
-                    <p className="text-sm text-gray-400">Tüm özellikleri dilediğiniz gibi test edin</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -265,16 +282,16 @@ const Demo = () => {
               <h3 className="text-xl font-bold mb-4">Sıkça Sorulan Sorular</h3>
               <div className="space-y-4">
                 <div>
-                  <p className="font-semibold mb-1 text-blue-400">Demo ne kadar sürelidir?</p>
-                  <p className="text-sm text-gray-400">Demo süresini sizinle birlikte belirleriz. Genellikle 7-14 gün arası test süresi sunuyoruz.</p>
+                  <p className="font-semibold mb-1 text-blue-400">Demo ne kadar sürer?</p>
+                  <p className="text-sm text-gray-400">Demo süresini birlikte belirleriz. Genellikle 7-14 gün arası test süresi sunuyoruz.</p>
                 </div>
                 <div>
-                  <p className="font-semibold mb-1 text-blue-400">Ücretli mi?</p>
-                  <p className="text-sm text-gray-400">Hayır! Demo tamamen ücretsizdir. Hiçbir ödeme gerekmez.</p>
+                  <p className="font-semibold mb-1 text-blue-400">Demo ücretli mi?</p>
+                  <p className="text-sm text-gray-400">Hayır. Demo tamamen ücretsizdir ve hiçbir ödeme talep edilmez.</p>
                 </div>
                 <div>
                   <p className="font-semibold mb-1 text-blue-400">Kendi verilerimle test edebilir miyim?</p>
-                  <p className="text-sm text-gray-400">Evet! Kendi sipariş verilerinizi girebilir, gerçek senaryolarla test edebilirsiniz.</p>
+                  <p className="text-sm text-gray-400">Evet. Kendi sipariş verilerinizi içeri aktarabilir ve gerçek senaryoları test edebilirsiniz.</p>
                 </div>
               </div>
             </div>

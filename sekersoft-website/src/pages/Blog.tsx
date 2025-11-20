@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
-import { Calendar, Clock, ArrowRight, Search, Tag } from 'lucide-react'
+import { Calendar, Clock, ArrowRight, Search } from 'lucide-react'
+import { screenshotPaths } from '../data/screenshots'
 
 const Blog = () => {
   const posts = [
@@ -9,7 +10,8 @@ const Blog = () => {
       category: 'Dijital Dönüşüm',
       date: '15 Ocak 2024',
       readTime: '5 dk',
-      featured: true
+      featured: true,
+      image: screenshotPaths.dashboard
     },
     {
       title: 'Rota Optimizasyonu ile Maliyet Tasarrufu',
@@ -17,7 +19,8 @@ const Blog = () => {
       category: 'Teknoloji',
       date: '12 Ocak 2024',
       readTime: '4 dk',
-      featured: false
+      featured: false,
+      image: screenshotPaths.routes
     },
     {
       title: 'Müşteri Deneyimini İyileştirmenin 7 Yolu',
@@ -25,7 +28,8 @@ const Blog = () => {
       category: 'Müşteri İlişkileri',
       date: '10 Ocak 2024',
       readTime: '6 dk',
-      featured: false
+      featured: false,
+      image: screenshotPaths.orders
     },
     {
       title: 'Filo Yönetiminde Yapay Zeka Kullanımı',
@@ -33,7 +37,8 @@ const Blog = () => {
       category: 'Yapay Zeka',
       date: '8 Ocak 2024',
       readTime: '7 dk',
-      featured: false
+      featured: false,
+      image: screenshotPaths.vehicles
     },
     {
       title: 'Sürdürülebilir Lojistik Pratikleri',
@@ -41,7 +46,8 @@ const Blog = () => {
       category: 'Sürdürülebilirlik',
       date: '5 Ocak 2024',
       readTime: '5 dk',
-      featured: false
+      featured: false,
+      image: screenshotPaths.charts
     },
     {
       title: 'E-Ticaret Lojistiğinde Trendler',
@@ -49,7 +55,8 @@ const Blog = () => {
       category: 'E-Ticaret',
       date: '3 Ocak 2024',
       readTime: '4 dk',
-      featured: false
+      featured: false,
+      image: screenshotPaths.activeVehicles
     },
   ]
 
@@ -125,8 +132,13 @@ const Blog = () => {
             className="glass rounded-3xl overflow-hidden mb-12 group cursor-pointer"
           >
             <div className="grid lg:grid-cols-2 gap-8 p-8">
-              <div className="aspect-video rounded-2xl bg-gradient-to-br from-blue-900/50 to-cyan-900/50 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                <Tag className="w-24 h-24 text-blue-400/30" />
+              <div className="aspect-video rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-500">
+                <img
+                  src={post.image}
+                  alt={post.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
               </div>
               <div className="flex flex-col justify-center">
                 <div className="flex items-center gap-3 mb-4">
@@ -171,8 +183,13 @@ const Blog = () => {
               transition={{ delay: index * 0.1 }}
               className="glass rounded-2xl overflow-hidden group cursor-pointer glass-hover"
             >
-              <div className="aspect-video bg-gradient-to-br from-blue-900/50 to-cyan-900/50 flex items-center justify-center overflow-hidden">
-                <Tag className="w-16 h-16 text-blue-400/30 group-hover:scale-110 transition-transform" />
+              <div className="aspect-video overflow-hidden border-b border-white/5">
+                <img
+                  src={post.image}
+                  alt={post.title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
+                />
               </div>
               <div className="p-6">
                 <span className="inline-block px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-medium mb-3">

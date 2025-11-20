@@ -1,0 +1,23 @@
+{
+  "name": "Sekersoft Logistics OS",
+  "short_name": "Sekersoft",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#010409",
+  "theme_color": "#0A84FF",
+  "description": "Sekersoft Logistics OS · Offline çalışan lojistik ve nakliye yönetim yazılımı.",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+

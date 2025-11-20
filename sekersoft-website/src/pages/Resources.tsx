@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { BookOpen, FileText, Video, Download, ExternalLink, FileCode } from 'lucide-react'
+import { BookOpen, FileText, Video, Download, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 const Resources = () => {

@@ -313,7 +313,7 @@ export async function generateOrderPDFForEmail(order: any): Promise<string> {
   return result.filePath
 }
 
-export function exportReportToPDF(report: any, year: number, month: number) {
+export function exportReportToPDF(report: any, year: number, month: number, periodLabel?: string) {
   const doc = new jsPDF()
   doc.setFont('helvetica')
   
@@ -321,8 +321,9 @@ export function exportReportToPDF(report: any, year: number, month: number) {
   doc.setFontSize(20)
   doc.text('SEKERSOFT', 105, 20, { align: 'center' })
   
+  const period = periodLabel || `${month}/${year}`
   doc.setFontSize(14)
-  doc.text(`Aylik Rapor - ${month}/${year}`, 105, 30, { align: 'center' })
+  doc.text(`Rapor - ${period}`, 105, 30, { align: 'center' })
   
   // Finansal Özet
   doc.setFontSize(12)
@@ -406,6 +407,7 @@ export function exportReportToPDF(report: any, year: number, month: number) {
   doc.text('Sekersoft - Lojistik Yonetim Sistemi', 105, 285, { align: 'center' })
   
   // PDF'i indir
-  doc.save(`rapor_${year}_${month}.pdf`)
+  const filename = periodLabel ? periodLabel.replace(/\s+/g, '_') : `${year}_${month}`
+  doc.save(`rapor_${filename}.pdf`)
 }
 

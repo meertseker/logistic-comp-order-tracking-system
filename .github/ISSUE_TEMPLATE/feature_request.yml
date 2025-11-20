@@ -1,0 +1,95 @@
+name: ✨ Özellik İsteği
+description: Yeni bir özellik veya iyileştirme önerin
+title: "[FEATURE]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sekersoft için yeni bir özellik mi öneriyorsunuz? Harika! 🚀
+        
+  - type: textarea
+    id: problem
+    attributes:
+      label: Sorun
+      description: Bu özellik isteği hangi sorunu çözüyor?
+      placeholder: "Örnek: Şu işi yaparken zorluk çekiyorum..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Önerilen Çözüm
+      description: Nasıl bir çözüm öneriyorsunuz?
+      placeholder: "Örnek: Eğer şu özellik olsaydı..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatifler
+      description: Düşündüğünüz başka çözümler var mı?
+      placeholder: Alternatif yaklaşımlar...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Öncelik
+      description: Bu özellik sizin için ne kadar önemli?
+      options:
+        - Düşük - Güzel olurdu
+        - Orta - İşimi kolaylaştırır
+        - Yüksek - Kritik öneme sahip
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Kategori
+      description: Bu özellik hangi alanla ilgili?
+      options:
+        - Sipariş Yönetimi
+        - Gider Takibi
+        - Fatura Yönetimi
+        - Raporlama
+        - Dashboard
+        - Araç Yönetimi
+        - Ayarlar
+        - Kullanıcı Arayüzü
+        - Performans
+        - Diğer
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockup
+    attributes:
+      label: Mockup/Tasarım
+      description: Varsa mockup, tasarım veya örnek görsel ekleyin
+      placeholder: Görselleri buraya sürükleyin
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Ek Bilgiler
+      description: Eklemek istediğiniz başka bir şey var mı?
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Kontrol Listesi
+      options:
+        - label: Benzer bir özellik isteğinin olmadığını kontrol ettim
+          required: true
+        - label: Bu özellik gerçekten işime yarayacak
+          required: true
+

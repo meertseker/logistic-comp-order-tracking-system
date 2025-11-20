@@ -1,0 +1,51 @@
+title: "❓ [SORU]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ❓ Sorunuz Nedir?
+        
+        Sekersoft hakkında sorunuzu sormadan önce:
+        - 📚 [Dokümantasyonu](https://github.com/meertseker/logistic-comp-order-tracking-system/tree/main/docs) kontrol ettiniz mi?
+        - 🔍 Benzer sorular aradınız mı?
+        
+  - type: textarea
+    id: question
+    attributes:
+      label: Soru
+      description: Sorunuzu açık ve net bir şekilde sorun
+      placeholder: Sorunuz nedir?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Bağlam
+      description: Sorunuzla ilgili ek bilgiler
+      placeholder: Ne yapmaya çalışıyorsunuz?
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Sekersoft Versiyonu
+      description: Hangi versiyonu kullanıyorsunuz?
+      placeholder: "örn: 1.0.0"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: İşletim Sistemi
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Diğer
+    validations:
+      required: false
+

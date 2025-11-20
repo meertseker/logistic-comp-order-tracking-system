@@ -1,0 +1,93 @@
+name: 🐛 Bug Report
+description: Bir hata veya sorun bildirin
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sekersoft'ta bir hata buldunuz mu? Lütfen aşağıdaki formu doldurun.
+        
+  - type: textarea
+    id: description
+    attributes:
+      label: Hatanın Açıklaması
+      description: Hatayı net bir şekilde açıklayın
+      placeholder: Ne oldu?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Nasıl Tekrarlanır
+      description: Hatayı tekrarlamak için adımlar
+      placeholder: |
+        1. Şu sayfaya git '...'
+        2. Şuna tıkla '...'
+        3. Aşağı kaydır '...'
+        4. Hatayı gör
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Beklenen Davranış
+      description: Ne olmasını bekliyordunuz?
+      placeholder: Ne olmalıydı?
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Ekran Görüntüleri
+      description: Varsa ekran görüntüsü ekleyin (resmi buraya yapıştırabilirsiniz)
+      placeholder: Ekran görüntülerini buraya sürükleyin
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: İşletim Sistemi
+      description: Hangi işletim sistemini kullanıyorsunuz?
+      options:
+        - Windows 10
+        - Windows 11
+        - macOS (Intel)
+        - macOS (Apple Silicon)
+        - Linux
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Sekersoft Versiyonu
+      description: Hangi versiyonu kullanıyorsunuz? (Ayarlar > Hakkında'dan bakabilirsiniz)
+      placeholder: "örn: 1.0.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Ek Bilgiler
+      description: Bu sorunla ilgili başka bir şey eklemek ister misiniz?
+      placeholder: Ek detaylar...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Kontrol Listesi
+      description: Lütfen aşağıdakileri onaylayın
+      options:
+        - label: Aynı hatanın daha önce bildirilmediğini kontrol ettim
+          required: true
+        - label: En son versiyonu kullanıyorum
+          required: false
+

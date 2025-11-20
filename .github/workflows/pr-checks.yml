@@ -1,0 +1,128 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-title-check:
+    name: 📝 PR Title Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title format
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            test
+            chore
+            ci
+            perf
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            Başlık küçük harfle başlamalı ve nokta ile bitmemeli.
+            Örnek: "feat: yeni özellik eklendi"
+
+  pr-size-check:
+    name: 📏 PR Size Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            
+            const additions = pr.additions;
+            const deletions = pr.deletions;
+            const total = additions + deletions;
+            
+            let label = '';
+            if (total < 50) label = 'size/XS';
+            else if (total < 200) label = 'size/S';
+            else if (total < 500) label = 'size/M';
+            else if (total < 1000) label = 'size/L';
+            else label = 'size/XL';
+            
+            // Remove old size labels
+            const currentLabels = pr.labels.map(l => l.name);
+            const sizeLabels = currentLabels.filter(l => l.startsWith('size/'));
+            for (const oldLabel of sizeLabels) {
+              if (oldLabel !== label) {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  name: oldLabel,
+                });
+              }
+            }
+            
+            // Add new size label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: [label],
+            });
+            
+            if (total > 1000) {
+              core.warning(`⚠️ Bu PR çok büyük (${total} satır). Daha küçük PR'lara bölmeyi düşünün.`);
+            }
+
+  pr-labels-check:
+    name: 🏷️ PR Labels Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            
+            const labels = pr.labels.map(l => l.name);
+            const hasTypeLabel = labels.some(l => 
+              ['bug', 'enhancement', 'documentation', 'refactor', 'test'].includes(l)
+            );
+            
+            if (!hasTypeLabel) {
+              core.warning('⚠️ Lütfen PR\'a bir tür etiketi ekleyin (bug, enhancement, vb.)');
+            }
+
+  auto-assign-reviewer:
+    name: 👤 Auto Assign Reviewer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto assign reviewer
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const author = context.payload.pull_request.user.login;
+            
+            // Otomatik reviewer atama (projenize göre düzenleyin)
+            const reviewers = ['meertseker'].filter(r => r !== author);
+            
+            if (reviewers.length > 0) {
+              await github.rest.pulls.requestReviewers({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                reviewers: reviewers,
+              });
+            }
+

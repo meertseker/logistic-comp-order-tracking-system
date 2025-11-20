@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.sekersoft.com/sitemap.xml
+
+# Disallow admin or API paths if they exist in the future
+# Disallow: /admin/
+# Disallow: /api/
+

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { HelpCircle, BookOpen, Download, Mail, Phone, MessageCircle, FileText, Video, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { siteConfig } from '../config/site'
 
 const Support = () => {
   const faqs = [
@@ -83,22 +84,22 @@ const Support = () => {
       icon: Mail,
       title: 'Email Desteği',
       description: 'Sorularınız için bize email gönderin',
-      action: 'info@sekersoft.com',
-      link: 'mailto:info@sekersoft.com'
+      action: siteConfig.contact.email,
+      link: `mailto:${siteConfig.contact.email}`,
     },
     {
       icon: Phone,
       title: 'Telefon Desteği',
       description: 'Çalışma saatleri içinde bizi arayın',
-      action: '+90 (XXX) XXX XX XX',
-      link: 'tel:+90XXXXXXXXXX'
+      action: siteConfig.contact.phone,
+      link: `tel:${siteConfig.contact.phoneHref}`,
     },
     {
       icon: MessageCircle,
       title: 'WhatsApp Destek',
       description: 'Hızlı destek için WhatsApp kullanın',
-      action: 'WhatsApp\'tan Yaz',
-      link: 'https://wa.me/90XXXXXXXXXX'
+      action: 'WhatsApp üzerinden yazın',
+      link: siteConfig.contact.whatsappLink,
     },
     {
       icon: BookOpen,

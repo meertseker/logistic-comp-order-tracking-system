@@ -489,17 +489,34 @@ export default function CreateOrderFixed() {
                     {formData.plaka && (
                       <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.12)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}>
                         <p className="text-sm" style={{ color: '#0A84FF' }}>
-                          <span className="font-semibold text-white mr-1">Seçili Araç:</span>
+                          <span className="font-semibold text-white mr-1">Seçili Araç Maliyeti:</span>
                           {(() => {
                             const v = vehicles.find(v => v.plaka === formData.plaka)
-                            if (!v) return '-'
+                            if (!v) return 'Araç bulunamadı'
+                            
+                            console.log('Seçili araç:', v.plaka)
+                            console.log('Yakıt tüketimi:', v.yakit_tuketimi, 'Yakıt fiyatı:', v.yakit_fiyati)
+                            console.log('Günlük ücret:', v.gunluk_ucret, 'Günlük ort km:', v.gunluk_ort_km)
+                            console.log('Yemek günlük:', v.yemek_gunluk)
+                            console.log('Sigorta yıllık:', v.sigorta_yillik, 'MTV:', v.mtv_yillik, 'Muayene:', v.muayene_yillik)
+                            console.log('Hedef toplam km:', v.hedef_toplam_km)
+                            
                             const yakit = ((v.yakit_tuketimi || 25) * (v.yakit_fiyati || 40)) / 100
                             const surucu = (v.gunluk_ucret || 1600) / (v.gunluk_ort_km || 500)
                             const yemek = (v.yemek_gunluk || 150) / (v.gunluk_ort_km || 500)
                             const bakim = ((v.yag_maliyet || 500) / (v.yag_aralik || 5000)) + ((v.lastik_maliyet || 8000) / (v.lastik_omur || 50000)) + ((v.buyuk_bakim_maliyet || 3000) / (v.buyuk_bakim_aralik || 15000))
-                            // HGS güzergah bazlı hesaplanır, sabit km başına değil
-                            const toplam = yakit + surucu + yemek + bakim
-                            return `${toplam.toFixed(2)} ₺/km (ortalama)`
+                            // HGS güzergah bazlı hesaplanır, araç bazında değil. Sabit giderler (sigorta/MTV/muayene) dahil.
+                            const yillikKm = v.hedef_toplam_km || 120000
+                            const sigortaPerKm = (v.sigorta_yillik || 12000) / yillikKm
+                            const mtvPerKm = (v.mtv_yillik || 5000) / yillikKm
+                            const muayenePerKm = (v.muayene_yillik || 1500) / yillikKm
+                            const toplam = yakit + surucu + yemek + bakim + sigortaPerKm + mtvPerKm + muayenePerKm
+                            
+                            console.log('Yakıt:', yakit.toFixed(2), 'Sürücü:', surucu.toFixed(2), 'Yemek:', yemek.toFixed(2), 'Bakım:', bakim.toFixed(2))
+                            console.log('Sigorta/km:', sigortaPerKm.toFixed(2), 'MTV/km:', mtvPerKm.toFixed(2), 'Muayene/km:', muayenePerKm.toFixed(2))
+                            console.log('Toplam maliyet:', toplam.toFixed(2), '₺/km')
+                            
+                            return `${toplam.toFixed(2)} ₺/km (Yakıt: ${yakit.toFixed(2)} + Sürücü: ${surucu.toFixed(2)} + Yemek: ${yemek.toFixed(2)} + Bakım: ${bakim.toFixed(2)} + Sigorta/MTV/Muayene: ${(sigortaPerKm + mtvPerKm + muayenePerKm).toFixed(2)})`
                           })()}
                         </p>
                       </div>
@@ -916,14 +933,16 @@ export default function CreateOrderFixed() {
                       {formatCurrency(analysis.costBreakdown.yemekMaliyet)}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                      🛣️ HGS/Köprü:
-                    </span>
-                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
-                      {formatCurrency(analysis.costBreakdown.hgsMaliyet)}
-                    </span>
-                  </div>
+                  {analysis.costBreakdown.hgsMaliyet > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                        🛣️ HGS/Köprü (Güzergah):
+                      </span>
+                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>
+                        {formatCurrency(analysis.costBreakdown.hgsMaliyet)}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
                       🔧 Bakım:
@@ -932,14 +951,27 @@ export default function CreateOrderFixed() {
                       {formatCurrency(analysis.costBreakdown.toplamBakimMaliyet)}
                     </span>
                   </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                      🏛️ Sigorta/MTV/Muayene:
+                    </span>
+                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
+                      {formatCurrency(analysis.costBreakdown.sigortaMaliyet + analysis.costBreakdown.mtvMaliyet + analysis.costBreakdown.muayeneMaliyet)}
+                    </span>
+                  </div>
                 </div>
                 
                 {/* Toplam Maliyet */}
                 <div className="mt-4 p-3 rounded-xl" style={{ backgroundColor: 'rgba(255, 69, 58, 0.15)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mb-1">
                     <span className="font-semibold" style={{ color: '#FF453A' }}>Toplam Maliyet:</span>
                     <span className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
                       {formatCurrency(analysis.toplamMaliyet)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                      ({analysis.etkinKm.toFixed(0)} km × {formatCurrency(analysis.toplamMaliyet / analysis.etkinKm)}/km)
                     </span>
                   </div>
                 </div>
@@ -973,10 +1005,11 @@ export default function CreateOrderFixed() {
           <Card className="bg-blue-50">
             <div className="space-y-2 text-xs text-blue-800">
               <p><strong>💡 İpuçları:</strong></p>
-              <p>• Fiyat otomatik hesaplanır</p>
-              <p>• İstersen manuel değiştirebilirsin</p>
+              <p>• Fiyat otomatik hesaplanır (araç parametreleri + güzergah maliyetleri)</p>
+              <p>• HGS/Köprü maliyetleri güzergah bilgisinden otomatik eklenir</p>
+              <p>• İstersen manuel fiyat değiştirebilirsin</p>
               <p>• Kâr/zarar anlık güncellenir</p>
-              <p>• Dönüşte yük bulursan maliyet düşer</p>
+              <p>• Dönüşte yük bulursan maliyet düşer (%50 verimlilik)</p>
             </div>
           </Card>
         </div>

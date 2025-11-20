@@ -1,7 +1,7 @@
 import { _electron as electron } from '@playwright/test';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, copyFileSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -19,6 +19,13 @@ const pages = [
   { name: 'settings', path: '/settings', description: 'Ayarlar' }
 ];
 
+const websiteAssetMap = {
+  '01-dashboard.png': '01-dashboard.png',
+  '03-create-order.png': 'CREATEORDER.png',
+  '04-reports.png': 'expense calculator.png',
+  '06-vehicles.png': 'vehicles.png'
+};
+
 async function takeScreenshots() {
   console.log('🚀 Electron uygulama ile ekran görüntüleri alınıyor...\n');
 
@@ -26,6 +33,13 @@ async function takeScreenshots() {
   const screenshotsDir = join(__dirname, '../screenshots');
   if (!existsSync(screenshotsDir)) {
     mkdirSync(screenshotsDir, { recursive: true });
+  }
+
+  const websitePublicDir = join(__dirname, '../sekersoft-website/public');
+  const websiteScreenshotsDir = join(websitePublicDir, 'screenshots');
+
+  if (!existsSync(websiteScreenshotsDir)) {
+    mkdirSync(websiteScreenshotsDir, { recursive: true });
   }
 
   // Electron uygulamasını başlat
@@ -113,12 +127,23 @@ async function takeScreenshots() {
 
         // Screenshot al
         const fileName = `${String(i + 1).padStart(2, '0')}-${pageInfo.name}.png`;
+        const screenshotPath = join(screenshotsDir, fileName);
         await window.screenshot({
-          path: join(screenshotsDir, fileName),
+          path: screenshotPath,
           fullPage: true
         });
 
         console.log(`✅ Kaydedildi: ${fileName}\n`);
+
+        const websiteAsset = websiteAssetMap[fileName];
+        if (websiteAsset) {
+          const websiteAssetPath = join(websitePublicDir, websiteAsset);
+          copyFileSync(screenshotPath, websiteAssetPath);
+          console.log(`   ↪︎ Web sitesi görseli güncellendi: ${websiteAsset}\n`);
+        }
+
+        const galleryTarget = join(websiteScreenshotsDir, fileName);
+        copyFileSync(screenshotPath, galleryTarget);
 
       } catch (error) {
         console.error(`❌ Hata (${pageInfo.description}):`, error.message);

@@ -1,0 +1,121 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Source code
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Scripts
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Config files
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.editorconfig text eol=lf
+.prettierrc text eol=lf
+.eslintrc text eol=lf
+
+# Documentation
+*.txt text eol=lf
+LICENSE text eol=lf
+README* text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.webp binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.dmg binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+
+# Database files
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+
+# Archives
+*.7z binary
+*.jar binary
+*.rar binary
+*.tar binary
+*.zip binary
+*.gz binary
+
+# Video/Audio
+*.mp4 binary
+*.mp3 binary
+*.mov binary
+*.avi binary
+*.flv binary
+*.mkv binary
+
+# Node.js
+node_modules/ export-ignore
+.npm/ export-ignore
+.yarn/ export-ignore
+
+# Git
+.git export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
+
+# CI/CD
+.github/ export-ignore
+
+# IDE
+.vscode/ export-ignore
+.idea/ export-ignore
+
+# Test
+tests/ export-ignore
+test/ export-ignore
+*.test.* export-ignore
+*.spec.* export-ignore
+
+# Build artifacts
+dist/ export-ignore
+build/ export-ignore
+release/ export-ignore
+out/ export-ignore
+
+# GitHub Linguist - Language detection hints
+*.md linguist-detectable=false
+*.txt linguist-detectable=false
+docs/** linguist-documentation
+screenshots/** linguist-documentation
+promo-assets/** linguist-documentation
+photos/** linguist-documentation
+
+# Diff settings
+*.lockb -diff
+package-lock.json -diff
+yarn.lock -diff
+pnpm-lock.yaml -diff
+

@@ -1,0 +1,25 @@
+# Auto-assign configuration
+# PR'lar otomatik olarak belirtilen kişilere atanır
+
+# PR oluşturulduğunda assign edilecek reviewers
+addReviewers: true
+
+# PR oluşturulduğunda assign edilecek assignees
+addAssignees: false
+
+# Reviewers listesi
+reviewers:
+  - meertseker
+
+# Assignees listesi (PR author'u otomatik assignee olur)
+assignees: []
+
+# En az kaç reviewer assign edilecek
+numberOfReviewers: 1
+
+# Skip keywords - bu kelimeleri içeren PR'lar skip edilir
+skipKeywords:
+  - wip
+  - WIP
+  - draft
+

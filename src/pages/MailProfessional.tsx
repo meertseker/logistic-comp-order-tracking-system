@@ -27,6 +27,7 @@ import {
   RefreshCw,
   Zap,
   BarChart3,
+  MapPin,
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -101,8 +102,11 @@ export default function MailProfessional() {
     recipient: '',
     orderId: '',
     subject: '',
+    message: '',
     template: 'bekliyor',
   })
+  const [allOrders, setAllOrders] = useState<any[]>([])
+  const [selectedOrder, setSelectedOrder] = useState<any>(null)
   
   // Toplu mail gönderme
   const [bulkMail, setBulkMail] = useState({
@@ -120,6 +124,7 @@ export default function MailProfessional() {
 
   useEffect(() => {
     loadData()
+    loadAllOrders()
   }, [])
 
   const loadData = async () => {
@@ -180,6 +185,15 @@ export default function MailProfessional() {
     }
   }
 
+  const loadAllOrders = async () => {
+    try {
+      const orders = await window.electronAPI.db.getOrders({})
+      setAllOrders(orders)
+    } catch (error) {
+      console.error('Failed to load orders:', error)
+    }
+  }
+
   const handleRefresh = async () => {
     setRefreshing(true)
     await loadData()
@@ -192,17 +206,47 @@ export default function MailProfessional() {
     setShowDetailModal(true)
   }
 
+  const handleOrderSelect = (orderId: string) => {
+    const order = allOrders.find(o => o.id === Number(orderId))
+    if (order) {
+      setSelectedOrder(order)
+      setManualMail({ 
+        ...manualMail, 
+        orderId,
+        recipient: order.customer_email || '',
+      })
+      
+      // Email yoksa uyar
+      if (!order.customer_email) {
+        showToast('Bu siparişe ait müşteri email adresi bulunmuyor', 'warning')
+      }
+    }
+  }
+
   const handleSendManualMail = async () => {
-    if (!manualMail.recipient || !manualMail.orderId) {
-      showToast('Lütfen tüm alanları doldurun', 'error')
+    if (!manualMail.orderId) {
+      showToast('Lütfen bir sipariş seçin', 'error')
+      return
+    }
+    
+    if (!selectedOrder || !selectedOrder.customer_email) {
+      showToast('Seçili siparişin email adresi bulunmuyor', 'error')
+      return
+    }
+    
+    if (!manualMail.message || !manualMail.message.trim()) {
+      showToast('Lütfen müşterinize özel bir mesaj yazın', 'error')
       return
     }
     
     try {
       setSending(true)
       
-      // Sipariş detaylarını al
-      const order = await window.electronAPI.db.getOrder(Number(manualMail.orderId))
+      // Seçili siparişi kullan veya tekrar yükle
+      let order = selectedOrder
+      if (!order || order.id !== Number(manualMail.orderId)) {
+        order = await window.electronAPI.db.getOrder(Number(manualMail.orderId))
+      }
       if (!order) {
         showToast('Sipariş bulunamadı', 'error')
         return
@@ -217,7 +261,7 @@ export default function MailProfessional() {
         orderId: order.id,
         musteri: order.musteri,
         telefon: order.telefon,
-        customerEmail: manualMail.recipient,
+        customerEmail: order.customer_email,
         nereden: order.nereden,
         nereye: order.nereye,
         yukAciklamasi: order.yuk_aciklamasi || '',
@@ -242,18 +286,29 @@ export default function MailProfessional() {
         fileName: inv.file_name
       }))
       
-      // Mail gönder
+      // Mail gönder - Mesaj zorunlu olduğu için direkt gönder
+      console.log('📧 Frontend - Mail gönderiliyor:', {
+        subject: manualMail.subject,
+        message: manualMail.message,
+        messageLength: manualMail.message?.length,
+        email: order.customer_email
+      })
+      
       const result = await window.electronAPI.mail.sendOrderEmail(
-        manualMail.recipient,
+        order.customer_email,
         orderData,
         pdfPath,
-        invoiceFiles
+        invoiceFiles,
+        manualMail.subject || undefined,
+        manualMail.message  // Zorunlu alan, doğrudan gönder
       )
+      
+      console.log('📬 Mail gönderim sonucu:', result)
       
       if (result.success) {
         showToast('✅ Mail başarıyla gönderildi!', 'success')
-        setShowSendModal(false)
-        setManualMail({ recipient: '', orderId: '', subject: '', template: 'bekliyor' })
+        setManualMail({ recipient: '', orderId: '', subject: '', message: '', template: 'bekliyor' })
+        setSelectedOrder(null)
         await loadData()
       } else {
         showToast(`❌ Mail gönderilemedi: ${result.message}`, 'error')
@@ -953,60 +1008,132 @@ export default function MailProfessional() {
           <Card>
             <div className="mb-6">
               <h3 className="text-2xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
-                Manuel Mail Gönder
+                Manuel Özel Mesaj Gönder
               </h3>
               <p className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                Tek bir müşteriye özel mail gönderin
+                Müşterinize özel, kişiselleştirilmiş mesaj gönderin
               </p>
             </div>
 
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <Select
+                    label="Sipariş Seç *"
+                    value={manualMail.orderId}
+                    onChange={(e) => handleOrderSelect(e.target.value)}
+                    options={[
+                      { value: '', label: 'Sipariş seçin...' },
+                      ...allOrders
+                        .filter(o => o.customer_email) // Sadece email adresi olanları göster
+                        .map(o => ({ 
+                          value: o.id.toString(), 
+                          label: `#${o.id} - ${o.musteri} (${o.customer_email})`
+                        }))
+                    ]}
+                  />
+                  <p className="text-xs mt-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                    📧 Sadece email adresi olan müşteriler gösterilmektedir
+                  </p>
+                </div>
+              </div>
+              
+              {selectedOrder && (
+                <div className="p-5 rounded-xl" style={{ 
+                  background: 'rgba(48, 209, 88, 0.1)',
+                  border: '0.5px solid rgba(48, 209, 88, 0.3)'
+                }}>
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="p-2 rounded-lg" style={{ 
+                      background: 'rgba(48, 209, 88, 0.2)',
+                      border: '0.5px solid rgba(48, 209, 88, 0.4)'
+                    }}>
+                      <Package className="w-5 h-5" style={{ color: '#30D158' }} />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-lg mb-1" style={{ color: '#30D158' }}>
+                        Seçili Sipariş: #{selectedOrder.id}
+                      </h4>
+                      <p className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                        Mail otomatik olarak hazırlanacaktır
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm" style={{ color: 'rgba(235, 235, 245, 0.8)' }}>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" style={{ color: '#30D158' }} />
+                      <span><strong>Müşteri:</strong> {selectedOrder.musteri}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4" style={{ color: '#30D158' }} />
+                      <span><strong>Email:</strong> {selectedOrder.customer_email}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" style={{ color: '#30D158' }} />
+                      <span><strong>Güzergah:</strong> {selectedOrder.nereden} → {selectedOrder.nereye}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" style={{ color: '#30D158' }} />
+                      <span><strong>Durum:</strong> {selectedOrder.status}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-4">
                 <Input
-                  label="Sipariş No *"
-                  type="number"
-                  placeholder="Örn: 123"
-                  value={manualMail.orderId}
-                  onChange={(e) => setManualMail({ ...manualMail, orderId: e.target.value })}
-                  icon={<Package className="w-4 h-4" />}
-                />
-                <Input
-                  label="Alıcı Email *"
-                  type="email"
-                  placeholder="ornek@mail.com"
-                  value={manualMail.recipient}
-                  onChange={(e) => setManualMail({ ...manualMail, recipient: e.target.value })}
-                  icon={<Mail className="w-4 h-4" />}
+                  label="Konu (Opsiyonel)"
+                  type="text"
+                  placeholder="Otomatik oluşturulacak"
+                  value={manualMail.subject}
+                  onChange={(e) => setManualMail({ ...manualMail, subject: e.target.value })}
+                  disabled={sending}
                 />
               </div>
-
-              <Select
-                label="Mail Şablonu"
-                value={manualMail.template}
-                onChange={(e) => setManualMail({ ...manualMail, template: e.target.value })}
-                options={MAIL_TEMPLATES.map(t => ({ value: t.id, label: t.name }))}
-              />
+              
+              <div>
+                <TextArea
+                  label="Özel Mesajınız *"
+                  value={manualMail.message}
+                  onChange={(e) => setManualMail({ ...manualMail, message: e.target.value })}
+                  placeholder="Müşterinize özel mesajınızı buraya yazın..."
+                  rows={6}
+                  disabled={sending}
+                  required
+                />
+                <p className="text-xs mt-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                  💬 Bu sayfadan sadece özel mesaj gönderilebilir. Otomatik template kullanılmaz.
+                </p>
+              </div>
 
               <div className="flex items-center gap-3 p-4 rounded-xl" style={{ 
-                background: 'rgba(10, 132, 255, 0.1)',
-                border: '0.5px solid rgba(10, 132, 255, 0.3)'
+                background: 'rgba(191, 90, 242, 0.1)',
+                border: '0.5px solid rgba(191, 90, 242, 0.3)'
               }}>
-                <AlertCircle className="w-5 h-5" style={{ color: '#0A84FF' }} />
-                <p className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.8)' }}>
-                  Mail, seçilen sipariş bilgileri ve seçilen şablona göre otomatik oluşturulacaktır.
-                </p>
+                <Mail className="w-5 h-5" style={{ color: '#BF5AF2' }} />
+                <div>
+                  <p className="text-sm font-semibold mb-1" style={{ color: '#FFFFFF' }}>
+                    📝 Manuel Özel Mesaj Gönderimi
+                  </p>
+                  <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.7)' }}>
+                    Mail, müşterinize özel mesajınız merkeze alınarak profesyonel formatta hazırlanacaktır. Sipariş bilgileri sadece referans olarak eklenecektir.
+                  </p>
+                </div>
               </div>
 
               <div className="flex justify-end gap-3">
                 <Button
-                  onClick={() => setManualMail({ recipient: '', orderId: '', subject: '', template: 'bekliyor' })}
+                  onClick={() => {
+                    setManualMail({ recipient: '', orderId: '', subject: '', message: '', template: 'bekliyor' })
+                    setSelectedOrder(null)
+                  }}
                   variant="secondary"
                 >
                   Temizle
                 </Button>
                 <Button
                   onClick={handleSendManualMail}
-                  disabled={sending || !manualMail.recipient || !manualMail.orderId}
+                  disabled={sending || !manualMail.orderId || !selectedOrder?.customer_email || !manualMail.message?.trim()}
                 >
                   {sending ? (
                     <>

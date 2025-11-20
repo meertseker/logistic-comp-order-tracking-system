@@ -1,11 +1,94 @@
-# Sekersoft - Taşımacılık Yönetim Sistemi
+<div align="center">
+
+# 🚚 Sekersoft - Taşımacılık Yönetim Sistemi
+
+**Modern, offline-first masaüstü taşımacılık yönetim uygulaması**
 
 [![Build macOS](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-macos.yml/badge.svg)](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-macos.yml)
 [![Build Windows](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-windows.yml/badge.svg)](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-windows.yml)
-[![Build All Platforms](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-all-platforms.yml/badge.svg)](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/build-all-platforms.yml)
+[![Code Quality](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/code-quality.yml/badge.svg)](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/code-quality.yml)
 [![Release Build](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/release-build.yml/badge.svg)](https://github.com/meertseker/logistic-comp-order-tracking-system/actions/workflows/release-build.yml)
 
-Modern, offline-first masaüstü taşımacılık yönetim uygulaması. Windows ve macOS'ta çalışmak üzere Electron, React, ve SQLite ile geliştirilmiştir.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/github/v/release/meertseker/logistic-comp-order-tracking-system?include_prereleases)](https://github.com/meertseker/logistic-comp-order-tracking-system/releases)
+[![Issues](https://img.shields.io/github/issues/meertseker/logistic-comp-order-tracking-system)](https://github.com/meertseker/logistic-comp-order-tracking-system/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/meertseker/logistic-comp-order-tracking-system)](https://github.com/meertseker/logistic-comp-order-tracking-system/pulls)
+[![Contributors](https://img.shields.io/github/contributors/meertseker/logistic-comp-order-tracking-system)](https://github.com/meertseker/logistic-comp-order-tracking-system/graphs/contributors)
+[![Last Commit](https://img.shields.io/github/last-commit/meertseker/logistic-comp-order-tracking-system)](https://github.com/meertseker/logistic-comp-order-tracking-system/commits/main)
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.2-61dafb?logo=react)](https://reactjs.org/)
+[![Electron](https://img.shields.io/badge/Electron-28.0-47848f?logo=electron)](https://www.electronjs.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-3-003b57?logo=sqlite)](https://www.sqlite.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.0-646cff?logo=vite)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?logo=tailwind-css)](https://tailwindcss.com/)
+
+[![Platform Windows](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows)](https://github.com/meertseker/logistic-comp-order-tracking-system/releases)
+[![Platform macOS](https://img.shields.io/badge/Platform-macOS-000000?logo=apple)](https://github.com/meertseker/logistic-comp-order-tracking-system/releases)
+[![Downloads](https://img.shields.io/github/downloads/meertseker/logistic-comp-order-tracking-system/total)](https://github.com/meertseker/logistic-comp-order-tracking-system/releases)
+
+[📥 İndir](https://github.com/meertseker/logistic-comp-order-tracking-system/releases) • 
+[📚 Dökümanlar](docs/INDEX.md) • 
+[🐛 Bug Bildir](https://github.com/meertseker/logistic-comp-order-tracking-system/issues/new?template=bug_report.yml) • 
+[✨ Özellik İste](https://github.com/meertseker/logistic-comp-order-tracking-system/issues/new?template=feature_request.yml) • 
+[💬 Discussions](https://github.com/meertseker/logistic-comp-order-tracking-system/discussions)
+
+---
+
+</div>
+
+Windows ve macOS'ta çalışmak üzere **Electron, React, TypeScript ve SQLite** ile geliştirilmiş, tamamen **offline** çalışan profesyonel taşımacılık yönetim sistemi.
+
+## 📸 Ekran Görüntüleri
+
+<details>
+<summary><b>🎯 Dashboard</b> - Genel bakış ve istatistikler</summary>
+
+<br>
+
+![Dashboard](screenshots/01-dashboard.png)
+
+</details>
+
+<details>
+<summary><b>📋 Sipariş Yönetimi</b> - Sipariş listesi ve filtreleme</summary>
+
+<br>
+
+![Orders](screenshots/02-orders.png)
+
+</details>
+
+<details>
+<summary><b>➕ Yeni Sipariş</b> - Sipariş oluşturma formu</summary>
+
+<br>
+
+![Create Order](screenshots/03-create-order.png)
+
+</details>
+
+<details>
+<summary><b>📊 Raporlama</b> - Detaylı finansal raporlar</summary>
+
+<br>
+
+![Reports](screenshots/04-reports.png)
+
+</details>
+
+<details>
+<summary><b>📈 Grafikler</b> - Görsel analizler</summary>
+
+<br>
+
+![Charts](screenshots/05-charts.png)
+
+</details>
+
+Daha fazla ekran görüntüsü için [screenshots/](screenshots/) klasörüne bakınız.
+
+---
 
 ## 🚀 Özellikler
 
@@ -293,17 +376,63 @@ Sekersoft ekibi tarafından geliştirilmiştir.
 
 ## 🤝 Katkıda Bulunma
 
-Katkıda bulunmak için [docs/development/CONTRIBUTING.md](docs/development/CONTRIBUTING.md) dosyasını inceleyiniz.
+Katkılarınızı bekliyoruz! Projeye nasıl katkıda bulunabileceğinizi öğrenmek için:
 
-1. Fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add amazing feature'`)
-4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
-5. Pull Request açın
+📘 **[CONTRIBUTING.md](docs/development/CONTRIBUTING.md)** - Detaylı katkıda bulunma rehberi
 
-## 📞 Destek
+### Hızlı Başlangıç
 
-Sorularınız için: support@seymentransport.com
+1. 🍴 **Fork** edin
+2. 🌿 Feature branch oluşturun: `git checkout -b feature/amazing-feature`
+3. ✍️ Değişikliklerinizi commit edin: `git commit -m 'feat: add amazing feature'`
+4. 📤 Branch'inizi push edin: `git push origin feature/amazing-feature`
+5. 🎉 **Pull Request** açın
+
+### Katkı Alanları
+
+- 🐛 Bug düzeltmeleri
+- ✨ Yeni özellikler
+- 📚 Dokümantasyon iyileştirmeleri
+- 🌍 Çeviri desteği
+- 🎨 UI/UX iyileştirmeleri
+- ⚡ Performans optimizasyonları
+
+[![Contributors](https://contrib.rocks/image?repo=meertseker/logistic-comp-order-tracking-system)](https://github.com/meertseker/logistic-comp-order-tracking-system/graphs/contributors)
+
+## 💬 Topluluk ve Destek
+
+Sorularınız mı var? Yardıma mı ihtiyacınız var?
+
+- 💬 **[GitHub Discussions](https://github.com/meertseker/logistic-comp-order-tracking-system/discussions)** - Sorular, fikirler ve tartışmalar
+- 🐛 **[Issue Tracker](https://github.com/meertseker/logistic-comp-order-tracking-system/issues)** - Bug raporları ve özellik istekleri
+- 📧 **E-posta:** support@seymentransport.com
+- 📖 **[Destek Dokümantasyonu](.github/SUPPORT.md)** - Detaylı destek rehberi
+
+## 🛡️ Güvenlik
+
+Güvenlik açığı bulduysanız, lütfen sorumlu bir şekilde bildirin:
+
+🔒 **[SECURITY.md](SECURITY.md)** - Güvenlik politikası ve bildirme prosedürü
+
+## 📜 Davranış Kuralları
+
+Bu projede [Davranış Kurallarımıza](CODE_OF_CONDUCT.md) uyulması beklenir. Saygılı ve kapsayıcı bir topluluk için hep birlikte çalışıyoruz.
+
+## 📊 Proje İstatistikleri
+
+<div align="center">
+
+![Alt](https://repobeats.axiom.co/api/embed/YOUR_REPOBEATS_ID.svg "Repobeats analytics image")
+
+</div>
+
+## 🌟 Stargazers
+
+[![Stargazers over time](https://starchart.cc/meertseker/logistic-comp-order-tracking-system.svg)](https://starchart.cc/meertseker/logistic-comp-order-tracking-system)
+
+## 📜 Changelog
+
+Tüm önemli değişiklikler için [CHANGELOG.md](CHANGELOG.md) dosyasına bakınız.
 
 ---
 

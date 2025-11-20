@@ -1,19 +1,7 @@
 import { motion } from 'framer-motion'
-import { 
-  Truck,
-  Package,
-  Users,
-  Building2,
-  TrendingUp,
-  DollarSign,
-  Clock,
-  CheckCircle2,
-  BarChart3,
-  FileText,
-  MapPin,
-  Calculator
-} from 'lucide-react'
+import { Truck, Package, Users, Building2, DollarSign, Clock, CheckCircle2, BarChart3, Calculator } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { screenshotPaths } from '../data/screenshots'
 
 const Solutions = () => {
   const solutions = [
@@ -28,7 +16,8 @@ const Solutions = () => {
         'Ay sonu raporlarını kolayca hazırlayın',
         'Faturalarınızı dijital ortamda saklayın'
       ],
-      scenario: 'Sabah siparişinizi alıyorsunuz. Sisteme giriyorsunuz: güzergah, müşteri, fiyat. Sekersoft anında maliyeti hesaplıyor. Karlı mı zararlı mı, hemen biliyorsunuz.'
+      scenario: 'Sabah siparişinizi alıyorsunuz. Sisteme giriyorsunuz: güzergah, müşteri, fiyat. Sekersoft anında maliyeti hesaplıyor. Karlı mı zararlı mı, hemen biliyorsunuz.',
+      image: screenshotPaths.orders
     },
     {
       icon: Building2,
@@ -41,7 +30,8 @@ const Solutions = () => {
         'Müşteri bazında sipariş takibi',
         'Detaylı finansal raporlama'
       ],
-      scenario: '5 aracınız var. Hangisi daha çok kazandırıyor? Hangi müşteri en çok sipariş veriyor? Hangi güzergah karlı? Tüm cevaplar dashboard\'ta.'
+      scenario: '5 aracınız var. Hangisi daha çok kazandırıyor? Hangi müşteri en çok sipariş veriyor? Hangi güzergah karlı? Tüm cevaplar dashboard\'ta.',
+      image: screenshotPaths.dashboard
     },
     {
       icon: Package,
@@ -54,7 +44,8 @@ const Solutions = () => {
         'Güzergah maliyet analizi',
         'İstatistiksel raporlar'
       ],
-      scenario: 'Her seferin maliyetini biliyorsunuz. Yakıt, sürücü, bakım, yol giderleri otomatik hesaplanıyor. Karlılık marjınız her zaman görünür.'
+      scenario: 'Her seferin maliyetini biliyorsunuz. Yakıt, sürücü, bakım, yol giderleri otomatik hesaplanıyor. Karlılık marjınız her zaman görünür.',
+      image: screenshotPaths.charts
     },
     {
       icon: Users,
@@ -67,7 +58,8 @@ const Solutions = () => {
         'Email ile otomatik bildirimler',
         'Profesyonel raporlar'
       ],
-      scenario: 'Aynı güzergahı sürekli yapıyorsunuz. Bir kez kaydediyorsunuz, her seferinde otomatik maliyet hesaplanıyor. Zaman kazanıyorsunuz.'
+      scenario: 'Aynı güzergahı sürekli yapıyorsunuz. Bir kez kaydediyorsunuz, her seferinde otomatik maliyet hesaplanıyor. Zaman kazanıyorsunuz.',
+      image: screenshotPaths.createOrder
     },
   ]
 
@@ -164,8 +156,17 @@ const Solutions = () => {
               transition={{ delay: index * 0.1 }}
               className="glass rounded-3xl p-8 glass-hover"
             >
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mb-6">
-                <solution.icon className="w-8 h-8 text-blue-400" />
+              <div className="rounded-2xl overflow-hidden border border-white/10 mb-6">
+                <img
+                  src={solution.image}
+                  alt={solution.title}
+                  className="w-full h-48 object-cover"
+                  loading="lazy"
+                />
+              </div>
+
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mb-4">
+                <solution.icon className="w-7 h-7 text-blue-400" />
               </div>
               
               <h3 className="text-2xl font-bold mb-3">{solution.title}</h3>
@@ -352,9 +353,14 @@ const Solutions = () => {
                 </div>
               </div>
             </div>
-            <div className="glass rounded-2xl p-8">
-              <div className="aspect-square rounded-xl bg-gradient-to-br from-blue-900/50 to-cyan-900/50 flex items-center justify-center">
-                <TrendingUp className="w-32 h-32 text-blue-400/30" />
+            <div className="glass rounded-2xl p-4">
+              <div className="rounded-2xl overflow-hidden border border-white/10">
+                <img
+                  src={screenshotPaths.activeVehicles}
+                  alt="Sekersoft başarı ekranı"
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
               </div>
             </div>
           </div>

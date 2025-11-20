@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Target, Shield, Heart, Code, Database, Monitor, Zap, CheckCircle2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { screenshotPaths } from '../data/screenshots'
 
 const About = () => {
   const values = [
@@ -105,9 +106,14 @@ const About = () => {
                 otomatik maliyet hesaplama, detaylı raporlama. Hepsi bu kadar basit.
               </p>
             </div>
-            <div className="glass rounded-2xl p-8">
-              <div className="aspect-square rounded-xl bg-gradient-to-br from-blue-900/50 to-cyan-900/50 flex items-center justify-center">
-                <Target className="w-32 h-32 text-blue-400/30" />
+            <div className="glass rounded-2xl p-4">
+              <div className="rounded-xl overflow-hidden border border-white/10">
+                <img
+                  src={screenshotPaths.dashboard}
+                  alt="Sekersoft masaüstü ekran görüntüsü"
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
               </div>
             </div>
           </div>

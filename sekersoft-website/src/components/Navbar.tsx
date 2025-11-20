@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '../lib/utils'
+import { siteConfig } from '../config/site'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -56,15 +57,23 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <div className="w-10 h-10 rounded-xl glass glass-hover flex items-center justify-center">
-              <span className="text-2xl font-bold gradient-text">S</span>
+          <Link to="/" className="flex items-center space-x-3 group" aria-label={`${siteConfig.name} ana sayfa`}>
+            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+              <img
+                src="/logo.png"
+                alt={`${siteConfig.name} logosu`}
+                className="w-10 h-10 object-contain"
+                loading="lazy"
+              />
             </div>
-            <span className="text-xl font-bold gradient-text">Sekersoft</span>
+            <div className="flex flex-col leading-tight">
+              <span className="text-xl font-bold gradient-text">{siteConfig.shortName}</span>
+              <span className="text-xs text-gray-400 uppercase tracking-[0.2em]">{siteConfig.tagline}</span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-4 lg:space-x-6">
             {navLinks.map((link) => (
               <div key={link.name} className="relative group">
                 <Link
@@ -109,7 +118,7 @@ const Navbar = () => {
               to="/demo"
               className="px-6 py-2.5 rounded-xl glass glass-hover text-sm font-medium transition-all"
             >
-              Ücretsiz Dene
+              Demo Talep Et
             </Link>
             <Link
               to="/contact"
@@ -175,7 +184,7 @@ const Navbar = () => {
                   onClick={() => setIsOpen(false)}
                   className="block w-full px-4 py-2.5 rounded-xl glass glass-hover text-sm font-medium text-center transition-all"
                 >
-                  Ücretsiz Dene
+                  Demo Talep Et
                 </Link>
                 <Link
                   to="/contact"

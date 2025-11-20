@@ -209,54 +209,7 @@ export default function ChartsProfessional() {
     ],
   }
 
-  // Gelir Kaynakları Doughnut
-  const revenueSourcesData = {
-    labels: ['Taşıma Geliri', 'Ek Hizmetler', 'Diğer'],
-    datasets: [
-      {
-        label: 'Gelir Kaynakları',
-        data: [75, 20, 5],
-        backgroundColor: [
-          'rgba(48, 209, 88, 0.8)',
-          'rgba(10, 132, 255, 0.8)',
-          'rgba(255, 159, 10, 0.8)',
-        ],
-        borderColor: [
-          'rgb(48, 209, 88)',
-          'rgb(10, 132, 255)',
-          'rgb(255, 159, 10)',
-        ],
-        borderWidth: 2,
-      },
-    ],
-  }
-
-  // Performans Radar Chart
-  const performanceData = {
-    labels: ['Gelir', 'Verimlilik', 'Müşteri Memnuniyeti', 'Karlılık', 'Büyüme'],
-    datasets: [
-      {
-        label: 'Bu Ay',
-        data: [85, 75, 90, 70, 80],
-        backgroundColor: 'rgba(10, 132, 255, 0.2)',
-        borderColor: 'rgb(10, 132, 255)',
-        pointBackgroundColor: 'rgb(10, 132, 255)',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgb(10, 132, 255)',
-      },
-      {
-        label: 'Geçen Ay',
-        data: [75, 70, 85, 65, 70],
-        backgroundColor: 'rgba(255, 159, 10, 0.2)',
-        borderColor: 'rgb(255, 159, 10)',
-        pointBackgroundColor: 'rgb(255, 159, 10)',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgb(255, 159, 10)',
-      },
-    ],
-  }
+  // Gelir Kaynakları ve Performans Radar grafikleri kaldırıldı - veri hazırlığına gerek yok
 
   const chartOptions = {
     responsive: true,
@@ -336,48 +289,12 @@ export default function ChartsProfessional() {
     }
   }
 
-  const radarOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          color: 'rgba(235, 235, 245, 0.8)',
-          font: {
-            size: 12
-          }
-        }
-      }
-    },
-    scales: {
-      r: {
-        angleLines: {
-          color: 'rgba(235, 235, 245, 0.1)'
-        },
-        grid: {
-          color: 'rgba(235, 235, 245, 0.1)'
-        },
-        pointLabels: {
-          color: 'rgba(235, 235, 245, 0.8)',
-          font: {
-            size: 11
-          }
-        },
-        ticks: {
-          color: 'rgba(235, 235, 245, 0.6)',
-          backdropColor: 'transparent'
-        }
-      }
-    }
-  }
 
   const ChartCard = ({ title, description, chartId, children, icon: Icon }: any) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="glass-card rounded-xl p-6 relative"
-      id={chartId}
     >
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -410,7 +327,9 @@ export default function ChartsProfessional() {
           <ChartExportControls chartId={chartId} chartTitle={title} />
         </div>
       </div>
-      {children}
+      <div id={chartId}>
+        {children}
+      </div>
     </motion.div>
   )
 
@@ -532,30 +451,8 @@ export default function ChartsProfessional() {
             <Pie data={profitMarginData} options={pieOptions} />
           </div>
         </ChartCard>
-
-        {/* Gelir Kaynakları */}
-        <ChartCard 
-          title="Gelir Kaynakları"
-          description="Gelir dağılımı analizi"
-          chartId="revenue-sources-chart"
-          icon={DollarSign}
-        >
-          <div className="h-80">
-            <Doughnut data={revenueSourcesData} options={pieOptions} />
-          </div>
-        </ChartCard>
-
-        {/* Performans Radar */}
-        <ChartCard 
-          title="Genel Performans"
-          description="Çok boyutlu performans analizi"
-          chartId="performance-radar-chart"
-          icon={Activity}
-        >
-          <div className="h-80">
-            <Radar data={performanceData} options={radarOptions} />
-          </div>
-        </ChartCard>
+        
+        {/* Gelir Kaynakları ve Performans Radar grafikleri kaldırıldı */}
       </div>
 
       {/* Fullscreen Modal */}

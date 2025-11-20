@@ -1,0 +1,68 @@
+# Stale Issues/PRs Configuration
+# Bu dosya, eski issue ve PR'ları otomatik yönetir
+
+# Issues için yapılandırma
+daysUntilStale: 90
+daysUntilClose: 14
+
+# Stale olarak işaretleneceklere eklenen etiket
+staleLabel: "stale"
+
+# Uygulanacak issue'lar (boş = hepsi)
+only: issues
+
+# Bu etiketlere sahip issue'lar asla stale olmaz
+exemptLabels:
+  - "priority: critical"
+  - "priority: high"
+  - "good first issue"
+  - "help wanted"
+  - "enhancement"
+  - "security"
+  - "in progress"
+
+# Bu milestone'lara sahip issue'lar stale olmaz
+exemptMilestones: true
+
+# Bu assignee'lere sahip issue'lar stale olmaz
+exemptAssignees: true
+
+# Stale olarak işaretlendiğinde eklenecek yorum
+markComment: >
+  Bu issue 90 gündür hareketsiz. Eğer hala geçerliyse, lütfen bir yorum
+  bırakın. Aksi takdirde, 14 gün içinde otomatik olarak kapatılacak.
+  
+  Teşekkürler! 🙏
+
+# Kapatılırken eklenecek yorum
+closeComment: >
+  Bu issue uzun süredir hareketsiz olduğu için otomatik olarak kapatıldı.
+  Eğer hala geçerliyse, yeniden açabilir veya yeni bir issue oluşturabilirsiniz.
+  
+  Teşekkürler! 🙏
+
+# Stale işaretinden sonra aktivite olursa stale etiketini kaldır
+removeStaleWhenUpdated: true
+
+# PR'lar için farklı ayarlar
+pulls:
+  daysUntilStale: 30
+  daysUntilClose: 7
+  staleLabel: "stale"
+  exemptLabels:
+    - "priority: critical"
+    - "priority: high"
+    - "work in progress"
+    - "dependencies"
+  markComment: >
+    Bu PR 30 gündür hareketsiz. Eğer hala üzerinde çalışıyorsanız,
+    lütfen bir güncelleme yapın. Aksi takdirde, 7 gün içinde otomatik
+    olarak kapatılacak.
+    
+    Teşekkürler! 🙏
+  closeComment: >
+    Bu PR uzun süredir hareketsiz olduğu için otomatik olarak kapatıldı.
+    Eğer çalışmaya devam etmek isterseniz, yeniden açabilirsiniz.
+    
+    Teşekkürler! 🙏
+

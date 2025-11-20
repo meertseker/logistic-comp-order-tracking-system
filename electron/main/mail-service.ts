@@ -102,7 +102,9 @@ export class MailService {
     recipientEmail: string,
     orderData: OrderMailData,
     pdfPath?: string,
-    invoiceFiles?: Array<{ filePath: string; fileName: string }>
+    invoiceFiles?: Array<{ filePath: string; fileName: string }>,
+    customSubject?: string,
+    customMessage?: string
   ): Promise<{ success: boolean; message: string }> {
     const db = getDB()
     
@@ -135,27 +137,47 @@ export class MailService {
         companyName: settings.company_name || 'Şirket Adı',
       }
       
-      const htmlContent = generateEmailByStatus(orderData.status, templateData)
+      // Eğer özel mesaj varsa, özel template kullan
+      console.log('📧 Mail Service - customMessage kontrol:', {
+        customMessage,
+        hasMessage: !!customMessage,
+        trimmed: customMessage?.trim(),
+        length: customMessage?.length
+      })
       
-      // Mail subject'i duruma göre belirle
-      const subjects: Record<string, string> = {
-        'Bekliyor': 'Siparişiniz Alındı',
-        'Yüklendi': 'Yükleme Tamamlandı',
-        'Yolda': 'Aracınız Yola Çıktı',
-        'Teslim Edildi': 'Teslimat Tamamlandı',
-        'Faturalandı': 'Faturanız Hazır',
-        'İptal': 'Sipariş İptal Edildi',
+      let htmlContent: string
+      if (customMessage && customMessage.trim()) {
+        console.log('✅ ÖZEL MESAJ TEMPLATE kullanılıyor')
+        htmlContent = this.generateCustomMessageTemplate(orderData, customMessage, templateData.companyName)
+      } else {
+        console.log('⚠️ OTOMATİK TEMPLATE kullanılıyor - Durum:', orderData.status)
+        // Duruma göre otomatik template
+        htmlContent = generateEmailByStatus(orderData.status, templateData)
       }
       
-      const subject = subjects[orderData.status] || 'Sipariş Durumu Güncellendi'
+      // Mail subject'i custom veya duruma göre belirle
+      let subject: string
+      if (customSubject) {
+        subject = customSubject
+      } else {
+        const subjects: Record<string, string> = {
+          'Bekliyor': 'Siparişiniz Alındı',
+          'Yüklendi': 'Yükleme Tamamlandı',
+          'Yolda': 'Aracınız Yola Çıktı',
+          'Teslim Edildi': 'Teslimat Tamamlandı',
+          'Faturalandı': 'Faturanız Hazır',
+          'İptal': 'Sipariş İptal Edildi',
+        }
+        subject = `${subjects[orderData.status] || 'Sipariş Durumu Güncellendi'} - Sipariş #${orderData.orderId}`
+      }
       
       // Mail seçenekleri (Türkçe karakter desteği için charset ekle)
       const mailOptions: any = {
         from: `"${settings.from_name}" <${settings.from_email}>`,
         to: recipientEmail,
-        subject: `${subject} - Sipariş #${orderData.orderId}`,
+        subject: subject,
         html: htmlContent,
-        text: this.generatePlainTextEmail(orderData), // Fallback plain text
+        text: customMessage ? this.generateCustomPlainTextEmail(orderData, customMessage, templateData.companyName) : this.generatePlainTextEmail(orderData), // Fallback plain text
         charset: 'utf-8',
         encoding: 'utf-8'
       }
@@ -237,6 +259,177 @@ export class MailService {
     }
   }
   
+  /**
+   * Özel mesaj için HTML template oluştur
+   */
+  private generateCustomMessageTemplate(data: OrderMailData, customMessage: string, companyName: string): string {
+    const formatCurrency = (amount: number) => {
+      return new Intl.NumberFormat('tr-TR', {
+        style: 'currency',
+        currency: 'TRY',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount)
+    }
+    
+    const formatDate = (dateString: string) => {
+      return new Date(dateString).toLocaleDateString('tr-TR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    }
+    
+    return `
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Özel Mesaj - Sipariş #${data.orderId}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background-color: #f3f4f6;">
+    
+    <!-- Container -->
+    <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f3f4f6;">
+        <tr>
+            <td style="padding: 40px 20px;">
+                
+                <!-- Main Card -->
+                <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">
+                                ${companyName || 'Şirket Adı'}
+                            </h1>
+                            <p style="margin: 10px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 16px;">
+                                ${data.musteri} - Sipariş #${data.orderId}
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Custom Message Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            
+                            <!-- Main Message Box -->
+                            <table role="presentation" style="width: 100%; margin-bottom: 30px;">
+                                <tr>
+                                    <td style="padding: 25px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; border-left: 5px solid #3b82f6;">
+                                        <div style="color: #1e40af; font-size: 15px; line-height: 1.8; white-space: pre-wrap;">${customMessage.replace(/\n/g, '<br>')}</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Order Summary -->
+                            <table role="presentation" style="width: 100%; margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 20px; background-color: #f9fafb; border-radius: 10px; border: 1px solid #e5e7eb;">
+                                        <h3 style="margin: 0 0 15px; font-size: 16px; font-weight: 600; color: #374151;">
+                                            📦 Sipariş Özeti
+                                        </h3>
+                                        
+                                        <table role="presentation" style="width: 100%;">
+                                            <tr>
+                                                <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+                                                    <table role="presentation" style="width: 100%;">
+                                                        <tr>
+                                                            <td style="color: #6b7280; font-size: 13px;">Sipariş No</td>
+                                                            <td style="color: #111827; font-size: 14px; font-weight: 600; text-align: right;">#${data.orderId}</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+                                                    <table role="presentation" style="width: 100%;">
+                                                        <tr>
+                                                            <td style="color: #6b7280; font-size: 13px;">Güzergah</td>
+                                                            <td style="color: #111827; font-size: 14px; font-weight: 600; text-align: right;">${data.nereden} → ${data.nereye}</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            ${data.isSubcontractor ? `
+                                            <tr>
+                                                <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+                                                    <table role="presentation" style="width: 100%;">
+                                                        <tr>
+                                                            <td style="color: #6b7280; font-size: 13px;">Taşeron Firma</td>
+                                                            <td style="color: #111827; font-size: 14px; font-weight: 600; text-align: right;">${data.subcontractorCompany}</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            ` : `
+                                            <tr>
+                                                <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+                                                    <table role="presentation" style="width: 100%;">
+                                                        <tr>
+                                                            <td style="color: #6b7280; font-size: 13px;">Plaka</td>
+                                                            <td style="color: #111827; font-size: 14px; font-weight: 600; text-align: right;">${data.plaka}</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            `}
+                                                            <tr>
+                                                <td style="padding: 10px 0;">
+                                                    <table role="presentation" style="width: 100%;">
+                                                        <tr>
+                                                            <td style="color: #6b7280; font-size: 13px;">Mesafe</td>
+                                                            <td style="color: #111827; font-size: 14px; font-weight: 600; text-align: right;">${data.gidisKm} km${data.donusKm > 0 ? ` + ${data.donusKm} km` : ''}</td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Info Box -->
+                            <table role="presentation" style="width: 100%;">
+                                <tr>
+                                    <td style="padding: 15px 20px; background-color: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 6px;">
+                                        <p style="margin: 0; color: #1e3a8a; font-size: 13px; line-height: 1.5;">
+                                            <strong>📎 Ek Belgeler:</strong><br>
+                                            Bu mail ile birlikte sipariş detay belgesi eklenmiştir. Herhangi bir sorunuz için bizimle iletişime geçebilirsiniz.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #f9fafb; text-align: center; border-top: 1px solid #e5e7eb;">
+                            <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px;">
+                                <strong>${companyName || 'Sekersoft'}</strong>
+                            </p>
+                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                                Bu mail size özel olarak gönderilmiştir.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+                
+            </td>
+        </tr>
+    </table>
+    
+</body>
+</html>
+    `
+  }
+
   /**
    * HTML mail template oluştur
    */
@@ -474,6 +667,39 @@ export class MailService {
     `
   }
   
+  /**
+   * Özel mesaj için plain text email
+   */
+  private generateCustomPlainTextEmail(data: OrderMailData, customMessage: string, companyName: string): string {
+    const formatCurrency = (amount: number) => {
+      return new Intl.NumberFormat('tr-TR', {
+        style: 'currency',
+        currency: 'TRY',
+        minimumFractionDigits: 0,
+      }).format(amount)
+    }
+    
+    return `
+${companyName || 'ŞİRKET ADI'}
+SİPARİŞ #${data.orderId} - ${data.musteri}
+=====================================
+
+${customMessage}
+
+-------------------------------------
+SİPARİŞ ÖZETİ
+-------------------------------------
+Sipariş No: #${data.orderId}
+Güzergah: ${data.nereden} → ${data.nereye}
+${data.isSubcontractor ? `Taşeron: ${data.subcontractorCompany}` : `Plaka: ${data.plaka}`}
+Mesafe: ${data.gidisKm} km${data.donusKm > 0 ? ` + ${data.donusKm} km` : ''}
+
+---
+Bu mail size özel olarak gönderilmiştir.
+${companyName || 'Sekersoft'}
+    `.trim()
+  }
+
   /**
    * Plain text email (HTML olmayan mail istemcileri için)
    */

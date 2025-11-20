@@ -1,0 +1,179 @@
+# GitHub Labels Configuration
+# Bu dosyayı labels sync için kullanabilirsiniz: https://github.com/marketplace/actions/github-labeler
+
+# Type Labels (Tür Etiketleri)
+- name: "bug"
+  color: "d73a4a"
+  description: "Bir şeyler beklendiği gibi çalışmıyor"
+
+- name: "enhancement"
+  color: "a2eeef"
+  description: "Yeni özellik veya istek"
+
+- name: "documentation"
+  color: "0075ca"
+  description: "Dokümantasyon iyileştirmesi veya ekleme"
+
+- name: "refactor"
+  color: "fbca04"
+  description: "Kod iyileştirme (fonksiyonelite değişmeden)"
+
+- name: "test"
+  color: "1d76db"
+  description: "Test ekleme veya düzeltme"
+
+# Priority Labels (Öncelik Etiketleri)
+- name: "priority: critical"
+  color: "b60205"
+  description: "Acil dikkat gerektirir"
+
+- name: "priority: high"
+  color: "d93f0b"
+  description: "Yüksek öncelikli"
+
+- name: "priority: medium"
+  color: "fbca04"
+  description: "Orta öncelikli"
+
+- name: "priority: low"
+  color: "0e8a16"
+  description: "Düşük öncelikli"
+
+# Status Labels (Durum Etiketleri)
+- name: "status: blocked"
+  color: "d73a4a"
+  description: "Başka bir issue veya PR bekliyor"
+
+- name: "status: in progress"
+  color: "fbca04"
+  description: "Üzerinde aktif olarak çalışılıyor"
+
+- name: "status: needs review"
+  color: "0e8a16"
+  description: "Review bekliyor"
+
+- name: "status: on hold"
+  color: "d4c5f9"
+  description: "Geçici olarak durduruldu"
+
+# Area Labels (Alan Etiketleri)
+- name: "area: orders"
+  color: "c5def5"
+  description: "Sipariş yönetimi ile ilgili"
+
+- name: "area: expenses"
+  color: "c5def5"
+  description: "Gider takibi ile ilgili"
+
+- name: "area: invoices"
+  color: "c5def5"
+  description: "Fatura yönetimi ile ilgili"
+
+- name: "area: reports"
+  color: "c5def5"
+  description: "Raporlama ile ilgili"
+
+- name: "area: dashboard"
+  color: "c5def5"
+  description: "Dashboard ile ilgili"
+
+- name: "area: ui/ux"
+  color: "c5def5"
+  description: "Kullanıcı arayüzü ve deneyimi"
+
+- name: "area: database"
+  color: "c5def5"
+  description: "Veritabanı ile ilgili"
+
+- name: "area: build"
+  color: "c5def5"
+  description: "Build ve deployment"
+
+- name: "area: ci/cd"
+  color: "c5def5"
+  description: "CI/CD pipeline"
+
+# Size Labels (PR Boyutu)
+- name: "size/XS"
+  color: "3cbf00"
+  description: "< 50 satır değişiklik"
+
+- name: "size/S"
+  color: "5d9801"
+  description: "50-200 satır değişiklik"
+
+- name: "size/M"
+  color: "7f7203"
+  description: "200-500 satır değişiklik"
+
+- name: "size/L"
+  color: "a14c05"
+  description: "500-1000 satır değişiklik"
+
+- name: "size/XL"
+  color: "c32607"
+  description: "> 1000 satır değişiklik"
+
+# Special Labels (Özel Etiketler)
+- name: "good first issue"
+  color: "7057ff"
+  description: "Yeni başlayanlar için uygun"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Ekstra dikkat gerekiyor"
+
+- name: "question"
+  color: "d876e3"
+  description: "Daha fazla bilgi gerekli"
+
+- name: "wontfix"
+  color: "ffffff"
+  description: "Bu üzerinde çalışılmayacak"
+
+- name: "duplicate"
+  color: "cfd3d7"
+  description: "Bu issue veya PR zaten mevcut"
+
+- name: "invalid"
+  color: "e4e669"
+  description: "Geçersiz görünüyor"
+
+- name: "dependencies"
+  color: "0366d6"
+  description: "Bağımlılık güncellemeleri"
+
+- name: "security"
+  color: "d73a4a"
+  description: "Güvenlik ile ilgili"
+
+- name: "performance"
+  color: "fbca04"
+  description: "Performans iyileştirmeleri"
+
+- name: "breaking change"
+  color: "d73a4a"
+  description: "Geriye dönük uyumsuz değişiklikler"
+
+# Platform Labels (Platform)
+- name: "platform: windows"
+  color: "0078d7"
+  description: "Windows'a özgü"
+
+- name: "platform: macos"
+  color: "000000"
+  description: "macOS'a özgü"
+
+- name: "platform: linux"
+  color: "fcc624"
+  description: "Linux'a özgü"
+
+# Triage Labels
+- name: "triage"
+  color: "fef2c0"
+  description: "İnceleme bekliyor"
+
+- name: "needs more info"
+  color: "d876e3"
+  description: "Daha fazla bilgi gerekli"
+

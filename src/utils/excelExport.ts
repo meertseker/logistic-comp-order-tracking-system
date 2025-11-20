@@ -62,12 +62,13 @@ export function exportOrdersToExcel(orders: any[], filename: string = 'siparisle
   XLSX.writeFile(wb, `${filename}_${timestamp}.xlsx`)
 }
 
-export function exportReportToExcel(report: any, year: number, month: number) {
+export function exportReportToExcel(report: any, year: number, month: number, periodLabel?: string) {
   const wb = XLSX.utils.book_new()
 
   // Özet sayfası
+  const period = periodLabel || `${month}/${year}`
   const summary = [{
-    'Dönem': `${month}/${year}`,
+    'Dönem': period,
     'Toplam Gelir (₺)': report.earnings,
     'Tahmini Gider (₺)': report.estimatedCosts || 0,
     'Ek Gider (₺)': report.expenses,
@@ -103,6 +104,7 @@ export function exportReportToExcel(report: any, year: number, month: number) {
   }
 
   // Dosyayı indir
-  XLSX.writeFile(wb, `rapor_${year}_${month}.xlsx`)
+  const filename = periodLabel ? periodLabel.replace(/\s+/g, '_') : `${year}_${month}`
+  XLSX.writeFile(wb, `rapor_${filename}.xlsx`)
 }
 

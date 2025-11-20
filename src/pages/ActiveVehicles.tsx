@@ -447,18 +447,10 @@ export default function ActiveVehicles() {
                   className="hover:shadow-2xl transition-all duration-300 border-2 relative"
                   style={{ 
                     borderColor: delayed ? '#FF453A' : `${statusColor}66`,
-                    background: 'linear-gradient(135deg, rgba(28, 28, 30, 0.95) 0%, rgba(44, 44, 46, 0.95) 100%)'
+                    background: 'linear-gradient(135deg, rgba(28, 28, 30, 0.95) 0%, rgba(44, 44, 46, 0.95) 100%)',
+                    boxShadow: delayed ? '0 0 20px rgba(255, 69, 58, 0.3)' : undefined
                   }}
                 >
-                  {/* Gecikme Badge */}
-                  {delayed && (
-                    <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1"
-                      style={{ backgroundColor: 'rgba(255, 69, 58, 0.2)', color: '#FF453A', border: '1px solid #FF453A' }}>
-                      <AlertCircle className="w-3 h-3" />
-                      GECİKİYOR
-                    </div>
-                  )}
-
                   <div className="space-y-4">
                     {/* Header - Araç ve Durum */}
                     <div className="flex items-center justify-between pb-4 border-b" style={{ borderColor: 'rgba(235, 235, 245, 0.1)' }}>

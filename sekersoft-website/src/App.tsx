@@ -1,6 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import ScrollToTop from './components/ScrollToTop'
+import Seo from './components/Seo'
+import { pageMeta } from './config/pageMeta'
 import Home from './pages/Home'
 import Features from './pages/Features'
 import Solutions from './pages/Solutions'
@@ -16,10 +19,20 @@ import Privacy from './pages/legal/Privacy'
 import Terms from './pages/legal/Terms'
 import KVKK from './pages/legal/KVKK'
 import CookiePolicy from './pages/legal/CookiePolicy'
+import NotFound from './pages/NotFound'
+
+const RouteMetadata = () => {
+  const location = useLocation()
+  const meta = pageMeta[location.pathname] ?? pageMeta.default
+
+  return <Seo {...meta} path={location.pathname} structuredData={meta.structuredData} />
+}
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
+      <RouteMetadata />
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow">
@@ -39,6 +52,7 @@ function App() {
             <Route path="/terms" element={<Terms />} />
             <Route path="/kvkk" element={<KVKK />} />
             <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />

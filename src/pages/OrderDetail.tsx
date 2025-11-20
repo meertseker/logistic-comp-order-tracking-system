@@ -73,6 +73,8 @@ export default function OrderDetail() {
   
   // Mail states
   const [recipientEmail, setRecipientEmail] = useState('')
+  const [mailSubject, setMailSubject] = useState('')
+  const [mailMessage, setMailMessage] = useState('')
   const [sendingMail, setSendingMail] = useState(false)
   const [mailSettings, setMailSettings] = useState<any>(null)
 
@@ -159,13 +161,17 @@ export default function OrderDetail() {
         recipientEmail,
         orderData,
         pdfPath,
-        invoiceFiles
+        invoiceFiles,
+        mailSubject || undefined,
+        mailMessage || undefined
       )
       
       if (result.success) {
         showToast('Mail başarıyla gönderildi! ✅', 'success')
         setShowMailModal(false)
         setRecipientEmail('')
+        setMailSubject('')
+        setMailMessage('')
       } else {
         showToast(`Mail gönderilemedi: ${result.message}`, 'error')
       }
@@ -1057,6 +1063,8 @@ export default function OrderDetail() {
         onClose={() => {
           setShowMailModal(false)
           setRecipientEmail('')
+          setMailSubject('')
+          setMailMessage('')
         }}
         title="📧 Sipariş Maili Gönder"
         footer={
@@ -1066,6 +1074,8 @@ export default function OrderDetail() {
               onClick={() => {
                 setShowMailModal(false)
                 setRecipientEmail('')
+                setMailSubject('')
+                setMailMessage('')
               }}
             >
               İptal
@@ -1108,6 +1118,33 @@ export default function OrderDetail() {
               placeholder="musteri@example.com"
               disabled={sendingMail}
               autoFocus
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Konu
+            </label>
+            <Input
+              type="text"
+              value={mailSubject}
+              onChange={(e) => setMailSubject(e.target.value)}
+              placeholder={`Sipariş #${order?.id} - ${order?.nereden} → ${order?.nereye}`}
+              disabled={sendingMail}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Mesaj
+            </label>
+            <TextArea
+              value={mailMessage}
+              onChange={(e) => setMailMessage(e.target.value)}
+              placeholder="İsteğe bağlı ek mesajınızı buraya yazabilirsiniz..."
+              disabled={sendingMail}
+              rows={4}
             />
           </div>
           
@@ -1118,6 +1155,7 @@ export default function OrderDetail() {
               <li>• Müşteri ve güzergah bilgileri</li>
               <li>• Finansal özet</li>
               <li>• PDF eki (Sipariş belgesi)</li>
+              {mailMessage && <li>• Özel mesajınız</li>}
             </ul>
           </div>
           

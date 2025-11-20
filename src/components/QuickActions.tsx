@@ -6,7 +6,9 @@ import {
   TrendingUp, 
   Truck, 
   MapPin,
-  BarChart3 
+  BarChart3,
+  Navigation,
+  Mail
 } from 'lucide-react'
 
 interface QuickAction {
@@ -26,6 +28,13 @@ const quickActions: QuickAction[] = [
     bgColor: 'rgba(10, 132, 255, 0.15)',
   },
   {
+    title: 'Aktif Araçlar',
+    icon: <Navigation className="w-5 h-5" />,
+    to: '/active-vehicles',
+    color: '#5AC8FA',
+    bgColor: 'rgba(90, 200, 250, 0.15)',
+  },
+  {
     title: 'Raporlar',
     icon: <FileText className="w-5 h-5" />,
     to: '/reports',
@@ -40,18 +49,11 @@ const quickActions: QuickAction[] = [
     bgColor: 'rgba(191, 90, 242, 0.15)',
   },
   {
-    title: 'Araçlar',
-    icon: <Truck className="w-5 h-5" />,
-    to: '/vehicles',
+    title: 'Mail',
+    icon: <Mail className="w-5 h-5" />,
+    to: '/mail',
     color: '#FF9F0A',
     bgColor: 'rgba(255, 159, 10, 0.15)',
-  },
-  {
-    title: 'Güzergahlar',
-    icon: <MapPin className="w-5 h-5" />,
-    to: '/routes',
-    color: '#FF453A',
-    bgColor: 'rgba(255, 69, 58, 0.15)',
   },
   {
     title: 'Tüm Siparişler',

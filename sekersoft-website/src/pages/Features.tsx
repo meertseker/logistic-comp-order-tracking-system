@@ -16,6 +16,7 @@ import {
   Monitor,
   CheckCircle2
 } from 'lucide-react'
+import { screenshotPaths } from '../data/screenshots'
 
 const Features = () => {
   const mainFeatures = [
@@ -23,6 +24,7 @@ const Features = () => {
       icon: Package,
       title: 'Akıllı Sipariş Yönetimi',
       description: 'Tüm siparişlerinizi dijital ortamda kolayca oluşturun, takip edin ve yönetin.',
+      image: screenshotPaths.orders,
       details: [
         'Kolay sipariş oluşturma - Plaka, müşteri, güzergah, fiyat bilgileri',
         'Canlı durum takibi - Bekliyor, Yolda, Teslim Edildi, Faturalandı',
@@ -35,6 +37,7 @@ const Features = () => {
       icon: DollarSign,
       title: 'Profesyonel Maliyet Hesaplama',
       description: 'Her siparişin gerçek maliyetini otomatik hesaplayın. Hangi iş karlı hangisi zararlı, anında görün.',
+      image: '/expense-calculator.png',
       details: [
         'Yakıt maliyeti - KM bazlı otomatik hesaplama',
         'Sürücü giderleri - Günlük ücret, yemek, süre hesaplama',
@@ -48,6 +51,7 @@ const Features = () => {
       icon: Truck,
       title: 'Araç Yönetimi',
       description: 'Her aracınızın maliyet profilini kaydedin. Farklı araçların farklı maliyetlerini dikkate alın.',
+      image: screenshotPaths.vehicles,
       details: [
         'Yakıt ayarları - Tüketim (lt/100km), yakıt fiyatı',
         'Sürücü parametreleri - Günlük ücret, ortalama KM, yemek masrafı',
@@ -61,6 +65,7 @@ const Features = () => {
       icon: MapPin,
       title: 'Güzergah Yönetimi',
       description: 'Sık kullandığınız güzergahları kaydedin. Mesafe ve maliyet bilgilerini otomatik hesaplayın.',
+      image: screenshotPaths.routes,
       details: [
         'Başlangıç ve varış noktaları',
         'Mesafe bilgisi (km)',
@@ -74,6 +79,7 @@ const Features = () => {
       icon: Receipt,
       title: 'Detaylı Gider Takibi',
       description: 'Her sipariş için detaylı gider kaydı tutun. Gerçek maliyetleri tam olarak bilin.',
+      image: '/gidertakibi.png',
       details: [
         'Kategorize gider türleri - Yakıt, HGS, Köprü, Yemek, Bakım, Diğer',
         'Sipariş bazlı gider ekleme',
@@ -87,6 +93,7 @@ const Features = () => {
       icon: FileText,
       title: 'Fatura ve Belge Yönetimi',
       description: 'Tüm evraklarınızı güvenli şekilde dijital ortamda saklayın.',
+      image: screenshotPaths.settings,
       details: [
         'PDF ve fotoğraf yükleme desteği',
         'Sipariş bazlı fatura ilişkilendirme',
@@ -100,6 +107,7 @@ const Features = () => {
       icon: BarChart3,
       title: 'Gelişmiş Raporlama & Analiz',
       description: 'İşletmenizin durumunu görsel raporlar ve analizlerle anlayın.',
+      image: screenshotPaths.charts,
       details: [
         'Aylık finansal raporlar - Gelir, gider, net kar',
         'Araç performans analizleri - En çok çalışan araçlar',
@@ -113,6 +121,7 @@ const Features = () => {
       icon: Monitor,
       title: 'Modern Dashboard',
       description: 'İşletmenizin anlık durumunu tek bakışta görün.',
+      image: screenshotPaths.dashboard,
       details: [
         'Toplam ve aktif sipariş sayıları',
         'Tamamlanan teslimatlar',
@@ -228,10 +237,13 @@ const Features = () => {
               </div>
               
               <div className={index % 2 === 1 ? 'lg:order-1' : ''}>
-                <div className="glass rounded-3xl p-8">
-                  <div className="aspect-square rounded-2xl bg-gradient-to-br from-blue-900/50 to-cyan-900/50 flex items-center justify-center">
-                    <feature.icon className="w-32 h-32 text-blue-400/30" />
-                  </div>
+                <div className="glass rounded-3xl overflow-hidden border border-white/5">
+                  <img
+                    src={feature.image}
+                    alt={feature.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
               </div>
             </motion.div>

@@ -5,58 +5,63 @@ import { Link } from 'react-router-dom'
 const Pricing = () => {
   const plans = [
     {
-      name: 'Tek Lisans',
-      description: 'Tek kullanıcı için ideal',
-      price: null, // İletişime göre
+      name: 'Başlangıç',
+      description: '1 bilgisayar, mikro nakliyeciler',
+      price: '49.900',
+      priceSuffix: 'TL + KDV',
+      priceNote: 'Tek seferlik lisans · 1 yıl destek dahil',
       features: [
         { text: 'Tek bilgisayar lisansı', included: true },
         { text: 'Sınırsız sipariş yönetimi', included: true },
-        { text: 'Çoklu araç desteği', included: true },
-        { text: 'Tam özellikli maliyet sistemi', included: true },
-        { text: 'Raporlama ve analiz', included: true },
+        { text: 'Otomatik maliyet sistemi', included: true },
+        { text: 'Araç & şoför kartları', included: true },
+        { text: 'PDF/Excel raporları', included: true },
         { text: 'Email desteği', included: true },
+        { text: 'Kurulum sihirbazı', included: true },
         { text: 'Ücretsiz güncellemeler (1 yıl)', included: true },
-        { text: 'Windows & macOS desteği', included: true },
       ],
       popular: false,
-      cta: 'Fiyat Teklifi Al',
+      cta: 'Teklif Oluştur',
       ctaLink: '/contact'
     },
     {
-      name: 'Küçük İşletme',
-      description: '2-5 bilgisayar için',
-      price: null,
+      name: 'Profesyonel',
+      description: '3 lisanslı filo yönetimi · En popüler',
+      price: '99.000',
+      priceSuffix: 'TL + KDV',
+      priceNote: '3 bilgisayar lisansı · Uzaktan kurulum',
       features: [
-        { text: '2-5 bilgisayar lisansı', included: true },
-        { text: 'Tüm Tek Lisans özellikleri', included: true },
-        { text: 'Öncelikli email desteği', included: true },
-        { text: 'Ücretsiz güncellemeler (1 yıl)', included: true },
-        { text: 'Kurulum desteği', included: true },
-        { text: 'Veri transfer yardımı', included: true },
-        { text: 'Telefon desteği', included: true },
-        { text: 'İndirimli lisans fiyatı', included: true },
+        { text: '3 bilgisayar lisansı (ek lisans 15.000 TL)', included: true },
+        { text: 'Tüm Başlangıç özellikleri', included: true },
+        { text: 'Veri transferi & onboarding', included: true },
+        { text: 'Telefon + uzaktan destek', included: true },
+        { text: 'Kooperatif modu', included: true },
+        { text: 'Gelişmiş dashboard', included: true },
+        { text: 'Yerel yedekleme otomasyonu', included: true },
+        { text: 'Öncelikli hata giderme', included: true },
       ],
       popular: true,
-      cta: 'Fiyat Teklifi Al',
+      cta: 'Satışla Görüş',
       ctaLink: '/contact'
     },
     {
       name: 'Kurumsal',
-      description: '6+ bilgisayar için',
-      price: null,
-      customPrice: true,
+      description: 'Sınırsız kullanıcı + entegrasyon',
+      price: '250.000+',
+      priceSuffix: 'TL + KDV',
+      priceNote: 'Özel teklif · SLA ve entegrasyon planı',
       features: [
-        { text: '6+ bilgisayar lisansı', included: true },
-        { text: 'Tüm özellikler dahil', included: true },
-        { text: 'Öncelikli telefon desteği', included: true },
-        { text: 'Uzaktan kurulum', included: true },
-        { text: 'Özel eğitim programı', included: true },
-        { text: 'Veri migrasyonu', included: true },
-        { text: 'Esnek ödeme seçenekleri', included: true },
-        { text: 'Özel lisans anlaşması', included: true },
+        { text: 'Sınırsız kullanıcı & cihaz', included: true },
+        { text: 'Özel entegrasyon geliştirme', included: true },
+        { text: 'Saha eğitimi (2 gün)', included: true },
+        { text: '7/24 SLA destek hattı', included: true },
+        { text: 'Yedekli kurulum & bulut replikası', included: true },
+        { text: 'Özel rapor dizaynı (4 adet)', included: true },
+        { text: 'Dedicated müşteri temsilcisi', included: true },
+        { text: 'Yerinde kurulum opsiyonu', included: true },
       ],
       popular: false,
-      cta: 'Teklif Al',
+      cta: 'Kurumsal Teklif Al',
       ctaLink: '/contact'
     },
   ]
@@ -125,6 +130,10 @@ const Pricing = () => {
       answer: 'İlk yıl tüm güncellemeler ücretsizdir. Sonrasında isteğe bağlı yıllık destek ve güncelleme paketi satın alabilirsiniz.'
     },
     {
+      question: 'Yıllık bakım paketi neleri içerir?',
+      answer: '2. yıldan itibaren lisans bedelinin %22’si karşılığında yeni sürümlere erişim, mevzuat uyum yamaları, uzaktan destek ve lisans reset hakları sunulur.'
+    },
+    {
       question: 'Verilerim güvende mi?',
       answer: 'Kesinlikle! Tüm verileriniz sadece kendi bilgisayarınızda saklanır. Hiçbir veri internete gönderilmez. Siz kontrol edersiniz.'
     },
@@ -146,8 +155,25 @@ const Pricing = () => {
     { feature: 'Subscription Model', competitor: 'Aylık/Yıllık Ödeme', sekersoft: 'Tek Seferlik' },
     { feature: 'Internet Gereksinimi', competitor: 'Zorunlu', sekersoft: 'Gerektirmez' },
     { feature: 'Veri Saklama', competitor: 'Bulut (Güvenlik riski)', sekersoft: 'Lokal (Güvenli)' },
-    { feature: 'Maliyet (5 Yıl)', competitor: '~50.000 ₺', sekersoft: 'Tek Ödeme' },
+    { feature: 'Maliyet (5 Yıl)', competitor: '~300.000 ₺', sekersoft: '49.900-250.000 ₺ tek ödeme' },
     { feature: 'Gizlilik', competitor: 'Şüpheli', sekersoft: '%100 Garantili' }
+  ]
+
+  const maintenance = {
+    percentage: '%22',
+    details: [
+      'Yeni versiyon ve mevzuat güncellemeleri',
+      'Öncelikli uzaktan destek & eğitim',
+      'Lisans taşıma / cihaz değişimi hakları',
+      'Yedekleme & veri sağlığı kontrolleri'
+    ]
+  }
+
+  const addOns = [
+    { title: 'Ek Kullanıcı Lisansı', price: '15.000 TL', description: 'Her ekstra bilgisayar için tek seferlik lisans.' },
+    { title: 'Veri Aktarımı', price: '10.000 TL / Gün', description: 'Eski Excel veya yazılımdan veri göçü.' },
+    { title: 'Özel Rapor Tasarımı', price: '5.000 TL', description: 'Kuruma özel rapor & dashboard şablonu.' },
+    { title: 'Yerinde Eğitim', price: '10.000 TL + Yol', description: 'Saha ekibiniz için tam gün eğitim.' }
   ]
 
   return (
@@ -167,9 +193,13 @@ const Pricing = () => {
             Şeffaf <span className="gradient-text">Fiyatlandırma</span>
           </h1>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Abonelik yok, gizli maliyet yok. Bir kez satın alın, süresiz kullanın. 
-            Tüm verileriniz bilgisayarınızda, tamamen güvende.
+            Abonelik yok, gizli maliyet yok. Paketler <span className="text-white font-semibold">49.900 TL + KDV</span>'den başlar.
+            Bir kez satın alın, süresiz kullanın. Tüm verileriniz bilgisayarınızda, tamamen güvende.
           </p>
+          <div className="inline-flex items-center gap-2 px-5 py-3 mt-8 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-sm text-blue-100">
+            <Shield className="w-4 h-4" />
+            <span>İlk 20 müşteri için %10 lansman indirimi + ücretsiz yerinde eğitim</span>
+          </div>
         </motion.div>
 
         {/* Benefits */}
@@ -216,8 +246,13 @@ const Pricing = () => {
               <p className="text-gray-400 text-sm mb-6">{plan.description}</p>
 
               <div className="mb-8">
-                <p className="text-3xl font-bold gradient-text mb-2">İletişime Geçin</p>
-                <p className="text-gray-400 text-sm">Size özel fiyat teklifi</p>
+                <div className="flex items-baseline gap-3">
+                  <p className="text-5xl font-bold gradient-text">{plan.price}</p>
+                  <div className="text-left">
+                    <p className="text-sm text-gray-400">{plan.priceSuffix}</p>
+                    <p className="text-xs text-gray-500">{plan.priceNote}</p>
+                  </div>
+                </div>
               </div>
 
               <Link
@@ -260,6 +295,48 @@ const Pricing = () => {
                 <span className="text-gray-300">{item}</span>
               </div>
             ))}
+          </div>
+        </motion.div>
+
+        {/* Maintenance */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-20 grid lg:grid-cols-2 gap-8"
+        >
+          <div className="glass rounded-3xl p-8">
+            <h2 className="text-3xl font-bold mb-4">
+              Yıllık Bakım & Güncelleme Paketi
+            </h2>
+            <p className="text-gray-400 mb-6">
+              2. yıldan itibaren lisans bedelinin <span className="text-white font-semibold">{maintenance.percentage}</span>'si
+              karşılığında aşağıdaki hizmetleri sunuyoruz:
+            </p>
+            <div className="space-y-3">
+              {maintenance.details.map((item) => (
+                <div key={item} className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-300">{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="glass rounded-3xl p-8">
+            <h2 className="text-3xl font-bold mb-4">
+              Add-on Hizmetler
+            </h2>
+            <div className="space-y-4">
+              {addOns.map((item) => (
+                <div key={item.title} className="border border-white/5 rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-semibold">{item.title}</p>
+                    <span className="text-blue-400 font-semibold">{item.price}</span>
+                  </div>
+                  <p className="text-sm text-gray-400">{item.description}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </motion.div>
 

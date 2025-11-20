@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Genel Sorular
+    url: https://github.com/meertseker/logistic-comp-order-tracking-system/discussions
+    about: Genel sorularınız için GitHub Discussions kullanın
+  - name: 📧 Destek
+    url: mailto:support@seymentransport.com
+    about: Teknik destek için e-posta gönderin
+  - name: 📖 Dokümantasyon
+    url: https://github.com/meertseker/logistic-comp-order-tracking-system/tree/main/docs
+    about: Detaylı dokümantasyonu inceleyin
+

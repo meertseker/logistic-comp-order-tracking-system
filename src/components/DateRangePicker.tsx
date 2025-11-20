@@ -148,7 +148,7 @@ export default function DateRangePicker({
   }
 
   return (
-    <div className="relative">
+    <div className="relative z-50">
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
@@ -178,7 +178,7 @@ export default function DateRangePicker({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 mt-2 z-[9999] rounded-xl p-4 shadow-2xl min-w-[320px]"
+            className="absolute top-full left-0 mt-2 z-[100] rounded-xl p-4 shadow-2xl min-w-[320px]"
             style={{
               background: 'rgba(28, 28, 30, 0.95)',
               border: '0.5px solid rgba(235, 235, 245, 0.2)',

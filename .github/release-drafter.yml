@@ -1,0 +1,136 @@
+name-template: 'v$RESOLVED_VERSION 🎉'
+tag-template: 'v$RESOLVED_VERSION'
+
+categories:
+  - title: '🚀 Yeni Özellikler'
+    labels:
+      - 'enhancement'
+      - 'feature'
+      - 'feat'
+  - title: '🐛 Bug Düzeltmeleri'
+    labels:
+      - 'bug'
+      - 'fix'
+  - title: '🔒 Güvenlik'
+    labels:
+      - 'security'
+  - title: '⚡ Performans'
+    labels:
+      - 'performance'
+  - title: '📚 Dokümantasyon'
+    labels:
+      - 'documentation'
+      - 'docs'
+  - title: '🎨 UI/UX İyileştirmeleri'
+    labels:
+      - 'ui'
+      - 'ux'
+      - 'design'
+  - title: '♻️ Refactoring'
+    labels:
+      - 'refactor'
+  - title: '🧪 Testler'
+    labels:
+      - 'test'
+  - title: '🔧 Bakım ve Altyapı'
+    labels:
+      - 'chore'
+      - 'ci'
+      - 'dependencies'
+
+version-resolver:
+  major:
+    labels:
+      - 'breaking change'
+      - 'major'
+  minor:
+    labels:
+      - 'enhancement'
+      - 'feature'
+      - 'feat'
+  patch:
+    labels:
+      - 'bug'
+      - 'fix'
+      - 'security'
+      - 'performance'
+  default: patch
+
+template: |
+  ## 📦 Neler Değişti?
+
+  $CHANGES
+
+  ## 📥 İndirme
+
+  ### Windows
+  - [Sekersoft-Setup-$RESOLVED_VERSION.exe](https://github.com/meertseker/logistic-comp-order-tracking-system/releases/download/v$RESOLVED_VERSION/Sekersoft-Setup-$RESOLVED_VERSION.exe)
+  - [Sekersoft-$RESOLVED_VERSION-portable.exe](https://github.com/meertseker/logistic-comp-order-tracking-system/releases/download/v$RESOLVED_VERSION/Sekersoft-$RESOLVED_VERSION-portable.exe)
+
+  ### macOS
+  - [Sekersoft-$RESOLVED_VERSION-x64.dmg](https://github.com/meertseker/logistic-comp-order-tracking-system/releases/download/v$RESOLVED_VERSION/Sekersoft-$RESOLVED_VERSION-x64.dmg) (Intel)
+  - [Sekersoft-$RESOLVED_VERSION-arm64.dmg](https://github.com/meertseker/logistic-comp-order-tracking-system/releases/download/v$RESOLVED_VERSION/Sekersoft-$RESOLVED_VERSION-arm64.dmg) (Apple Silicon)
+
+  ## 🔄 Güncelleme
+
+  Eğer Sekersoft zaten kuruluysa, uygulama açıldığında otomatik olarak güncelleme bildirimi alacaksınız.
+
+  ## 📝 Kurulum
+
+  ### Windows
+  1. `.exe` dosyasını indirin
+  2. Çalıştırın ve kurulum sihirbazını takip edin
+  3. Sekersoft'ı başlatın
+
+  ### macOS
+  1. `.dmg` dosyasını indirin (chipinize uygun olanı)
+  2. DMG'yi açın ve Sekersoft'ı Applications klasörüne sürükleyin
+  3. İlk açılışta "tanımlanamayan geliştirici" uyarısı alırsanız:
+     - Sistem Tercihleri > Güvenlik ve Gizlilik > "Yine de Aç"
+
+  ## ⚠️ Bilinen Sorunlar
+
+  <!-- Varsa bilinen sorunları buraya ekleyin -->
+
+  ## 🙏 Teşekkürler
+
+  Bu sürüme katkıda bulunan herkese teşekkürler! 🎉
+
+  **Tam Changelog**: https://github.com/meertseker/logistic-comp-order-tracking-system/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+
+  ---
+
+  **Destek ve Geri Bildirim:**
+  - 🐛 [Bug Bildir](https://github.com/meertseker/logistic-comp-order-tracking-system/issues/new?template=bug_report.yml)
+  - ✨ [Özellik İste](https://github.com/meertseker/logistic-comp-order-tracking-system/issues/new?template=feature_request.yml)
+  - 💬 [Discussions](https://github.com/meertseker/logistic-comp-order-tracking-system/discussions)
+  - 📧 support@seymentransport.com
+
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&'
+
+autolabeler:
+  - label: 'documentation'
+    files:
+      - '*.md'
+      - 'docs/**/*'
+  - label: 'bug'
+    branch:
+      - '/fix\/.+/'
+    title:
+      - '/fix/i'
+  - label: 'enhancement'
+    branch:
+      - '/feature\/.+/'
+      - '/feat\/.+/'
+    title:
+      - '/feat/i'
+      - '/feature/i'
+  - label: 'dependencies'
+    files:
+      - 'package.json'
+      - 'package-lock.json'
+  - label: 'ci'
+    files:
+      - '.github/workflows/*'
+

@@ -1,0 +1,48 @@
+title: "💡 [İDEA]: "
+labels: ["idea"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 💡 Fikrinizi Paylaşın!
+        
+        Sekersoft için yeni bir fikriniz mi var? Harika! Lütfen aşağıdaki formu doldurun.
+        
+  - type: textarea
+    id: idea-description
+    attributes:
+      label: Fikir Açıklaması
+      description: Fikrinizi detaylı bir şekilde açıklayın
+      placeholder: Ne düşündünüz?
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Kullanım Senaryosu
+      description: Bu fikir hangi durumlarda işe yarar?
+      placeholder: Örnek senaryolar...
+    validations:
+      required: false
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Faydaları
+      description: Bu fikir projeye nasıl değer katar?
+      placeholder: Bu fikir sayesinde...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: implementation
+    attributes:
+      label: Kendi Başına Geliştirebilir misiniz?
+      options:
+        - "Evet, kendim geliştirebilirim"
+        - "Yardımla geliştirebilirim"
+        - "Hayır, sadece fikir veriyorum"
+    validations:
+      required: true
+

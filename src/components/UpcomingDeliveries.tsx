@@ -20,6 +20,7 @@ interface UpcomingDeliveriesProps {
 const getStatusColor = (status: string) => {
   const colors: Record<string, string> = {
     'Bekliyor': '#FFD60A',
+    'Yüklendi': '#FF9F0A',
     'Yolda': '#0A84FF',
     'Teslim Edildi': '#30D158',
     'Faturalandı': '#BF5AF2',
@@ -72,7 +73,7 @@ export default function UpcomingDeliveries({ orders }: UpcomingDeliveriesProps) 
         <h3 className="text-lg font-semibold" style={{ color: '#FFFFFF' }}>
           Aktif Teslimatlar
         </h3>
-        <Link to="/orders">
+        <Link to="/active-vehicles">
           <motion.button
             whileHover={{ scale: 1.05 }}
             className="text-xs font-medium flex items-center gap-1"

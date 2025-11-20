@@ -1,0 +1,58 @@
+name: 📚 Dokümantasyon
+description: Dokümantasyon eksikliği veya hatası bildirin
+title: "[DOCS]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dokümantasyonumuzu geliştirmemize yardımcı olun! 📖
+        
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Dokümantasyon Türü
+      options:
+        - Eksik Dokümantasyon
+        - Hatalı Bilgi
+        - Güncel Olmayan İçerik
+        - İyileştirme Önerisi
+        - Çeviri Sorunu
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Dosya/Sayfa
+      description: Hangi dosya veya sayfayla ilgili?
+      placeholder: "Örnek: README.md, docs/user-guide/USAGE.md"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Sorun
+      description: Dokümantasyonla ilgili sorun nedir?
+      placeholder: Neyin eksik veya yanlış olduğunu açıklayın
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Öneriniz
+      description: Nasıl düzeltilmesini veya iyileştirilmesini önerirsiniz?
+      placeholder: Önerilen değişiklikler...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Katkıda Bulunma
+      options:
+        - label: Bu değişikliği kendim yapmak için Pull Request açabilirim
+          required: false
+

@@ -109,7 +109,10 @@ export default function ReportsProfessional() {
   const exportToCSV = () => {
     if (!report) return
 
+    const periodLabel = dateRange.label || `${dateRange.startDate} - ${dateRange.endDate}`
     const csvContent = [
+      ['Rapor Dönemi', periodLabel],
+      [''],
       ['Açıklama', 'Değer'],
       ['Toplam Gelir (₺)', report.earnings],
       ['Tahmini Gider (₺)', report.estimatedCosts || 0],
@@ -125,7 +128,8 @@ export default function ReportsProfessional() {
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
-    link.download = `rapor_${dateRange.startDate}.csv`
+    const filename = dateRange.label ? dateRange.label.replace(/\s+/g, '_') : `${dateRange.startDate}_${dateRange.endDate}`
+    link.download = `rapor_${filename}.csv`
     link.click()
   }
 
@@ -244,7 +248,7 @@ export default function ReportsProfessional() {
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button 
-                  onClick={() => exportReportToExcel(report, new Date(dateRange.startDate).getFullYear(), new Date(dateRange.startDate).getMonth() + 1)} 
+                  onClick={() => exportReportToExcel(report, new Date(dateRange.startDate).getFullYear(), new Date(dateRange.startDate).getMonth() + 1, dateRange.label)} 
                   variant="secondary" 
                   size="sm"
                 >
@@ -254,7 +258,7 @@ export default function ReportsProfessional() {
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button 
-                  onClick={() => exportReportToPDF(report, new Date(dateRange.startDate).getFullYear(), new Date(dateRange.startDate).getMonth() + 1)} 
+                  onClick={() => exportReportToPDF(report, new Date(dateRange.startDate).getFullYear(), new Date(dateRange.startDate).getMonth() + 1, dateRange.label)} 
                   size="sm"
                 >
                   <FileText className="w-4 h-4 mr-2" />
