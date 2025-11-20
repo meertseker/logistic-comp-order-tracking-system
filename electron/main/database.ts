@@ -370,6 +370,74 @@ const createTables = () => {
     CREATE INDEX IF NOT EXISTS idx_mail_logs_status ON mail_logs(status);
   `)
   
+  // Uyumsoft Settings table - API yapılandırması
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS uyumsoft_settings (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      api_key TEXT,
+      api_secret TEXT,
+      environment TEXT DEFAULT 'TEST',
+      company_name TEXT,
+      company_tax_number TEXT,
+      company_tax_office TEXT,
+      company_address TEXT,
+      company_city TEXT,
+      company_district TEXT,
+      company_postal_code TEXT,
+      company_phone TEXT,
+      company_email TEXT,
+      sender_email TEXT,
+      auto_send_email INTEGER DEFAULT 1,
+      auto_approve INTEGER DEFAULT 0,
+      invoice_prefix TEXT DEFAULT 'SEK',
+      enabled INTEGER DEFAULT 0,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+  
+  // Uyumsoft Invoices table - Oluşturulan faturalar
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS uyumsoft_invoices (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      order_id INTEGER NOT NULL,
+      invoice_uuid TEXT UNIQUE,
+      invoice_number TEXT,
+      invoice_type TEXT NOT NULL,
+      invoice_date DATETIME NOT NULL,
+      ettn TEXT,
+      customer_name TEXT NOT NULL,
+      customer_tax_number TEXT,
+      customer_tax_office TEXT,
+      customer_id_number TEXT,
+      customer_email TEXT,
+      customer_phone TEXT,
+      customer_address TEXT,
+      total_amount REAL NOT NULL,
+      vat_amount REAL NOT NULL,
+      grand_total REAL NOT NULL,
+      invoice_status TEXT DEFAULT 'DRAFT',
+      uyumsoft_status TEXT,
+      pdf_url TEXT,
+      html_content TEXT,
+      sent_to_email TEXT,
+      sent_at DATETIME,
+      cancelled_at DATETIME,
+      cancel_reason TEXT,
+      error_message TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+    )
+  `)
+  
+  // Uyumsoft İndexler
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_uyumsoft_invoices_order_id ON uyumsoft_invoices(order_id);
+    CREATE INDEX IF NOT EXISTS idx_uyumsoft_invoices_status ON uyumsoft_invoices(invoice_status);
+    CREATE INDEX IF NOT EXISTS idx_uyumsoft_invoices_uuid ON uyumsoft_invoices(invoice_uuid);
+    CREATE INDEX IF NOT EXISTS idx_uyumsoft_invoices_invoice_number ON uyumsoft_invoices(invoice_number);
+  `)
+  
   // Mail settings'e company_name kolonu ekle (migration)
   try {
     db.exec(`ALTER TABLE mail_settings ADD COLUMN company_name TEXT DEFAULT 'Şirket Adı'`)
@@ -382,6 +450,112 @@ const createTables = () => {
     INSERT OR IGNORE INTO mail_settings (id, enabled)
     VALUES (1, 0)
   `).run()
+  
+  // Default Uyumsoft settings ekle (boş, kullanıcı dolduracak)
+  db.prepare(`
+    INSERT OR IGNORE INTO uyumsoft_settings (id, enabled, environment)
+    VALUES (1, 0, 'TEST')
+  `).run()
+  
+  // WhatsApp Settings table - API yapılandırması
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS whatsapp_settings (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      provider TEXT DEFAULT 'iletimerkezi',
+      api_key TEXT,
+      api_secret TEXT,
+      api_username TEXT,
+      api_password TEXT,
+      sender_name TEXT,
+      sender_phone TEXT,
+      enabled INTEGER DEFAULT 0,
+      
+      -- Otomatik bildirim ayarları
+      auto_send_on_created INTEGER DEFAULT 1,
+      auto_send_on_status_change INTEGER DEFAULT 1,
+      auto_send_on_delivered INTEGER DEFAULT 1,
+      auto_send_on_invoiced INTEGER DEFAULT 1,
+      
+      -- Bildirim şablonları
+      template_order_created TEXT,
+      template_order_on_way TEXT,
+      template_order_delivered TEXT,
+      template_order_invoiced TEXT,
+      template_order_cancelled TEXT,
+      template_custom TEXT,
+      
+      company_name TEXT DEFAULT 'Sekersoft',
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+  
+  // WhatsApp Logs table - Gönderilen mesajların kaydı
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS whatsapp_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      order_id INTEGER,
+      recipient_phone TEXT NOT NULL,
+      recipient_name TEXT,
+      message_type TEXT NOT NULL,
+      message_content TEXT NOT NULL,
+      status TEXT NOT NULL,
+      delivery_status TEXT,
+      read_status INTEGER DEFAULT 0,
+      error_message TEXT,
+      provider_message_id TEXT,
+      sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      delivered_at DATETIME,
+      read_at DATETIME,
+      FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL
+    )
+  `)
+  
+  // WhatsApp İndexler
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_whatsapp_logs_order_id ON whatsapp_logs(order_id);
+    CREATE INDEX IF NOT EXISTS idx_whatsapp_logs_status ON whatsapp_logs(status);
+    CREATE INDEX IF NOT EXISTS idx_whatsapp_logs_sent_at ON whatsapp_logs(sent_at);
+    CREATE INDEX IF NOT EXISTS idx_whatsapp_logs_recipient_phone ON whatsapp_logs(recipient_phone);
+  `)
+  
+  // Default WhatsApp settings ekle (boş, kullanıcı dolduracak)
+  db.prepare(`
+    INSERT OR IGNORE INTO whatsapp_settings (id, enabled)
+    VALUES (1, 0)
+  `).run()
+  
+  // Varsayılan WhatsApp şablonları ekle
+  const defaultWhatsAppTemplates = {
+    template_order_created: 'Sayın {musteri}, siparişiniz (#{orderId}) başarıyla alınmıştır. {nereden} - {nereye} güzergahı için araç tahsis edilmiştir. Detaylar için: {phone}',
+    template_order_on_way: 'Sayın {musteri}, siparişiniz (#{orderId}) yola çıkmıştır. Plaka: {plaka}. Tahmini varış: {tahminiGun} gün. İyi yolculuklar!',
+    template_order_delivered: 'Sayın {musteri}, siparişiniz (#{orderId}) başarıyla teslim edilmiştir. ✅ Bizi tercih ettiğiniz için teşekkür ederiz.',
+    template_order_invoiced: 'Sayın {musteri}, siparişinize (#{orderId}) ait faturanız hazırlanmıştır. Fatura tutarı: {fiyat} TL. Ödeme bilgileri için: {phone}',
+    template_order_cancelled: 'Sayın {musteri}, siparişiniz (#{orderId}) iptal edilmiştir. Bilgi için: {phone}',
+    template_custom: 'Sayın {musteri}, siparişiniz (#{orderId}) hakkında bilgilendirme.'
+  }
+  
+  try {
+    const stmt = db.prepare(`
+      UPDATE whatsapp_settings 
+      SET template_order_created = ?,
+          template_order_on_way = ?,
+          template_order_delivered = ?,
+          template_order_invoiced = ?,
+          template_order_cancelled = ?,
+          template_custom = ?
+      WHERE id = 1 AND template_order_created IS NULL
+    `)
+    stmt.run(
+      defaultWhatsAppTemplates.template_order_created,
+      defaultWhatsAppTemplates.template_order_on_way,
+      defaultWhatsAppTemplates.template_order_delivered,
+      defaultWhatsAppTemplates.template_order_invoiced,
+      defaultWhatsAppTemplates.template_order_cancelled,
+      defaultWhatsAppTemplates.template_custom
+    )
+  } catch (error) {
+    console.error('Error setting default WhatsApp templates:', error)
+  }
   
   // Varsayılan güzergahları ekle
   const defaultRoutes = [

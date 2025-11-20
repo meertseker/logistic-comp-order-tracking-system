@@ -10,8 +10,10 @@ import {
 import { BackupManager } from './backup'
 import { getAdvancedLicenseManager } from './advanced-license-manager'
 import { getMailService } from './mail-service'
+import { getWhatsAppService } from './whatsapp-service'
 import { getExportManager } from './export-manager'
 import { UpdateManager } from './updater'
+import { uyumsoftAPI } from './uyumsoft'
 
 // __dirname is available in CommonJS (esbuild handles this)
 
@@ -1504,6 +1506,201 @@ ipcMain.handle('mail:getLogs', async (_, orderId) => {
   }
 })
 
+// ============================================================================
+// WHATSAPP OPERATIONS
+// ============================================================================
+
+// WhatsApp ayarlarını getir
+ipcMain.handle('whatsapp:getSettings', async () => {
+  const db = getDB()
+  try {
+    const settings = db.prepare('SELECT * FROM whatsapp_settings WHERE id = 1').get()
+    return settings || null
+  } catch (error) {
+    console.error('Error getting WhatsApp settings:', error)
+    throw error
+  }
+})
+
+// WhatsApp ayarlarını kaydet
+ipcMain.handle('whatsapp:saveSettings', async (_, settings) => {
+  const db = getDB()
+  try {
+    db.prepare(`
+      INSERT OR REPLACE INTO whatsapp_settings (
+        id, provider, api_key, api_secret, api_username, api_password,
+        sender_name, sender_phone, enabled,
+        auto_send_on_created, auto_send_on_status_change,
+        auto_send_on_delivered, auto_send_on_invoiced,
+        template_order_created, template_order_on_way,
+        template_order_delivered, template_order_invoiced,
+        template_order_cancelled, template_custom,
+        company_name, updated_at
+      ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    `).run(
+      settings.provider,
+      settings.api_key,
+      settings.api_secret,
+      settings.api_username,
+      settings.api_password,
+      settings.sender_name,
+      settings.sender_phone,
+      settings.enabled ? 1 : 0,
+      settings.auto_send_on_created ? 1 : 0,
+      settings.auto_send_on_status_change ? 1 : 0,
+      settings.auto_send_on_delivered ? 1 : 0,
+      settings.auto_send_on_invoiced ? 1 : 0,
+      settings.template_order_created,
+      settings.template_order_on_way,
+      settings.template_order_delivered,
+      settings.template_order_invoiced,
+      settings.template_order_cancelled,
+      settings.template_custom,
+      settings.company_name || 'Sekersoft'
+    )
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error saving WhatsApp settings:', error)
+    throw error
+  }
+})
+
+// WhatsApp bağlantısını test et
+ipcMain.handle('whatsapp:testConnection', async () => {
+  try {
+    const whatsappService = getWhatsAppService()
+    const result = await whatsappService.testConnection()
+    return result
+  } catch (error: any) {
+    console.error('Error testing WhatsApp connection:', error)
+    return { success: false, message: error.message }
+  }
+})
+
+// Sipariş WhatsApp mesajı gönder
+ipcMain.handle('whatsapp:sendOrderMessage', async (_, recipientPhone, orderData, messageType, customMessage, pdfPath) => {
+  try {
+    console.log('🟢 IPC Handler - WhatsApp gönderiliyor:', {
+      recipientPhone,
+      orderId: orderData?.orderId,
+      messageType,
+      hasCustomMessage: !!customMessage
+    })
+    
+    const whatsappService = getWhatsAppService()
+    const result = await whatsappService.sendOrderMessage(
+      recipientPhone, 
+      orderData, 
+      messageType, 
+      customMessage, 
+      pdfPath
+    )
+    return result
+  } catch (error: any) {
+    console.error('Error sending WhatsApp message:', error)
+    return { success: false, message: error.message }
+  }
+})
+
+// Toplu WhatsApp mesajı gönder
+ipcMain.handle('whatsapp:sendBulkMessages', async (_, recipients, messageType, customMessage) => {
+  try {
+    console.log('🟢 IPC Handler - Toplu WhatsApp gönderiliyor:', {
+      recipientCount: recipients.length,
+      messageType
+    })
+    
+    const whatsappService = getWhatsAppService()
+    const result = await whatsappService.sendBulkMessages(recipients, messageType, customMessage)
+    return result
+  } catch (error: any) {
+    console.error('Error sending bulk WhatsApp messages:', error)
+    return { success: 0, failed: recipients.length, results: [] }
+  }
+})
+
+// WhatsApp loglarını getir
+ipcMain.handle('whatsapp:getLogs', async (_, filters) => {
+  try {
+    const whatsappService = getWhatsAppService()
+    const logs = await whatsappService.getLogs(filters)
+    return logs
+  } catch (error) {
+    console.error('Error getting WhatsApp logs:', error)
+    throw error
+  }
+})
+
+// WhatsApp istatistiklerini getir
+ipcMain.handle('whatsapp:getStatistics', async (_, period) => {
+  try {
+    const whatsappService = getWhatsAppService()
+    const stats = await whatsappService.getStatistics(period)
+    return stats
+  } catch (error) {
+    console.error('Error getting WhatsApp statistics:', error)
+    throw error
+  }
+})
+
+// WhatsApp mesajı yeniden gönder
+ipcMain.handle('whatsapp:resendMessage', async (_, logId) => {
+  const db = getDB()
+  try {
+    // Log kaydını bul
+    const log = db.prepare('SELECT * FROM whatsapp_logs WHERE id = ?').get(logId) as any
+    
+    if (!log) {
+      return { success: false, message: 'Mesaj kaydı bulunamadı' }
+    }
+    
+    // Sipariş bilgilerini getir
+    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(log.order_id) as any
+    
+    if (!order) {
+      return { success: false, message: 'Sipariş bulunamadı' }
+    }
+    
+    // Yeniden gönder
+    const whatsappService = getWhatsAppService()
+    const orderData = {
+      orderId: order.id,
+      musteri: order.musteri,
+      telefon: order.telefon,
+      customerPhone: log.recipient_phone,
+      nereden: order.nereden,
+      nereye: order.nereye,
+      yukAciklamasi: order.yuk_aciklamasi || '',
+      plaka: order.plaka,
+      baslangicFiyati: order.baslangic_fiyati,
+      toplamMaliyet: order.toplam_maliyet || 0,
+      onerilenFiyat: order.onerilen_fiyat || 0,
+      karZarar: order.kar_zarar || 0,
+      karZararYuzde: order.kar_zarar_yuzde || 0,
+      gidisKm: order.gidis_km || 0,
+      donusKm: order.donus_km || 0,
+      tahminiGun: order.tahmini_gun || 1,
+      status: order.status,
+      createdAt: order.created_at,
+      isSubcontractor: order.is_subcontractor === 1,
+      subcontractorCompany: order.subcontractor_company
+    }
+    
+    const result = await whatsappService.sendOrderMessage(
+      log.recipient_phone,
+      orderData,
+      log.message_type,
+      log.message_content
+    )
+    
+    return result
+  } catch (error: any) {
+    console.error('Error resending WhatsApp message:', error)
+    return { success: false, message: error.message }
+  }
+})
+
 // Export/Import IPC Handlers
 ipcMain.handle('export:allData', async () => {
   const exportManager = getExportManager()
@@ -1860,6 +2057,265 @@ ipcMain.handle('db:seedSampleData', async () => {
   } catch (error) {
     console.error('❌ Örnek veri ekleme hatası:', error);
     return { success: false, error: (error as Error).message };
+  }
+})
+
+// ============================================
+// UYUMSOFT API HANDLERS
+// ============================================
+
+// Uyumsoft ayarlarını getir
+ipcMain.handle('uyumsoft:getSettings', async () => {
+  try {
+    const db = getDB()
+    const settings = db.prepare('SELECT * FROM uyumsoft_settings WHERE id = 1').get()
+    return settings || {}
+  } catch (error) {
+    console.error('Error getting Uyumsoft settings:', error)
+    throw error
+  }
+})
+
+// Uyumsoft ayarlarını kaydet
+ipcMain.handle('uyumsoft:saveSettings', async (_, settings) => {
+  try {
+    const db = getDB()
+    
+    // Eğer kayıt yoksa insert, varsa update
+    const existing = db.prepare('SELECT id FROM uyumsoft_settings WHERE id = 1').get()
+    
+    if (existing) {
+      db.prepare(`
+        UPDATE uyumsoft_settings
+        SET api_key = ?, api_secret = ?, environment = ?, company_name = ?,
+            company_tax_number = ?, company_tax_office = ?, company_address = ?,
+            company_city = ?, company_district = ?, company_postal_code = ?,
+            company_phone = ?, company_email = ?, sender_email = ?,
+            auto_send_email = ?, auto_approve = ?, invoice_prefix = ?,
+            enabled = ?, updated_at = datetime('now')
+        WHERE id = 1
+      `).run(
+        settings.api_key,
+        settings.api_secret,
+        settings.environment,
+        settings.company_name,
+        settings.company_tax_number,
+        settings.company_tax_office,
+        settings.company_address,
+        settings.company_city,
+        settings.company_district,
+        settings.company_postal_code,
+        settings.company_phone,
+        settings.company_email,
+        settings.sender_email,
+        settings.auto_send_email ? 1 : 0,
+        settings.auto_approve ? 1 : 0,
+        settings.invoice_prefix,
+        settings.enabled ? 1 : 0
+      )
+    } else {
+      db.prepare(`
+        INSERT INTO uyumsoft_settings (
+          id, api_key, api_secret, environment, company_name,
+          company_tax_number, company_tax_office, company_address,
+          company_city, company_district, company_postal_code,
+          company_phone, company_email, sender_email,
+          auto_send_email, auto_approve, invoice_prefix, enabled
+        )
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        settings.api_key,
+        settings.api_secret,
+        settings.environment,
+        settings.company_name,
+        settings.company_tax_number,
+        settings.company_tax_office,
+        settings.company_address,
+        settings.company_city,
+        settings.company_district,
+        settings.company_postal_code,
+        settings.company_phone,
+        settings.company_email,
+        settings.sender_email,
+        settings.auto_send_email ? 1 : 0,
+        settings.auto_approve ? 1 : 0,
+        settings.invoice_prefix,
+        settings.enabled ? 1 : 0
+      )
+    }
+    
+    // API client'ı yeniden yükle
+    uyumsoftAPI.loadSettings()
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error saving Uyumsoft settings:', error)
+    throw error
+  }
+})
+
+// Bağlantı testi
+ipcMain.handle('uyumsoft:testConnection', async () => {
+  try {
+    return await uyumsoftAPI.testConnection()
+  } catch (error: any) {
+    console.error('Error testing Uyumsoft connection:', error)
+    return { success: false, message: error.message }
+  }
+})
+
+// E-Arşiv fatura oluştur
+ipcMain.handle('uyumsoft:createEArchiveInvoice', async (_, orderId, invoiceData) => {
+  try {
+    return await uyumsoftAPI.createEArchiveInvoice(orderId, invoiceData)
+  } catch (error: any) {
+    console.error('Error creating e-Archive invoice:', error)
+    throw error
+  }
+})
+
+// E-Fatura oluştur
+ipcMain.handle('uyumsoft:createEInvoice', async (_, orderId, invoiceData) => {
+  try {
+    return await uyumsoftAPI.createEInvoice(orderId, invoiceData)
+  } catch (error: any) {
+    console.error('Error creating e-Invoice:', error)
+    throw error
+  }
+})
+
+// Fatura bilgilerini getir
+ipcMain.handle('uyumsoft:getInvoice', async (_, invoiceId) => {
+  try {
+    return await uyumsoftAPI.getInvoice(invoiceId)
+  } catch (error) {
+    console.error('Error getting invoice:', error)
+    throw error
+  }
+})
+
+// Sipariş faturalarını getir
+ipcMain.handle('uyumsoft:getInvoicesByOrder', async (_, orderId) => {
+  try {
+    return await uyumsoftAPI.getInvoicesByOrder(orderId)
+  } catch (error) {
+    console.error('Error getting invoices by order:', error)
+    throw error
+  }
+})
+
+// Tüm faturaları getir (raporlama için)
+ipcMain.handle('uyumsoft:getAllInvoices', async () => {
+  try {
+    const db = getDB()
+    const invoices = db.prepare(`
+      SELECT 
+        ui.*,
+        o.musteri as order_customer,
+        o.plaka as order_vehicle
+      FROM uyumsoft_invoices ui
+      LEFT JOIN orders o ON ui.order_id = o.id
+      ORDER BY ui.created_at DESC
+    `).all()
+    return invoices
+  } catch (error) {
+    console.error('Error getting all invoices:', error)
+    throw error
+  }
+})
+
+// Fatura iptal et
+ipcMain.handle('uyumsoft:cancelInvoice', async (_, invoiceId, reason) => {
+  try {
+    return await uyumsoftAPI.cancelInvoice(invoiceId, reason)
+  } catch (error: any) {
+    console.error('Error cancelling invoice:', error)
+    throw error
+  }
+})
+
+// Fatura PDF indir
+ipcMain.handle('uyumsoft:downloadInvoicePDF', async (_, invoiceId) => {
+  try {
+    return await uyumsoftAPI.downloadInvoicePDF(invoiceId)
+  } catch (error) {
+    console.error('Error downloading invoice PDF:', error)
+    throw error
+  }
+})
+
+// Fatura e-postasını yeniden gönder
+ipcMain.handle('uyumsoft:resendInvoiceEmail', async (_, invoiceId, email) => {
+  try {
+    return await uyumsoftAPI.resendInvoiceEmail(invoiceId, email)
+  } catch (error: any) {
+    console.error('Error resending invoice email:', error)
+    throw error
+  }
+})
+
+// ============================================
+// DEVELOPMENT: Enable Test Mode
+// ============================================
+ipcMain.handle('dev:enableTestMode', async () => {
+  try {
+    const db = getDB()
+    
+    console.log('🧪 Enabling test mode for WhatsApp and Uyumsoft...')
+    
+    // Enable WhatsApp with test settings
+    db.prepare(`
+      UPDATE whatsapp_settings 
+      SET enabled = 1,
+          provider = 'iletimerkezi',
+          api_key = 'TEST_API_KEY',
+          api_secret = 'TEST_API_SECRET',
+          sender_name = 'Test Şirket',
+          sender_phone = '+905551234567',
+          company_name = 'Sekersoft Test',
+          auto_send_on_created = 1,
+          auto_send_on_status_change = 1,
+          auto_send_on_delivered = 1,
+          auto_send_on_invoiced = 1,
+          updated_at = datetime('now')
+      WHERE id = 1
+    `).run()
+    
+    console.log('✅ WhatsApp test mode enabled')
+    
+    // Enable Uyumsoft with test settings
+    db.prepare(`
+      UPDATE uyumsoft_settings 
+      SET enabled = 1,
+          api_key = 'TEST_UYUMSOFT_API_KEY',
+          api_secret = 'TEST_UYUMSOFT_SECRET',
+          environment = 'TEST',
+          company_name = 'Test Nakliyat A.Ş.',
+          company_tax_number = '1234567890',
+          company_tax_office = 'Kadıköy',
+          company_address = 'Test Mahallesi Test Sokak No:1',
+          company_city = 'İstanbul',
+          company_district = 'Kadıköy',
+          company_postal_code = '34000',
+          company_phone = '+905551234567',
+          company_email = 'info@test.com',
+          sender_email = 'fatura@test.com',
+          auto_send_email = 1,
+          auto_approve = 0,
+          invoice_prefix = 'TEST',
+          updated_at = datetime('now')
+      WHERE id = 1
+    `).run()
+    
+    console.log('✅ Uyumsoft test mode enabled')
+    
+    return { 
+      success: true, 
+      message: 'Test modu aktif edildi! Lütfen uygulamayı yeniden başlatın.' 
+    }
+  } catch (error: any) {
+    console.error('Error enabling test mode:', error)
+    return { success: false, message: error.message }
   }
 })
 

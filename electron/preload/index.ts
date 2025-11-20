@@ -105,6 +105,31 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getLogs: (orderId?: number) => ipcRenderer.invoke('mail:getLogs', orderId),
   },
   
+  // WhatsApp operations
+  whatsapp: {
+    getSettings: () => ipcRenderer.invoke('whatsapp:getSettings'),
+    saveSettings: (settings: any) => ipcRenderer.invoke('whatsapp:saveSettings', settings),
+    testConnection: () => ipcRenderer.invoke('whatsapp:testConnection'),
+    sendOrderMessage: (
+      recipientPhone: string,
+      orderData: any,
+      messageType: 'created' | 'on_way' | 'delivered' | 'invoiced' | 'cancelled' | 'custom',
+      customMessage?: string,
+      pdfPath?: string
+    ) => 
+      ipcRenderer.invoke('whatsapp:sendOrderMessage', recipientPhone, orderData, messageType, customMessage, pdfPath),
+    sendBulkMessages: (
+      recipients: Array<{ phone: string; orderData: any }>,
+      messageType: 'created' | 'on_way' | 'delivered' | 'invoiced' | 'cancelled' | 'custom',
+      customMessage?: string
+    ) =>
+      ipcRenderer.invoke('whatsapp:sendBulkMessages', recipients, messageType, customMessage),
+    getLogs: (filters?: any) => ipcRenderer.invoke('whatsapp:getLogs', filters),
+    getStatistics: (period?: 'today' | 'week' | 'month' | 'all') => 
+      ipcRenderer.invoke('whatsapp:getStatistics', period),
+    resendMessage: (logId: number) => ipcRenderer.invoke('whatsapp:resendMessage', logId),
+  },
+  
   // Export/Import operations
   export: {
     allData: () => ipcRenderer.invoke('export:allData'),
@@ -150,6 +175,30 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.removeAllListeners('update-status')
       ipcRenderer.removeAllListeners('update-error')
     },
+  },
+  
+  // Uyumsoft API operations
+  uyumsoft: {
+    getSettings: () => ipcRenderer.invoke('uyumsoft:getSettings'),
+    saveSettings: (settings: any) => ipcRenderer.invoke('uyumsoft:saveSettings', settings),
+    testConnection: () => ipcRenderer.invoke('uyumsoft:testConnection'),
+    createEArchiveInvoice: (orderId: number, invoiceData: any) => 
+      ipcRenderer.invoke('uyumsoft:createEArchiveInvoice', orderId, invoiceData),
+    createEInvoice: (orderId: number, invoiceData: any) => 
+      ipcRenderer.invoke('uyumsoft:createEInvoice', orderId, invoiceData),
+    getInvoice: (invoiceId: number) => ipcRenderer.invoke('uyumsoft:getInvoice', invoiceId),
+    getInvoicesByOrder: (orderId: number) => ipcRenderer.invoke('uyumsoft:getInvoicesByOrder', orderId),
+    getAllInvoices: () => ipcRenderer.invoke('uyumsoft:getAllInvoices'),
+    cancelInvoice: (invoiceId: number, reason: string) => 
+      ipcRenderer.invoke('uyumsoft:cancelInvoice', invoiceId, reason),
+    downloadInvoicePDF: (invoiceId: number) => ipcRenderer.invoke('uyumsoft:downloadInvoicePDF', invoiceId),
+    resendInvoiceEmail: (invoiceId: number, email: string) => 
+      ipcRenderer.invoke('uyumsoft:resendInvoiceEmail', invoiceId, email),
+  },
+  
+  // Development tools
+  dev: {
+    enableTestMode: () => ipcRenderer.invoke('dev:enableTestMode'),
   },
 })
 
