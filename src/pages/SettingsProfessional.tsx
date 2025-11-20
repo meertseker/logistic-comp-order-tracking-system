@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { 
   Settings as SettingsIcon,
   Mail, 
+  MessageCircle,
   Database,
   Download,
   Upload,
@@ -20,14 +21,16 @@ import {
   Building2,
   Server,
   Edit,
+  Receipt,
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import { useToast } from '../context/ToastContext'
 
-type Tab = 'mail' | 'export' | 'system' | 'license'
+type Tab = 'mail' | 'whatsapp' | 'uyumsoft' | 'export' | 'system' | 'license'
 type MailProvider = 'gmail' | 'outlook' | 'custom' | null
+type WhatsAppProvider = 'iletimerkezi' | 'netgsm' | 'twilio' | null
 
 export default function SettingsProfessional() {
   const { showToast } = useToast()
@@ -39,6 +42,7 @@ export default function SettingsProfessional() {
   
   const [step, setStep] = useState<1 | 2>(1)
   const [provider, setProvider] = useState<MailProvider>(null)
+  const [whatsappProvider, setWhatsappProvider] = useState<WhatsAppProvider>(null)
   
   const [mailSettings, setMailSettings] = useState({
     smtp_host: '',
@@ -49,6 +53,48 @@ export default function SettingsProfessional() {
     from_email: '',
     from_name: 'Sekersoft',
     company_name: 'Şirket Adı',
+    enabled: false,
+  })
+  
+  const [whatsappSettings, setWhatsappSettings] = useState({
+    provider: 'iletimerkezi',
+    api_key: '',
+    api_secret: '',
+    api_username: '',
+    api_password: '',
+    sender_name: 'Sekersoft',
+    sender_phone: '',
+    enabled: false,
+    auto_send_on_created: true,
+    auto_send_on_status_change: true,
+    auto_send_on_delivered: true,
+    auto_send_on_invoiced: true,
+    template_order_created: '',
+    template_order_on_way: '',
+    template_order_delivered: '',
+    template_order_invoiced: '',
+    template_order_cancelled: '',
+    template_custom: '',
+    company_name: 'Sekersoft',
+  })
+  
+  const [uyumsoftSettings, setUyumsoftSettings] = useState({
+    api_key: '',
+    api_secret: '',
+    environment: 'TEST',
+    company_name: '',
+    company_tax_number: '',
+    company_tax_office: '',
+    company_address: '',
+    company_city: '',
+    company_district: '',
+    company_postal_code: '',
+    company_phone: '',
+    company_email: '',
+    sender_email: '',
+    auto_send_email: true,
+    auto_approve: false,
+    invoice_prefix: 'SEK',
     enabled: false,
   })
   
@@ -87,6 +133,58 @@ export default function SettingsProfessional() {
         })
         
         setStep(2)
+      }
+      
+      // WhatsApp ayarlarını yükle
+      const whatsappSetts = await window.electronAPI.whatsapp.getSettings()
+      if (whatsappSetts) {
+        setWhatsappSettings({
+          provider: whatsappSetts.provider || 'iletimerkezi',
+          api_key: whatsappSetts.api_key || '',
+          api_secret: whatsappSetts.api_secret || '',
+          api_username: whatsappSetts.api_username || '',
+          api_password: whatsappSetts.api_password || '',
+          sender_name: whatsappSetts.sender_name || 'Sekersoft',
+          sender_phone: whatsappSetts.sender_phone || '',
+          enabled: whatsappSetts.enabled === 1,
+          auto_send_on_created: whatsappSetts.auto_send_on_created === 1,
+          auto_send_on_status_change: whatsappSetts.auto_send_on_status_change === 1,
+          auto_send_on_delivered: whatsappSetts.auto_send_on_delivered === 1,
+          auto_send_on_invoiced: whatsappSetts.auto_send_on_invoiced === 1,
+          template_order_created: whatsappSetts.template_order_created || '',
+          template_order_on_way: whatsappSetts.template_order_on_way || '',
+          template_order_delivered: whatsappSetts.template_order_delivered || '',
+          template_order_invoiced: whatsappSetts.template_order_invoiced || '',
+          template_order_cancelled: whatsappSetts.template_order_cancelled || '',
+          template_custom: whatsappSetts.template_custom || '',
+          company_name: whatsappSetts.company_name || 'Sekersoft',
+        })
+        
+        setWhatsappProvider(whatsappSetts.provider || 'iletimerkezi')
+      }
+      
+      // Uyumsoft ayarlarını yükle
+      const uyumsoftSetts = await window.electronAPI.uyumsoft.getSettings()
+      if (uyumsoftSetts) {
+        setUyumsoftSettings({
+          api_key: uyumsoftSetts.api_key || '',
+          api_secret: uyumsoftSetts.api_secret || '',
+          environment: uyumsoftSetts.environment || 'TEST',
+          company_name: uyumsoftSetts.company_name || '',
+          company_tax_number: uyumsoftSetts.company_tax_number || '',
+          company_tax_office: uyumsoftSetts.company_tax_office || '',
+          company_address: uyumsoftSetts.company_address || '',
+          company_city: uyumsoftSetts.company_city || '',
+          company_district: uyumsoftSetts.company_district || '',
+          company_postal_code: uyumsoftSetts.company_postal_code || '',
+          company_phone: uyumsoftSetts.company_phone || '',
+          company_email: uyumsoftSetts.company_email || '',
+          sender_email: uyumsoftSetts.sender_email || '',
+          auto_send_email: uyumsoftSetts.auto_send_email === 1,
+          auto_approve: uyumsoftSetts.auto_approve === 1,
+          invoice_prefix: uyumsoftSetts.invoice_prefix || 'SEK',
+          enabled: uyumsoftSetts.enabled === 1,
+        })
       }
       
       // Sistem bilgilerini yükle
@@ -150,6 +248,106 @@ export default function SettingsProfessional() {
       showToast('Ayarlar kaydedilemedi', 'error')
     } finally {
       setSaving(false)
+    }
+  }
+  
+  const handleSaveUyumsoft = async () => {
+    if (!uyumsoftSettings.api_key || !uyumsoftSettings.api_secret) {
+      showToast('Lütfen API Key ve API Secret bilgilerini girin', 'error')
+      return
+    }
+    
+    if (!uyumsoftSettings.company_name || !uyumsoftSettings.company_tax_number) {
+      showToast('Lütfen firma bilgilerini eksiksiz doldurun', 'error')
+      return
+    }
+    
+    try {
+      setSaving(true)
+      
+      const finalSettings = {
+        ...uyumsoftSettings,
+        enabled: true,
+      }
+      
+      await window.electronAPI.uyumsoft.saveSettings(finalSettings)
+      setUyumsoftSettings(finalSettings)
+      
+      showToast('✅ Uyumsoft API başarıyla yapılandırıldı!', 'success')
+    } catch (error) {
+      console.error('Failed to save Uyumsoft settings:', error)
+      showToast('Ayarlar kaydedilemedi', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+  
+  const handleSaveWhatsApp = async () => {
+    if (!whatsappSettings.api_key || !whatsappSettings.sender_phone) {
+      showToast('Lütfen API Key ve Gönderici Telefon bilgilerini girin', 'error')
+      return
+    }
+    
+    try {
+      setSaving(true)
+      
+      const finalSettings = {
+        ...whatsappSettings,
+        enabled: true,
+      }
+      
+      await window.electronAPI.whatsapp.saveSettings(finalSettings)
+      setWhatsappSettings(finalSettings)
+      
+      showToast('✅ WhatsApp servisi başarıyla yapılandırıldı!', 'success')
+    } catch (error) {
+      console.error('Failed to save WhatsApp settings:', error)
+      showToast('Ayarlar kaydedilemedi', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+  
+  const handleTestWhatsApp = async () => {
+    if (!whatsappSettings.api_key || !whatsappSettings.sender_phone) {
+      showToast('Lütfen önce ayarları kaydedin', 'error')
+      return
+    }
+    
+    try {
+      setTesting(true)
+      showToast('Test mesajı gönderiliyor...', 'info')
+      
+      const result = await window.electronAPI.whatsapp.testConnection()
+      
+      if (result.success) {
+        showToast('✅ ' + result.message, 'success')
+      } else {
+        showToast('❌ ' + result.message, 'error')
+      }
+    } catch (error) {
+      console.error('WhatsApp test error:', error)
+      showToast('Test başarısız', 'error')
+    } finally {
+      setTesting(false)
+    }
+  }
+  
+  const handleTestUyumsoft = async () => {
+    try {
+      setTesting(true)
+      const result = await window.electronAPI.uyumsoft.testConnection()
+      
+      if (result.success) {
+        showToast('✅ ' + result.message, 'success')
+      } else {
+        showToast('❌ ' + result.message, 'error')
+      }
+    } catch (error: any) {
+      console.error('Failed to test Uyumsoft connection:', error)
+      showToast('Bağlantı testi başarısız: ' + (error.message || 'Bilinmeyen hata'), 'error')
+    } finally {
+      setTesting(false)
     }
   }
 
@@ -271,6 +469,8 @@ export default function SettingsProfessional() {
 
   const tabs = [
     { id: 'mail' as Tab, label: 'Mail Ayarları', icon: Mail },
+    { id: 'whatsapp' as Tab, label: 'WhatsApp Ayarları', icon: MessageCircle },
+    { id: 'uyumsoft' as Tab, label: 'Uyumsoft E-Fatura', icon: Receipt },
     { id: 'export' as Tab, label: 'Veri Yönetimi', icon: Database },
     { id: 'license' as Tab, label: 'Lisans Bilgileri', icon: Shield },
     { id: 'system' as Tab, label: 'Sistem Bilgileri', icon: Info },
@@ -525,6 +725,634 @@ export default function SettingsProfessional() {
         </div>
       )}
 
+      {/* WhatsApp Settings Tab */}
+      {activeTab === 'whatsapp' && (
+        <div className="space-y-6">
+          {whatsappSettings.enabled ? (
+            <Card title="✅ WhatsApp Sistemi Yapılandırıldı">
+              <div className="space-y-6">
+                <div className="p-6 bg-green-500/10 border-2 border-green-500/30 rounded-xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <CheckCircle className="w-8 h-8 text-green-400" />
+                    <h3 className="text-xl font-bold text-white">WhatsApp Sistemi Aktif!</h3>
+                  </div>
+                  
+                  <div className="space-y-3 text-gray-300">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-5 h-5 text-green-400" />
+                      <span className="font-medium">Servis:</span>
+                      <span className="px-3 py-1 bg-green-500/20 rounded-lg font-medium capitalize">
+                        {whatsappSettings.provider}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Gönderici:</span>
+                      <span>{whatsappSettings.sender_phone}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Otomatik Bildirimler:</span>
+                      <span className="px-3 py-1 bg-blue-500/20 rounded-lg">
+                        {whatsappSettings.auto_send_on_status_change ? 'Aktif' : 'Pasif'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 flex gap-3">
+                    <Button 
+                      onClick={handleTestWhatsApp} 
+                      disabled={testing}
+                      variant="secondary"
+                    >
+                      {testing ? (
+                        <>
+                          <Loader className="w-5 h-5 animate-spin mr-2" />
+                          Test Ediliyor...
+                        </>
+                      ) : (
+                        'Test Mesajı Gönder'
+                      )}
+                    </Button>
+                    <Button 
+                      onClick={() => setWhatsappSettings({ ...whatsappSettings, enabled: false })}
+                      variant="danger"
+                    >
+                      Ayarları Değiştir
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <>
+              <Card title="🟢 WhatsApp Servisi Seçin" subtitle="Hangi WhatsApp API servisini kullanmak istersiniz?">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <motion.button
+                    onClick={() => {
+                      setWhatsappProvider('iletimerkezi')
+                      setWhatsappSettings({ ...whatsappSettings, provider: 'iletimerkezi' })
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`
+                      p-6 bg-gradient-to-br rounded-2xl border-2 transition-all
+                      ${whatsappProvider === 'iletimerkezi'
+                        ? 'from-green-500/30 to-green-600/30 border-green-500/60'
+                        : 'from-green-500/10 to-green-600/10 border-green-500/20 hover:border-green-500/40'
+                      }
+                    `}
+                  >
+                    <div className="text-center">
+                      <div className="text-4xl mb-3">🇹🇷</div>
+                      <h3 className="text-xl font-bold text-white mb-2">İletimerkezi</h3>
+                      <p className="text-gray-300 text-sm mb-3">Türk servisi - Kolay kurulum</p>
+                      <div className="text-green-400 text-xs">✓ Önerilen</div>
+                    </div>
+                  </motion.button>
+
+                  <motion.button
+                    onClick={() => {
+                      setWhatsappProvider('netgsm')
+                      setWhatsappSettings({ ...whatsappSettings, provider: 'netgsm' })
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`
+                      p-6 bg-gradient-to-br rounded-2xl border-2 transition-all
+                      ${whatsappProvider === 'netgsm'
+                        ? 'from-blue-500/30 to-blue-600/30 border-blue-500/60'
+                        : 'from-blue-500/10 to-blue-600/10 border-blue-500/20 hover:border-blue-500/40'
+                      }
+                    `}
+                  >
+                    <div className="text-center">
+                      <div className="text-4xl mb-3">📱</div>
+                      <h3 className="text-xl font-bold text-white mb-2">NetGSM</h3>
+                      <p className="text-gray-300 text-sm mb-3">SMS + WhatsApp</p>
+                      <div className="text-blue-400 text-xs">Güvenilir</div>
+                    </div>
+                  </motion.button>
+
+                  <motion.button
+                    onClick={() => {
+                      setWhatsappProvider('twilio')
+                      setWhatsappSettings({ ...whatsappSettings, provider: 'twilio' })
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`
+                      p-6 bg-gradient-to-br rounded-2xl border-2 transition-all
+                      ${whatsappProvider === 'twilio'
+                        ? 'from-purple-500/30 to-purple-600/30 border-purple-500/60'
+                        : 'from-purple-500/10 to-purple-600/10 border-purple-500/20 hover:border-purple-500/40'
+                      }
+                    `}
+                  >
+                    <div className="text-center">
+                      <div className="text-4xl mb-3">🌍</div>
+                      <h3 className="text-xl font-bold text-white mb-2">Twilio</h3>
+                      <p className="text-gray-300 text-sm mb-3">Global servis</p>
+                      <div className="text-purple-400 text-xs">Gelişmiş</div>
+                    </div>
+                  </motion.button>
+                </div>
+              </Card>
+
+              {whatsappProvider && (
+                <Card title="⚙️ WhatsApp API Ayarları" subtitle="API bilgilerinizi girin">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          API Key / Username *
+                        </label>
+                        <Input
+                          value={whatsappSettings.api_key || whatsappSettings.api_username}
+                          onChange={(e) => setWhatsappSettings({
+                            ...whatsappSettings,
+                            api_key: e.target.value,
+                            api_username: e.target.value
+                          })}
+                          placeholder="API Key veya kullanıcı adı"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          API Secret / Password *
+                        </label>
+                        <Input
+                          type="password"
+                          value={whatsappSettings.api_secret || whatsappSettings.api_password}
+                          onChange={(e) => setWhatsappSettings({
+                            ...whatsappSettings,
+                            api_secret: e.target.value,
+                            api_password: e.target.value
+                          })}
+                          placeholder="API Secret veya şifre"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Gönderici Telefon *
+                        </label>
+                        <Input
+                          value={whatsappSettings.sender_phone}
+                          onChange={(e) => setWhatsappSettings({
+                            ...whatsappSettings,
+                            sender_phone: e.target.value
+                          })}
+                          placeholder="+90 555 123 4567"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                          Başında +90 ile yazın
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Şirket Adı
+                        </label>
+                        <Input
+                          value={whatsappSettings.company_name}
+                          onChange={(e) => setWhatsappSettings({
+                            ...whatsappSettings,
+                            company_name: e.target.value
+                          })}
+                          placeholder="Sekersoft"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-700 pt-6">
+                      <h3 className="text-lg font-semibold text-white mb-4">
+                        📬 Otomatik Bildirimler
+                      </h3>
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={whatsappSettings.auto_send_on_created}
+                            onChange={(e) => setWhatsappSettings({
+                              ...whatsappSettings,
+                              auto_send_on_created: e.target.checked
+                            })}
+                            className="w-5 h-5 rounded"
+                          />
+                          <span className="text-gray-300">Sipariş oluşturulduğunda gönder</span>
+                        </label>
+
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={whatsappSettings.auto_send_on_status_change}
+                            onChange={(e) => setWhatsappSettings({
+                              ...whatsappSettings,
+                              auto_send_on_status_change: e.target.checked
+                            })}
+                            className="w-5 h-5 rounded"
+                          />
+                          <span className="text-gray-300">Durum değiştiğinde gönder (Yolda, Teslim vb.)</span>
+                        </label>
+
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={whatsappSettings.auto_send_on_delivered}
+                            onChange={(e) => setWhatsappSettings({
+                              ...whatsappSettings,
+                              auto_send_on_delivered: e.target.checked
+                            })}
+                            className="w-5 h-5 rounded"
+                          />
+                          <span className="text-gray-300">Teslimat tamamlandığında gönder</span>
+                        </label>
+
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={whatsappSettings.auto_send_on_invoiced}
+                            onChange={(e) => setWhatsappSettings({
+                              ...whatsappSettings,
+                              auto_send_on_invoiced: e.target.checked
+                            })}
+                            className="w-5 h-5 rounded"
+                          />
+                          <span className="text-gray-300">Fatura kesildiğinde gönder</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-6 border-t border-gray-700">
+                      <Button
+                        onClick={() => setWhatsappProvider(null)}
+                        variant="secondary"
+                      >
+                        Geri
+                      </Button>
+                      <Button
+                        onClick={handleSaveWhatsApp}
+                        disabled={saving}
+                      >
+                        {saving ? (
+                          <>
+                            <Loader className="w-5 h-5 animate-spin mr-2" />
+                            Kaydediliyor...
+                          </>
+                        ) : (
+                          'Kaydet ve Aktifleştir'
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Uyumsoft E-Fatura Tab */}
+      {activeTab === 'uyumsoft' && (
+        <div className="space-y-6">
+          {uyumsoftSettings.enabled ? (
+            <Card title="✅ Uyumsoft E-Fatura Sistemi Yapılandırıldı">
+              <div className="space-y-6">
+                <div className="p-6 bg-green-500/10 border-2 border-green-500/30 rounded-xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <CheckCircle className="w-8 h-8 text-green-400" />
+                    <h3 className="text-xl font-bold text-white">E-Fatura Sistemi Aktif!</h3>
+                  </div>
+                  
+                  <div className="space-y-3 text-gray-300">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-5 h-5 text-green-400" />
+                      <span className="font-medium">Firma:</span>
+                      <span>{uyumsoftSettings.company_name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Receipt className="w-5 h-5 text-green-400" />
+                      <span className="font-medium">Vergi No:</span>
+                      <span>{uyumsoftSettings.company_tax_number}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Server className="w-5 h-5 text-green-400" />
+                      <span className="font-medium">Ortam:</span>
+                      <span className={`px-2 py-1 rounded ${uyumsoftSettings.environment === 'PRODUCTION' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
+                        {uyumsoftSettings.environment === 'PRODUCTION' ? 'Canlı' : 'Test'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-5 h-5 text-green-400" />
+                      <span className="font-medium">Otomatik E-posta:</span>
+                      <span>{uyumsoftSettings.auto_send_email ? 'Açık' : 'Kapalı'}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-gray-400 text-sm mt-4">
+                    Sipariş detay sayfalarında "Faturala" butonu ile yasal e-fatura/e-arşiv oluşturabilirsiniz.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    onClick={handleTestUyumsoft}
+                    variant="secondary"
+                    disabled={testing}
+                  >
+                    {testing ? (
+                      <>
+                        <Loader className="w-5 h-5 mr-2 animate-spin" />
+                        Test Ediliyor...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        Bağlantıyı Test Et
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    onClick={() => {
+                      setUyumsoftSettings({ ...uyumsoftSettings, enabled: false })
+                    }}
+                    variant="secondary"
+                  >
+                    <Edit className="w-5 h-5 mr-2" />
+                    Ayarları Düzenle
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <>
+              <Card 
+                title="🧾 Uyumsoft E-Fatura Entegrasyonu"
+                subtitle="Yasal e-fatura ve e-arşiv fatura oluşturun"
+              >
+                <div className="space-y-6">
+                  <div className="p-6 bg-blue-500/10 border-2 border-blue-500/30 rounded-xl">
+                    <h3 className="text-lg font-bold text-white mb-3">ℹ️ Uyumsoft Nedir?</h3>
+                    <p className="text-gray-300 mb-3">
+                      Uyumsoft, GİB (Gelir İdaresi Başkanlığı) entegre e-fatura ve e-arşiv fatura çözümüdür.
+                      Bu entegrasyon ile yasal faturalarınızı otomatik oluşturup müşterilerinize gönderebilirsiniz.
+                    </p>
+                    <ul className="space-y-2 text-gray-300 text-sm">
+                      <li className="flex items-start gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-400 mt-1 flex-shrink-0" />
+                        <span>E-Arşiv fatura (bireysel müşteriler için)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-400 mt-1 flex-shrink-0" />
+                        <span>E-Fatura (kurumsal müşteriler için)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-400 mt-1 flex-shrink-0" />
+                        <span>Otomatik GİB bildirimi</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-400 mt-1 flex-shrink-0" />
+                        <span>E-posta ile otomatik gönderim</span>
+                      </li>
+                    </ul>
+                    <div className="mt-4 flex items-center gap-2 text-yellow-200">
+                      <AlertCircle className="w-5 h-5" />
+                      <span className="text-sm font-medium">
+                        Uyumsoft hesabınız yoksa, <a href="https://uyumsoft.com.tr" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-100">uyumsoft.com.tr</a> adresinden oluşturabilirsiniz.
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-bold text-white">🔑 API Bilgileri</h3>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">API Key</label>
+                        <Input
+                          type="text"
+                          value={uyumsoftSettings.api_key}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, api_key: e.target.value })}
+                          placeholder="uyumsoft-api-key-xxxx"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">API Secret</label>
+                        <Input
+                          type="password"
+                          value={uyumsoftSettings.api_secret}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, api_secret: e.target.value })}
+                          placeholder="••••••••••••"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Ortam</label>
+                        <select
+                          value={uyumsoftSettings.environment}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, environment: e.target.value })}
+                          className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white"
+                        >
+                          <option value="TEST">Test Ortamı</option>
+                          <option value="PRODUCTION">Canlı Ortam</option>
+                        </select>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Önce TEST ortamında deneyip, sonra PRODUCTION'a geçin
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-bold text-white">🏢 Firma Bilgileri</h3>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Firma Ünvanı *</label>
+                        <Input
+                          type="text"
+                          value={uyumsoftSettings.company_name}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, company_name: e.target.value })}
+                          placeholder="ABC Nakliyat Ltd. Şti."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Vergi Numarası *</label>
+                        <Input
+                          type="text"
+                          value={uyumsoftSettings.company_tax_number}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, company_tax_number: e.target.value })}
+                          placeholder="1234567890"
+                          maxLength={10}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Vergi Dairesi *</label>
+                        <Input
+                          type="text"
+                          value={uyumsoftSettings.company_tax_office}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, company_tax_office: e.target.value })}
+                          placeholder="Kadıköy"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-white">📍 İletişim Bilgileri (Opsiyonel)</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Şehir</label>
+                        <Input
+                          type="text"
+                          value={uyumsoftSettings.company_city}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, company_city: e.target.value })}
+                          placeholder="İstanbul"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">İlçe</label>
+                        <Input
+                          type="text"
+                          value={uyumsoftSettings.company_district}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, company_district: e.target.value })}
+                          placeholder="Kadıköy"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Adres</label>
+                      <Input
+                        type="text"
+                        value={uyumsoftSettings.company_address}
+                        onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, company_address: e.target.value })}
+                        placeholder="Moda Cad. No:123 Kadıköy/İstanbul"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Telefon</label>
+                        <Input
+                          type="tel"
+                          value={uyumsoftSettings.company_phone}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, company_phone: e.target.value })}
+                          placeholder="0212 xxx xx xx"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">E-posta</label>
+                        <Input
+                          type="email"
+                          value={uyumsoftSettings.company_email}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, company_email: e.target.value })}
+                          placeholder="info@firma.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-white">⚙️ Fatura Ayarları</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Fatura Prefix</label>
+                        <Input
+                          type="text"
+                          value={uyumsoftSettings.invoice_prefix}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, invoice_prefix: e.target.value.toUpperCase().slice(0, 3) })}
+                          placeholder="SEK"
+                          maxLength={3}
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                          Fatura No: {uyumsoftSettings.invoice_prefix}2024000001
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Gönderen E-posta</label>
+                        <Input
+                          type="email"
+                          value={uyumsoftSettings.sender_email}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, sender_email: e.target.value })}
+                          placeholder="fatura@firma.com"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={uyumsoftSettings.auto_send_email}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, auto_send_email: e.target.checked })}
+                          className="w-5 h-5 rounded border-gray-600 bg-gray-800 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-gray-300">Faturaları otomatik olarak müşteriye e-posta ile gönder</span>
+                      </label>
+
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={uyumsoftSettings.auto_approve}
+                          onChange={(e) => setUyumsoftSettings({ ...uyumsoftSettings, auto_approve: e.target.checked })}
+                          className="w-5 h-5 rounded border-gray-600 bg-gray-800 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-gray-300">Faturaları otomatik olarak onayla (dikkatli kullanın!)</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      onClick={handleTestUyumsoft}
+                      variant="secondary"
+                      disabled={testing || !uyumsoftSettings.api_key || !uyumsoftSettings.api_secret}
+                    >
+                      {testing ? (
+                        <>
+                          <Loader className="w-5 h-5 mr-2 animate-spin" />
+                          Test Ediliyor...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          Bağlantıyı Test Et
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button
+                      onClick={handleSaveUyumsoft}
+                      disabled={saving || !uyumsoftSettings.api_key || !uyumsoftSettings.api_secret || !uyumsoftSettings.company_name}
+                    >
+                      {saving ? (
+                        <>
+                          <Loader className="w-5 h-5 mr-2 animate-spin" />
+                          Kaydediliyor...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          Kaydet ve Aktif Et
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Export Tab */}
       {activeTab === 'export' && (
         <div className="space-y-6">
@@ -761,6 +1589,73 @@ export default function SettingsProfessional() {
                 <Download className="w-5 h-5 mr-2" />
                 {saving ? 'Kontrol Ediliyor...' : 'Güncellemeleri Kontrol Et'}
               </Button>
+            </div>
+          </Card>
+          
+          {/* Development Tools */}
+          <Card title="🧪 Geliştirici Araçları" subtitle="Test ve debugging özellikleri">
+            <div className="p-6 bg-gradient-to-br from-purple-500/10 to-blue-500/10 border-2 border-purple-500/30 rounded-xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-purple-500/20 rounded-xl">
+                  <MessageCircle className="w-6 h-6 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">WhatsApp & Uyumsoft Test Modu</h3>
+                  <p className="text-sm text-gray-400">UI'ı test etmek için özellikleri gerçek API olmadan aktifleştirin</p>
+                </div>
+              </div>
+              
+              <div className="mb-4 p-4 bg-gray-800/50 rounded-lg">
+                <p className="text-sm text-gray-300 mb-2">✅ Test modunda neler aktifleşir:</p>
+                <ul className="text-sm text-gray-400 space-y-1 ml-4">
+                  <li>• WhatsApp "Mesaj Gönder" butonları</li>
+                  <li>• Uyumsoft "Faturala" butonları</li>
+                  <li>• Ayarlar sayfasında test bilgileri</li>
+                  <li>• Tüm modal ve form UI'ları</li>
+                </ul>
+                <p className="text-sm text-yellow-300 mt-3">⚠️ API çağrıları başarısız olur (test verisi)</p>
+              </div>
+              
+              <Button
+                onClick={async () => {
+                  try {
+                    setSaving(true)
+                    const result = await window.electronAPI.dev.enableTestMode()
+                    if (result.success) {
+                      showToast(result.message, 'success')
+                      // Reload to apply changes
+                      setTimeout(() => {
+                        window.location.reload()
+                      }, 2000)
+                    } else {
+                      showToast(result.message || 'Test modu aktif edilemedi', 'error')
+                    }
+                  } catch (error: any) {
+                    console.error('Enable test mode error:', error)
+                    showToast(error.message || 'Test modu aktif edilirken hata oluştu', 'error')
+                  } finally {
+                    setSaving(false)
+                  }
+                }}
+                disabled={saving}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              >
+                {saving ? (
+                  <>
+                    <Loader className="w-5 h-5 mr-2 animate-spin" />
+                    Aktifleştiriliyor...
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    Test Modunu Aktifleştir
+                  </>
+                )}
+              </Button>
+              
+              <p className="text-xs text-gray-400 mt-3 text-center">
+                Aktifleştirdikten sonra sayfa otomatik yeniden yüklenecek
+              </p>
             </div>
           </Card>
         </div>
