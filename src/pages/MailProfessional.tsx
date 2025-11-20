@@ -39,7 +39,7 @@ import StatCard from '../components/StatCard'
 import { useToast } from '../context/ToastContext'
 import { formatDate } from '../utils/formatters'
 
-type MailTab = 'dashboard' | 'history' | 'send' | 'bulk' | 'templates'
+type MailTab = 'dashboard' | 'history' | 'send' | 'bulk' | 'templates' | 'whatsapp'
 
 interface MailLog {
   id: number
@@ -86,6 +86,8 @@ export default function MailProfessional() {
   const [activeTab, setActiveTab] = useState<MailTab>('dashboard')
   const [loading, setLoading] = useState(true)
   const [mailLogs, setMailLogs] = useState<MailLog[]>([])
+  const [whatsappLogs, setWhatsappLogs] = useState<any[]>([])
+  const [whatsappStats, setWhatsappStats] = useState<any>(null)
   const [stats, setStats] = useState<MailStats | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
