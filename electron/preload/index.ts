@@ -93,8 +93,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getSettings: () => ipcRenderer.invoke('mail:getSettings'),
     saveSettings: (settings: any) => ipcRenderer.invoke('mail:saveSettings', settings),
     testConnection: () => ipcRenderer.invoke('mail:testConnection'),
-    sendOrderEmail: (recipientEmail: string, orderData: any, pdfPath?: string, invoiceFiles?: any[]) => 
-      ipcRenderer.invoke('mail:sendOrderEmail', recipientEmail, orderData, pdfPath, invoiceFiles),
+    sendOrderEmail: (
+      recipientEmail: string, 
+      orderData: any, 
+      pdfPath?: string, 
+      invoiceFiles?: any[], 
+      customSubject?: string, 
+      customMessage?: string
+    ) => 
+      ipcRenderer.invoke('mail:sendOrderEmail', recipientEmail, orderData, pdfPath, invoiceFiles, customSubject, customMessage),
     getLogs: (orderId?: number) => ipcRenderer.invoke('mail:getLogs', orderId),
   },
   
@@ -110,6 +117,39 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // System information
   system: {
     getInfo: () => ipcRenderer.invoke('system:getInfo'),
+  },
+  
+  // Auto-update operations
+  update: {
+    check: () => ipcRenderer.invoke('update:check'),
+    download: () => ipcRenderer.invoke('update:download'),
+    install: () => ipcRenderer.invoke('update:install'),
+    onUpdateAvailable: (callback: (info: any) => void) => {
+      ipcRenderer.on('update-available', (_, info) => callback(info))
+    },
+    onUpdateNotAvailable: (callback: (info: any) => void) => {
+      ipcRenderer.on('update-not-available', (_, info) => callback(info))
+    },
+    onDownloadProgress: (callback: (progress: any) => void) => {
+      ipcRenderer.on('download-progress', (_, progress) => callback(progress))
+    },
+    onUpdateDownloaded: (callback: (info: any) => void) => {
+      ipcRenderer.on('update-downloaded', (_, info) => callback(info))
+    },
+    onUpdateStatus: (callback: (message: string) => void) => {
+      ipcRenderer.on('update-status', (_, message) => callback(message))
+    },
+    onUpdateError: (callback: (message: string) => void) => {
+      ipcRenderer.on('update-error', (_, message) => callback(message))
+    },
+    removeAllListeners: () => {
+      ipcRenderer.removeAllListeners('update-available')
+      ipcRenderer.removeAllListeners('update-not-available')
+      ipcRenderer.removeAllListeners('download-progress')
+      ipcRenderer.removeAllListeners('update-downloaded')
+      ipcRenderer.removeAllListeners('update-status')
+      ipcRenderer.removeAllListeners('update-error')
+    },
   },
 })
 
