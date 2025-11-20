@@ -18,6 +18,7 @@ import SettingsProfessional from './pages/SettingsProfessional'
 import MailProfessional from './pages/MailProfessional'
 import { ToastProvider } from './context/ToastContext'
 import LicenseActivation from './components/LicenseActivation'
+import UpdateNotification from './components/UpdateNotification'
 
 function App() {
   const [isLicensed, setIsLicensed] = useState<boolean | null>(null)
@@ -78,6 +79,8 @@ function App() {
             <Route path="/settings" element={<SettingsProfessional />} />
           </Routes>
         </Layout>
+        {/* Auto-update notification */}
+        <UpdateNotification />
       </Router>
     </ToastProvider>
   )
