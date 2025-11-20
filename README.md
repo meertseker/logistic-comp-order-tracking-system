@@ -9,6 +9,13 @@ Modern, offline-first masaüstü taşımacılık yönetim uygulaması. Windows v
 
 ## 🚀 Özellikler
 
+### 🔄 Otomatik Güncelleme
+- Yeni sürümler için otomatik kontrol
+- Tek tıkla güncelleme
+- Arka planda indirme
+- Güvenli kurulum
+- GitHub Releases entegrasyonu
+
 ### ✅ Sipariş Yönetimi
 - Yeni sipariş oluşturma (plaka, müşteri, telefon, güzergah, yük açıklaması, fiyat)
 - Sipariş detaylarını görüntüleme ve düzenleme
@@ -211,16 +218,54 @@ Vite dev server varsayılan olarak 5173 portunu kullanır. Değiştirmek için `
 2. Yeniden yükleyin: `npm install`
 3. Rebuild edin: `npm run rebuild`
 
+## 🔄 Otomatik Güncelleme Sistemi
+
+Sekersoft, **electron-updater** kullanarak otomatik güncelleme desteğine sahiptir.
+
+### Nasıl Çalışır?
+
+1. **Otomatik Kontrol**: Uygulama her açıldığında yeni sürüm kontrolü yapar
+2. **Bildirim**: Yeni versiyon varsa ekranın sağ üst köşesinde bildirim gösterilir
+3. **İndirme**: Kullanıcı onayı ile arka planda indirilir
+4. **Kurulum**: Uygulama kapanırken veya anında kurulum yapılabilir
+
+### Güncelleme Yönetimi
+
+Yeni bir sürüm yayınlamak için:
+
+```bash
+# Versiyon güncelle
+npm version patch  # 1.0.0 → 1.0.1 (bug fix)
+npm version minor  # 1.0.0 → 1.1.0 (yeni özellik)
+npm version major  # 1.0.0 → 2.0.0 (breaking change)
+
+# Git tag oluştur ve push et
+git add .
+git commit -m "Release v1.0.1"
+git tag v1.0.1
+git push origin main
+git push origin v1.0.1
+```
+
+GitHub Actions otomatik olarak:
+- ✅ Windows ve macOS için build yapar
+- ✅ GitHub Release oluşturur
+- ✅ Güncelleme dosyalarını yükler
+- ✅ Kullanıcılar otomatik bildirim alır
+
+**Detaylı bilgi**: [docs/AUTO_UPDATE.md](docs/AUTO_UPDATE.md)
+
 ## 🚧 Gelecek Özellikler
 
 - [ ] Kullanıcı kimlik doğrulama
 - [ ] Çoklu kullanıcı desteği
 - [ ] Gelişmiş grafik ve charts
 - [ ] OCR ile fatura okuma
-- [ ] Otomatik yedekleme
+- [x] Otomatik güncelleme ✅
+- [x] Otomatik yedekleme ✅
 - [ ] Export to Excel
 - [ ] Yazdırma özellikleri
-- [ ] E-posta entegrasyonu
+- [x] E-posta entegrasyonu ✅
 - [ ] WhatsApp bildirimleri
 
 ## 📚 Dokümantasyon
