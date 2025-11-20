@@ -11,10 +11,12 @@ import { BackupManager } from './backup'
 import { getAdvancedLicenseManager } from './advanced-license-manager'
 import { getMailService } from './mail-service'
 import { getExportManager } from './export-manager'
+import { UpdateManager } from './updater'
 
 // __dirname is available in CommonJS (esbuild handles this)
 
 let backupManager: BackupManager | null = null
+let updateManager: UpdateManager | null = null
 
 let mainWindow: BrowserWindow | null = null
 
@@ -65,6 +67,9 @@ app.whenReady().then(async () => {
   backupManager = new BackupManager(dbPath)
   backupManager.startAutoBackup()
   
+  // Create window first
+  createWindow()
+  
   // Initialize advanced license manager ve periyodik doğrulamayı başlat
   // Screenshot modunda lisans kontrolünü atla
   const isScreenshotMode = process.env.SCREENSHOT_MODE === 'true'
@@ -87,8 +92,15 @@ app.whenReady().then(async () => {
     console.log('📸 Screenshot mode - skipping license validation')
   }
   
-  // Create window
-  createWindow()
+  // Initialize update manager
+  if (mainWindow && !isScreenshotMode) {
+    updateManager = new UpdateManager(mainWindow)
+    // Uygulama açıldıktan 10 saniye sonra güncelleme kontrol et
+    setTimeout(() => {
+      console.log('🔄 Checking for updates...')
+      updateManager?.checkForUpdates()
+    }, 10000)
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -450,7 +462,7 @@ ipcMain.handle('db:getDashboardStats', async () => {
   try {
     // Temel sayılar
     const totalOrders = db.prepare('SELECT COUNT(*) as count FROM orders').get()
-    const activeOrders = db.prepare('SELECT COUNT(*) as count FROM orders WHERE status IN (?, ?)').get('Yolda', 'Bekliyor')
+    const activeOrders = db.prepare('SELECT COUNT(*) as count FROM orders WHERE status IN (?, ?, ?)').get('Bekliyor', 'Yüklendi', 'Yolda')
     const completedOrders = db.prepare('SELECT COUNT(*) as count FROM orders WHERE status = ?').get('Teslim Edildi')
     
     const thisMonth = new Date()
@@ -571,7 +583,7 @@ ipcMain.handle('db:getDashboardStats', async () => {
     // Yaklaşan teslimatlar
     const upcomingDeliveries = db.prepare(`
       SELECT * FROM orders
-      WHERE status IN ('Yolda', 'Bekliyor')
+      WHERE status IN ('Bekliyor', 'Yüklendi', 'Yolda')
       ORDER BY created_at ASC
       LIMIT 5
     `).all()
@@ -1422,8 +1434,8 @@ ipcMain.handle('mail:saveSettings', async (_, settings) => {
     db.prepare(`
       INSERT OR REPLACE INTO mail_settings (
         id, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_password,
-        from_email, from_name, enabled, updated_at
-      ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        from_email, from_name, company_name, enabled, updated_at
+      ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `).run(
       settings.smtp_host,
       settings.smtp_port,
@@ -1432,6 +1444,7 @@ ipcMain.handle('mail:saveSettings', async (_, settings) => {
       settings.smtp_password,
       settings.from_email,
       settings.from_name,
+      settings.company_name || 'Şirket Adı',
       settings.enabled ? 1 : 0
     )
     
@@ -1455,10 +1468,20 @@ ipcMain.handle('mail:testConnection', async () => {
 })
 
 // Sipariş maili gönder
-ipcMain.handle('mail:sendOrderEmail', async (_, recipientEmail, orderData, pdfPath, invoiceFiles) => {
+ipcMain.handle('mail:sendOrderEmail', async (_, recipientEmail, orderData, pdfPath, invoiceFiles, customSubject, customMessage) => {
   try {
+    console.log('🔵 IPC Handler - Gelen parametreler:', {
+      recipientEmail,
+      orderId: orderData?.orderId,
+      customSubject,
+      customMessage,
+      hasCustomMessage: !!customMessage,
+      customMessageType: typeof customMessage,
+      customMessageLength: customMessage?.length
+    })
+    
     const mailService = getMailService()
-    const result = await mailService.sendOrderEmail(recipientEmail, orderData, pdfPath, invoiceFiles)
+    const result = await mailService.sendOrderEmail(recipientEmail, orderData, pdfPath, invoiceFiles, customSubject, customMessage)
     return result
   } catch (error: any) {
     console.error('Error sending order email:', error)
@@ -1518,6 +1541,49 @@ ipcMain.handle('system:getInfo', async () => {
     nodeVersion: process.versions.node,
     chromeVersion: process.versions.chrome,
     userDataPath: app.getPath('userData'),
+  }
+})
+
+// ============================================================================
+// AUTO-UPDATE OPERATIONS
+// ============================================================================
+
+ipcMain.handle('update:check', async () => {
+  try {
+    if (!updateManager) {
+      return { success: false, message: 'Update manager not initialized' }
+    }
+    await updateManager.checkForUpdates()
+    return { success: true }
+  } catch (error) {
+    console.error('Error checking for updates:', error)
+    return { success: false, message: (error as Error).message }
+  }
+})
+
+ipcMain.handle('update:download', async () => {
+  try {
+    if (!updateManager) {
+      return { success: false, message: 'Update manager not initialized' }
+    }
+    await updateManager.downloadUpdate()
+    return { success: true }
+  } catch (error) {
+    console.error('Error downloading update:', error)
+    return { success: false, message: (error as Error).message }
+  }
+})
+
+ipcMain.handle('update:install', async () => {
+  try {
+    if (!updateManager) {
+      return { success: false, message: 'Update manager not initialized' }
+    }
+    updateManager.quitAndInstall()
+    return { success: true }
+  } catch (error) {
+    console.error('Error installing update:', error)
+    return { success: false, message: (error as Error).message }
   }
 })
 
