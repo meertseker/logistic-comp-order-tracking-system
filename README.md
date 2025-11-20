@@ -104,6 +104,7 @@ Daha fazla ekran görüntüsü için [screenshots/](screenshots/) klasörüne ba
 - Sipariş detaylarını görüntüleme ve düzenleme
 - Sipariş durumu takibi (Bekliyor, Yolda, Teslim Edildi, Faturalandı, İptal)
 - Gelişmiş arama ve filtreleme
+- WhatsApp entegrasyonu ile anında bildirim
 
 ### 💰 Gider Takibi
 - Sipariş bazlı gider ekleme (Yakıt, HGS, Köprü, Yemek, Bakım, Diğer)
@@ -338,6 +339,48 @@ GitHub Actions otomatik olarak:
 
 **Detaylı bilgi**: [docs/AUTO_UPDATE.md](docs/AUTO_UPDATE.md)
 
+## 🟢 WhatsApp Entegrasyonu
+
+Sekersoft, **WhatsApp Business API** kullanarak otomatik bildirim gönderebilir.
+
+### Nasıl Çalışır?
+
+1. **Otomatik Bildirimler**: Sipariş durumu değiştiğinde müşteriye otomatik WhatsApp mesajı
+2. **Manuel Gönderim**: Sipariş detay sayfasından tek tıkla WhatsApp gönder
+3. **Toplu Gönderim**: Birden fazla müşteriye aynı anda mesaj gönder
+4. **Mesaj Geçmişi**: Tüm gönderilen mesajların kaydı ve takibi
+
+### Desteklenen Servisler
+
+- **İletimerkezi** (Önerilen) - Türk servisi, kolay kurulum
+- **NetGSM** - SMS + WhatsApp kombine
+- **Twilio** - Global servis provider
+
+### WhatsApp Kurulumu
+
+```bash
+# 1. Ayarlar → WhatsApp Ayarları
+# 2. Servis seç (İletimerkezi öneriliyor)
+# 3. API bilgilerini gir
+# 4. Otomatik bildirimleri aktifleştir
+# 5. Test mesajı gönder
+```
+
+### Özellikler
+
+- ✅ Otomatik durum bildirimleri
+- ✅ Sipariş oluşturulduğunda bildirim
+- ✅ "Yolda" durumunda bildirim
+- ✅ "Teslim Edildi" durumunda bildirim
+- ✅ "Faturalandı" durumunda bildirim
+- ✅ Manuel mesaj gönderimi
+- ✅ Toplu mesaj gönderimi
+- ✅ Mesaj şablonları
+- ✅ Mesaj geçmişi ve takibi
+- ✅ Yeniden gönder özelliği
+
+**Detaylı bilgi**: [docs/features/WHATSAPP_SYSTEM.md](docs/features/WHATSAPP_SYSTEM.md)
+
 ## 🚧 Gelecek Özellikler
 
 - [ ] Kullanıcı kimlik doğrulama
@@ -349,7 +392,7 @@ GitHub Actions otomatik olarak:
 - [ ] Export to Excel
 - [ ] Yazdırma özellikleri
 - [x] E-posta entegrasyonu ✅
-- [ ] WhatsApp bildirimleri
+- [x] WhatsApp bildirimleri ✅
 
 ## 📚 Dokümantasyon
 
