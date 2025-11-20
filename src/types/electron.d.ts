@@ -63,8 +63,34 @@ export interface ElectronAPI {
     getSettings: () => Promise<any>
     saveSettings: (settings: any) => Promise<{ success: boolean }>
     testConnection: () => Promise<{ success: boolean; message: string }>
-    sendOrderEmail: (recipientEmail: string, orderData: any, pdfPath?: string) => Promise<{ success: boolean; message: string }>
+    sendOrderEmail: (recipientEmail: string, orderData: any, pdfPath?: string, invoiceFiles?: any[], customSubject?: string, customMessage?: string) => Promise<{ success: boolean; message: string }>
     getLogs: (orderId?: number) => Promise<any[]>
+  }
+  
+  whatsapp: {
+    getSettings: () => Promise<any>
+    saveSettings: (settings: any) => Promise<{ success: boolean }>
+    testConnection: () => Promise<{ success: boolean; message: string }>
+    sendOrderMessage: (
+      recipientPhone: string,
+      orderData: any,
+      messageType: 'created' | 'on_way' | 'delivered' | 'invoiced' | 'cancelled' | 'custom',
+      customMessage?: string,
+      pdfPath?: string
+    ) => Promise<{ success: boolean; message: string; messageId?: string }>
+    sendBulkMessages: (
+      recipients: Array<{ phone: string; orderData: any }>,
+      messageType: 'created' | 'on_way' | 'delivered' | 'invoiced' | 'cancelled' | 'custom',
+      customMessage?: string
+    ) => Promise<{ success: number; failed: number; results: any[] }>
+    getLogs: (filters?: any) => Promise<any[]>
+    getStatistics: (period?: 'today' | 'week' | 'month' | 'all') => Promise<{
+      total: number
+      sent: number
+      failed: number
+      successRate: number
+    }>
+    resendMessage: (logId: number) => Promise<{ success: boolean; message: string }>
   }
   
   export: {
@@ -86,6 +112,24 @@ export interface ElectronAPI {
       chromeVersion: string
       userDataPath: string
     }>
+  }
+  
+  uyumsoft: {
+    getSettings: () => Promise<any>
+    saveSettings: (settings: any) => Promise<{ success: boolean }>
+    testConnection: () => Promise<{ success: boolean; message: string }>
+    createEArchiveInvoice: (orderId: number, invoiceData: any) => Promise<any>
+    createEInvoice: (orderId: number, invoiceData: any) => Promise<any>
+    getInvoice: (invoiceId: number) => Promise<any>
+    getInvoicesByOrder: (orderId: number) => Promise<any[]>
+    getAllInvoices: () => Promise<any[]>
+    cancelInvoice: (invoiceId: number, reason: string) => Promise<{ success: boolean; message: string }>
+    downloadInvoicePDF: (invoiceId: number) => Promise<{ success: boolean; path?: string; error?: string }>
+    resendInvoiceEmail: (invoiceId: number, email: string) => Promise<{ success: boolean; message: string }>
+  }
+  
+  dev: {
+    enableTestMode: () => Promise<{ success: boolean; message: string }>
   }
 }
 
