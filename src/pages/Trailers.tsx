@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Edit, Trash2, Package, MapPin, AlertCircle } from 'lucide-react'
-import Card from '../components/Card'
+import { motion } from 'framer-motion'
+import { Plus, Edit, Trash2, Package, MapPin } from 'lucide-react'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import Select from '../components/Select'
@@ -57,6 +56,7 @@ export default function Trailers() {
 
   useEffect(() => {
     loadTrailers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadTrailers = async () => {

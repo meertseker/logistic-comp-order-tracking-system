@@ -49,6 +49,7 @@ export interface ElectronAPI {
   
   app: {
     getPath: (name: string) => Promise<string>
+    getCompanyName: () => Promise<string | null>
   }
   
   license: {

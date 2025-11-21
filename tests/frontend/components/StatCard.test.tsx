@@ -70,7 +70,7 @@ describe('StatCard Component Tests', () => {
     render(<StatCard title="Loading" value={0} loading />)
     
     // Loading skeleton veya spinner olmalı
-    const loadingElement = screen.queryByTestId('loading-skeleton')
+    screen.queryByTestId('loading-skeleton')
     // Loading durumunda value gösterilmeyebilir veya placeholder olabilir
   })
 

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { User, TrendingUp, DollarSign, Package } from 'lucide-react'
+import { User, DollarSign, Package } from 'lucide-react'
 import { formatCurrency } from '../utils/formatters'
 
 interface CustomerData {

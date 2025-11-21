@@ -6,7 +6,6 @@ import {
   MessageCircle,
   Database,
   Download,
-  Upload,
   FileText,
   BarChart3,
   Info,
@@ -137,11 +136,16 @@ export default function SettingsProfessional() {
         electronAPI.update.removeAllListeners()
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadSettings = async () => {
     try {
       setLoading(true)
+      
+      // Company name'i license'dan al (en başta, diğer ayarlar için kullanılacak)
+      const companyName = await window.electronAPI.app.getCompanyName()
+      const defaultCompanyName = companyName || 'Şirket Adı'
       
       // Mail ayarlarını yükle
       const settings = await window.electronAPI.mail.getSettings()
@@ -161,8 +165,8 @@ export default function SettingsProfessional() {
           smtp_user: settings.smtp_user || '',
           smtp_password: settings.smtp_password || '',
           from_email: settings.from_email || '',
-          from_name: settings.from_name || 'Sekersoft',
-          company_name: settings.company_name || 'Şirket Adı',
+          from_name: settings.from_name || defaultCompanyName,
+          company_name: settings.company_name || defaultCompanyName,
           enabled: settings.enabled === 1,
         })
         
@@ -178,7 +182,7 @@ export default function SettingsProfessional() {
           api_secret: whatsappSetts.api_secret || '',
           api_username: whatsappSetts.api_username || '',
           api_password: whatsappSetts.api_password || '',
-          sender_name: whatsappSetts.sender_name || 'Sekersoft',
+          sender_name: whatsappSetts.sender_name || defaultCompanyName,
           sender_phone: whatsappSetts.sender_phone || '',
           enabled: whatsappSetts.enabled === 1,
           auto_send_on_created: whatsappSetts.auto_send_on_created === 1,
@@ -191,7 +195,7 @@ export default function SettingsProfessional() {
           template_order_invoiced: whatsappSetts.template_order_invoiced || '',
           template_order_cancelled: whatsappSetts.template_order_cancelled || '',
           template_custom: whatsappSetts.template_custom || '',
-          company_name: whatsappSetts.company_name || 'Sekersoft',
+          company_name: whatsappSetts.company_name || defaultCompanyName,
         })
         
         setWhatsappProvider(whatsappSetts.provider || 'iletimerkezi')
@@ -228,6 +232,22 @@ export default function SettingsProfessional() {
       // Lisans bilgilerini yükle
       const licInfo = await window.electronAPI.license.getInfo()
       setLicenseInfo(licInfo)
+      
+      // Mail settings'te company name yoksa license'dan al
+      if (settings && !settings.company_name && companyName) {
+        setMailSettings(prev => ({
+          ...prev,
+          company_name: companyName,
+        }))
+      }
+      
+      // WhatsApp settings'te company name yoksa license'dan al
+      if (whatsappSetts && !whatsappSetts.company_name && companyName) {
+        setWhatsappSettings(prev => ({
+          ...prev,
+          company_name: companyName,
+        }))
+      }
       
       // Test modu durumunu kontrol et
       const testModeStatus = await window.electronAPI.dev.getTestModeStatus()

@@ -9,7 +9,6 @@ import {
   Truck,
   Users,
   Activity,
-  Calendar,
   BarChart3
 } from 'lucide-react'
 import Card from '../components/Card'
@@ -47,6 +46,7 @@ export default function Reports() {
 
   useEffect(() => {
     loadReport()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year, month])
 
   const loadReport = async () => {
@@ -61,10 +61,12 @@ export default function Reports() {
     }
   }
 
-  const exportToCSV = () => {
+  const exportToCSV = async () => {
     if (!report) return
 
-    let csv = 'Sekersoft - Aylık Rapor\n'
+    const companyName = await window.electronAPI.app.getCompanyName()
+    const reportTitle = companyName ? `${companyName} - Aylık Rapor` : 'Sekersoft - Aylık Rapor'
+    let csv = `${reportTitle}\n`
     csv += `Dönem: ${months.find(m => m.value === month.toString())?.label} ${year}\n\n`
     
     csv += 'Özet\n'
@@ -83,6 +85,8 @@ export default function Reports() {
     report.byCustomer.forEach((item: any) => {
       csv += `${item.musteri},${item.count},${item.total}\n`
     })
+
+    csv += '\n\nBu rapor Sekersoft yazılımı ile oluşturulmuştur.\n'
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
@@ -122,7 +126,7 @@ export default function Reports() {
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button onClick={() => exportReportToPDF(report, year, month)} size="sm">
+              <Button onClick={async () => await exportReportToPDF(report, year, month)} size="sm">
                 <FileText className="w-4 h-4 mr-2" />
                 PDF
               </Button>

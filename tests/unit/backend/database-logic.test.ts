@@ -21,7 +21,7 @@ describe('Database Logic - KRİTİK TESTLER', () => {
       expect(badQuery).toContain('DROP TABLE')
       
       // Prepared statement güvenli:
-      const safeQuery = preparedQuery.replace('?', `'${maliciousInput.replace(/'/g, "''")}'`)
+      preparedQuery.replace('?', `'${maliciousInput.replace(/'/g, "''")}'`)
       // SQLite otomatik escape eder, biz de benzerini yapıyoruz
     })
 
@@ -517,6 +517,7 @@ describe('Database Logic - KRİTİK TESTLER', () => {
     })
 
     it('retry logic maksimum deneme sayısını aşmamalı', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const retryOperation = async (operation: () => Promise<void>, maxRetries: number = 3) => {
         let attempts = 0
         let lastError: Error | null = null
@@ -557,8 +558,7 @@ describe('Database Logic - KRİTİK TESTLER', () => {
       }
       
       // Başarılı operasyon
-      let counter = 0
-      const successOp = () => { counter++ }
+      const successOp = () => { /* operation */ }
       const result1 = retrySync(successOp, 3)
       expect(result1.success).toBe(true)
       expect(result1.attempts).toBe(1)

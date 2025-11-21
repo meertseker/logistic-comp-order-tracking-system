@@ -45,9 +45,15 @@ export default function UpdateNotification() {
     }
 
     // Update available
-    electronAPI.update.onUpdateAvailable((info: UpdateInfo) => {
+    electronAPI.update.onUpdateAvailable((info: any) => {
       console.log('✨ Update available:', info)
-      setUpdateInfo(info)
+      // electron-updater'dan gelen info objesi farklı yapıda olabilir
+      const updateData: UpdateInfo = {
+        version: info?.version || info?.updateInfo?.version || 'Yeni',
+        releaseNotes: info?.releaseNotes || info?.updateInfo?.releaseNotes,
+        releaseDate: info?.releaseDate || info?.updateInfo?.releaseDate,
+      }
+      setUpdateInfo(updateData)
       setShow(true)
       setError(null)
     })
@@ -64,8 +70,17 @@ export default function UpdateNotification() {
     })
 
     // Update downloaded
-    electronAPI.update.onUpdateDownloaded((info: UpdateInfo) => {
+    electronAPI.update.onUpdateDownloaded((info: any) => {
       console.log('✅ Update downloaded:', info)
+      // electron-updater'dan gelen info objesi farklı yapıda olabilir
+      setUpdateInfo((prevInfo) => {
+        if (prevInfo) return prevInfo // Zaten varsa değiştirme
+        return {
+          version: info?.version || info?.updateInfo?.version || 'Yeni',
+          releaseNotes: info?.releaseNotes || info?.updateInfo?.releaseNotes,
+          releaseDate: info?.releaseDate || info?.updateInfo?.releaseDate,
+        }
+      })
       setDownloading(false)
       setDownloaded(true)
       setProgress(100)
@@ -134,16 +149,29 @@ export default function UpdateNotification() {
             <>
               {/* Update Available */}
               <div className="flex items-start gap-4 mb-4">
-                <div className="p-3 bg-white/10 rounded-xl">
+                <div className="p-3 bg-white/10 rounded-xl flex-shrink-0">
                   <Download className="w-7 h-7 text-white" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <h3 className="text-xl font-bold text-white mb-1">
                     🎉 Yeni Güncelleme Mevcut!
                   </h3>
-                  <p className="text-blue-100 text-sm">
-                    Versiyon <span className="font-semibold">{updateInfo?.version}</span> yayınlandı
-                  </p>
+                  {updateInfo?.version ? (
+                    <p className="text-blue-100 text-sm">
+                      Versiyon <span className="font-semibold text-white">{updateInfo.version}</span> yayınlandı
+                    </p>
+                  ) : (
+                    <p className="text-blue-100 text-sm">
+                      Yeni bir güncelleme mevcut
+                    </p>
+                  )}
+                  {updateInfo?.releaseNotes && (
+                    <div className="mt-2 p-2 bg-blue-900/30 rounded-lg">
+                      <p className="text-xs text-blue-200 whitespace-pre-wrap">
+                        {updateInfo.releaseNotes}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

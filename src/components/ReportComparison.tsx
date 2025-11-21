@@ -56,17 +56,14 @@ export default function ReportComparison({ data }: ReportComparisonProps) {
     label, 
     value1, 
     value2, 
-    format = 'currency',
-    reverseColor = false 
+    format = 'currency'
   }: { 
     label: string
     value1: number
     value2: number
     format?: 'currency' | 'number'
-    reverseColor?: boolean
   }) => {
     const change = calculateChange(value1, value2)
-    const isPositive = reverseColor ? change < 0 : change > 0
     
     return (
       <div className="flex items-center justify-between py-3 border-b border-opacity-10" style={{ borderColor: 'rgba(235, 235, 245, 0.1)' }}>
@@ -172,7 +169,6 @@ export default function ReportComparison({ data }: ReportComparisonProps) {
           label="Tahmini Maliyetler"
           value1={data.period1.costs}
           value2={data.period2.costs}
-          reverseColor
         />
         <ComparisonRow
           label="Ek Giderler"

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { BarChart3, TrendingUp, PieChart as PieIcon, Activity, Layers, Maximize2, DollarSign } from 'lucide-react'
+import { BarChart3, TrendingUp, PieChart as PieIcon, Activity, Layers, Maximize2 } from 'lucide-react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,7 +15,7 @@ import {
   Filler,
   RadialLinearScale
 } from 'chart.js'
-import { Line, Bar, Pie, Doughnut, Radar } from 'react-chartjs-2'
+import { Line, Bar, Pie } from 'react-chartjs-2'
 import DateRangePicker, { DateRange } from '../components/DateRangePicker'
 import ChartExportControls from '../components/ChartExportControls'
 import Button from '../components/Button'

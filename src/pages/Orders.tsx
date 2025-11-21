@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, 
-  Search, 
   Eye, 
   Trash2, 
   Download,
@@ -63,14 +62,17 @@ export default function Orders() {
 
   useEffect(() => {
     loadOrders()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter])
 
   useEffect(() => {
     applyFilters()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allOrders, search, advancedFilters])
 
   useEffect(() => {
     calculateStatistics()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders])
 
   const loadOrders = async () => {
@@ -159,10 +161,6 @@ export default function Orders() {
       gercekKarMarji,                 // Yeni metrik
       hedefKarSapmasi,                // Yeni metrik
     })
-  }
-
-  const handleSearch = () => {
-    loadOrders()
   }
 
   const handleDelete = async (id: number) => {

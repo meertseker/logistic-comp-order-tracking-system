@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, TrendingUp } from 'lucide-react'
 import Input from './Input'
-import Card from './Card'
 
 interface Vehicle {
   plaka: string

@@ -1,5 +1,4 @@
 import { useState, useRef, forwardRef } from 'react'
-import { motion } from 'framer-motion'
 import html2canvas from 'html2canvas'
 import { Download } from 'lucide-react'
 import Button from '../components/Button'
@@ -11,7 +10,7 @@ import VehiclePerformance from '../components/VehiclePerformance'
 import UpcomingDeliveries from '../components/UpcomingDeliveries'
 import QuickActions from '../components/QuickActions'
 import StatCard from '../components/StatCard'
-import { DollarSign, TrendingUp, Truck, Package, Activity, Calendar, BarChart3 } from 'lucide-react'
+import { TrendingUp, Truck, Activity, BarChart3 } from 'lucide-react'
 import { formatCurrency } from '../utils/formatters'
 
 // Mock data

@@ -63,7 +63,7 @@ test.describe('Lisans Aktivasyon Testleri', () => {
     await mainWindow.waitForTimeout(2000)
     
     // Hata mesajı arayalım
-    const errorMessage = mainWindow.locator('.error, [role="alert"], .text-red').filter({ 
+    mainWindow.locator('.error, [role="alert"], .text-red').filter({ 
       hasText: /geçersiz|invalid|hatal/i 
     })
     
@@ -92,7 +92,7 @@ test.describe('Lisans Aktivasyon Testleri', () => {
     
     // Başarı sonrası ana ekrana yönlendirilmeli
     // Dashboard veya orders ekranı görünür olmalı
-    const dashboardOrOrders = mainWindow.locator('h1, h2').filter({ 
+    mainWindow.locator('h1, h2').filter({ 
       hasText: /dashboard|kontrol|siparişler|orders/i 
     })
     

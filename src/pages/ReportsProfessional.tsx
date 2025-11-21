@@ -9,18 +9,13 @@ import {
   Truck,
   Users,
   Activity,
-  Calendar,
-  BarChart3,
-  RefreshCw,
-  Filter,
-  Copy
+  BarChart3
 } from 'lucide-react'
-import Card from '../components/Card'
 import Button from '../components/Button'
 import DateRangePicker, { DateRange } from '../components/DateRangePicker'
 import ReportComparison from '../components/ReportComparison'
 import ChartExportControls from '../components/ChartExportControls'
-import { formatCurrency, formatNumber } from '../utils/formatters'
+import { formatCurrency } from '../utils/formatters'
 import { exportReportToExcel } from '../utils/excelExport'
 import { exportReportToPDF } from '../utils/pdfExport'
 import {
@@ -28,8 +23,6 @@ import {
   Bar,
   PieChart,
   Pie,
-  LineChart,
-  Line,
   Cell,
   XAxis,
   YAxis,
@@ -54,12 +47,14 @@ export default function ReportsProfessional() {
 
   useEffect(() => {
     loadReport()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange])
 
   useEffect(() => {
     if (comparisonDateRange && viewMode === 'comparison') {
       loadComparisonReport()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comparisonDateRange, viewMode])
 
   const loadReport = async () => {
@@ -258,7 +253,7 @@ export default function ReportsProfessional() {
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button 
-                  onClick={() => exportReportToPDF(report, new Date(dateRange.startDate).getFullYear(), new Date(dateRange.startDate).getMonth() + 1, dateRange.label)} 
+                  onClick={async () => await exportReportToPDF(report, new Date(dateRange.startDate).getFullYear(), new Date(dateRange.startDate).getMonth() + 1, dateRange.label)} 
                   size="sm"
                 >
                   <FileText className="w-4 h-4 mr-2" />

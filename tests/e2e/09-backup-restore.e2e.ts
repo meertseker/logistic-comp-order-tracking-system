@@ -256,11 +256,11 @@ test.describe('Database Backup ve Restore Testleri', () => {
     await backupButton.click()
     
     try {
-      const download = await downloadPromise
+      await downloadPromise
       console.log('✓ Backup alındı, data integrity korundu')
       
       await helpers.takeDebugScreenshot(mainWindow, 'backup-data-integrity')
-    } catch (error) {
+    } catch {
       console.log('⚠️  Backup timeout')
     }
   })

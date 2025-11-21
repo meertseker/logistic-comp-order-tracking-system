@@ -146,13 +146,13 @@ describe('Modal Component Tests', () => {
   })
 
   test('multiple modal açılabilmeli (z-index)', () => {
-    const { container: container1 } = render(
+    render(
       <Modal isOpen={true} onClose={() => {}} title="Modal 1">
         <p>Content 1</p>
       </Modal>
     )
     
-    const { container: container2 } = render(
+    render(
       <Modal isOpen={true} onClose={() => {}} title="Modal 2">
         <p>Content 2</p>
       </Modal>
@@ -166,13 +166,13 @@ describe('Modal Component Tests', () => {
   test('closeOnBackdropClick=false ise backdrop tıklanınca kapanmamalı', () => {
     const handleClose = jest.fn()
     
-    const { container } = render(
+    const { container: backdropContainer } = render(
       <Modal isOpen={true} onClose={handleClose} title="Title" closeOnBackdropClick={false}>
         <p>Content</p>
       </Modal>
     )
     
-    const backdrop = container.querySelector('.modal-backdrop')
+    const backdrop = backdropContainer.querySelector('.modal-backdrop')
     if (backdrop) {
       fireEvent.click(backdrop)
       expect(handleClose).not.toHaveBeenCalled()
@@ -180,7 +180,7 @@ describe('Modal Component Tests', () => {
   })
 
   test('animation ile açılıp kapanmalı', () => {
-    const { rerender, container } = render(
+    const { rerender } = render(
       <Modal isOpen={false} onClose={() => {}} title="Title">
         <p>Content</p>
       </Modal>

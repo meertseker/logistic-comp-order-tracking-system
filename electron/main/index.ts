@@ -1461,6 +1461,21 @@ ipcMain.handle('license:activate', async (_, licenseKey: string, companyName: st
   try {
     const licenseManager = await getAdvancedLicenseManager()
     const result = await licenseManager.activateLicense(licenseKey, companyName, email)
+    
+    // Company name'i settings tablosuna kaydet
+    if (result.success) {
+      const db = getDB()
+      db.prepare(`
+        INSERT OR REPLACE INTO settings (key, value, description, updated_at)
+        VALUES ('company_name', ?, 'Firma Adı (Lisans aktivasyonundan)', datetime('now'))
+      `).run(companyName)
+      
+      db.prepare(`
+        INSERT OR REPLACE INTO settings (key, value, description, updated_at)
+        VALUES ('company_email', ?, 'Firma E-posta (Lisans aktivasyonundan)', datetime('now'))
+      `).run(email)
+    }
+    
     return result
   } catch (error) {
     console.error('Error activating license:', error)
@@ -1476,6 +1491,30 @@ ipcMain.handle('license:getInfo', async () => {
   } catch (error) {
     console.error('Error getting license info:', error)
     return { licensed: false }
+  }
+})
+
+// Company name'i al (license'dan veya settings'ten)
+ipcMain.handle('app:getCompanyName', async () => {
+  try {
+    // Önce license'dan al
+    const licenseManager = await getAdvancedLicenseManager()
+    const licenseInfo = await licenseManager.getLicenseInfo()
+    if (licenseInfo.licensed && licenseInfo.info?.companyName) {
+      return licenseInfo.info.companyName
+    }
+    
+    // License yoksa settings'ten al
+    const db = getDB()
+    const setting = db.prepare('SELECT value FROM settings WHERE key = ?').get('company_name') as any
+    if (setting?.value) {
+      return setting.value
+    }
+    
+    return null
+  } catch (error) {
+    console.error('Error getting company name:', error)
+    return null
   }
 })
 
@@ -1819,6 +1858,17 @@ ipcMain.handle('mail:getSettingById', async (_, id) => {
 ipcMain.handle('mail:addSettings', async (_, settings) => {
   const db = getDB()
   try {
+    // Company name'i license'dan al (default olarak)
+    let defaultCompanyName = 'Şirket Adı'
+    try {
+      const companySetting = db.prepare('SELECT value FROM settings WHERE key = ?').get('company_name') as any
+      if (companySetting?.value) {
+        defaultCompanyName = companySetting.value
+      }
+    } catch (error) {
+      // Ignore
+    }
+    
     const result = db.prepare(`
       INSERT INTO mail_settings (
         name, provider, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_password,
@@ -1833,8 +1883,8 @@ ipcMain.handle('mail:addSettings', async (_, settings) => {
       settings.smtp_user,
       settings.smtp_password,
       settings.from_email,
-      settings.from_name || 'Sekersoft',
-      settings.company_name || 'Şirket Adı',
+      settings.from_name || defaultCompanyName,
+      settings.company_name || defaultCompanyName,
       settings.is_active ? 1 : 0,
       settings.enabled ? 1 : 0
     )
@@ -1850,6 +1900,17 @@ ipcMain.handle('mail:addSettings', async (_, settings) => {
 ipcMain.handle('mail:updateSettings', async (_, id, settings) => {
   const db = getDB()
   try {
+    // Company name'i license'dan al (default olarak)
+    let defaultCompanyName = 'Şirket Adı'
+    try {
+      const companySetting = db.prepare('SELECT value FROM settings WHERE key = ?').get('company_name') as any
+      if (companySetting?.value) {
+        defaultCompanyName = companySetting.value
+      }
+    } catch (error) {
+      // Ignore
+    }
+    
     db.prepare(`
       UPDATE mail_settings SET
         name = ?, provider = ?, smtp_host = ?, smtp_port = ?, smtp_secure = ?,
@@ -1865,8 +1926,8 @@ ipcMain.handle('mail:updateSettings', async (_, id, settings) => {
       settings.smtp_user,
       settings.smtp_password,
       settings.from_email,
-      settings.from_name || 'Sekersoft',
-      settings.company_name || 'Şirket Adı',
+      settings.from_name || defaultCompanyName,
+      settings.company_name || defaultCompanyName,
       settings.enabled ? 1 : 0,
       id
     )
@@ -2047,6 +2108,17 @@ ipcMain.handle('whatsapp:getSettings', async () => {
 ipcMain.handle('whatsapp:saveSettings', async (_, settings) => {
   const db = getDB()
   try {
+    // Company name'i license'dan al (default olarak)
+    let defaultCompanyName = 'Şirket Adı'
+    try {
+      const companySetting = db.prepare('SELECT value FROM settings WHERE key = ?').get('company_name') as any
+      if (companySetting?.value) {
+        defaultCompanyName = companySetting.value
+      }
+    } catch (error) {
+      // Ignore
+    }
+    
     db.prepare(`
       INSERT OR REPLACE INTO whatsapp_settings (
         id, provider, api_key, api_secret, api_username, api_password,
@@ -2064,7 +2136,7 @@ ipcMain.handle('whatsapp:saveSettings', async (_, settings) => {
       settings.api_secret,
       settings.api_username,
       settings.api_password,
-      settings.sender_name,
+      settings.sender_name || defaultCompanyName,
       settings.sender_phone,
       settings.enabled ? 1 : 0,
       settings.auto_send_on_created ? 1 : 0,
@@ -2077,7 +2149,7 @@ ipcMain.handle('whatsapp:saveSettings', async (_, settings) => {
       settings.template_order_invoiced,
       settings.template_order_cancelled,
       settings.template_custom,
-      settings.company_name || 'Sekersoft'
+      settings.company_name || defaultCompanyName
     )
     
     return { success: true }

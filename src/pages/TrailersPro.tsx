@@ -14,7 +14,6 @@ import {
   Weight,
   Maximize2,
   PackagePlus,
-  PackageMinus,
   Info
 } from 'lucide-react'
 import Card from '../components/Card'
@@ -23,7 +22,6 @@ import Input from '../components/Input'
 import Select from '../components/Select'
 import TextArea from '../components/TextArea'
 import Modal from '../components/Modal'
-import { formatCurrency } from '../utils/formatters'
 
 const DORSE_TIPLERI = [
   { value: 'Kapalı', label: '🚛 Kapalı Kasa' },

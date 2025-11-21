@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { 
   ArrowLeft, 
   Save, 
@@ -9,19 +9,15 @@ import {
   DollarSign, 
   Calculator,
   TrendingUp,
-  TrendingDown,
   AlertCircle,
-  CheckCircle,
   Activity,
   Zap,
   Plus,
   Users,
   Package
 } from 'lucide-react'
-import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
-import Select from '../components/Select'
 import VehicleSelect from '../components/VehicleSelect'
 import TextArea from '../components/TextArea'
 import RoutePicker from '../components/RoutePicker'
@@ -59,7 +55,6 @@ export default function CreateOrderFixed() {
   })
   
   const [analysis, setAnalysis] = useState<any>(null)
-  const [costBreakdown, setCostBreakdown] = useState<any>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Debounce expensive calculations
@@ -68,12 +63,14 @@ export default function CreateOrderFixed() {
 
   useEffect(() => {
     loadVehicles()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     if (formData.plaka) {
       loadCostBreakdown()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.plaka])
 
   // Tahmini gün otomatik hesaplama
@@ -99,6 +96,7 @@ export default function CreateOrderFixed() {
     if (formData.plaka && debouncedGidisKm) {
       analyzeOrder()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.plaka, debouncedGidisKm, debouncedDonusKm, formData.returnLoadRate, formData.tahminiGun, formData.nereden, formData.nereye, formData.baslangicFiyati])
 
   const loadVehicles = async () => {
@@ -120,8 +118,7 @@ export default function CreateOrderFixed() {
 
   const loadCostBreakdown = async () => {
     try {
-      const breakdown = await window.electronAPI.cost.getBreakdown(formData.plaka)
-      setCostBreakdown(breakdown)
+      await window.electronAPI.cost.getBreakdown(formData.plaka)
     } catch (error) {
       console.error('Failed to load cost breakdown:', error)
     }
@@ -181,14 +178,6 @@ export default function CreateOrderFixed() {
     }
   }
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }))
-    }
-  }
-
   // RoutePicker'dan gelen değişiklikleri işle
   const handleRouteChange = (next: { from?: string; to?: string; gidisKm?: number }) => {
     setFormData(prev => ({
@@ -197,10 +186,6 @@ export default function CreateOrderFixed() {
       nereye: next.to !== undefined ? next.to : prev.nereye,
       gidisKm: next.gidisKm !== undefined ? String(next.gidisKm) : prev.gidisKm,
     }))
-  }
-
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, returnLoadRate: e.target.value }))
   }
 
   const validate = (): boolean => {
@@ -221,7 +206,7 @@ export default function CreateOrderFixed() {
     if (!formData.musteri.trim()) newErrors.musteri = 'Müşteri adı zorunludur'
     
     // Telefon validasyonu
-    const phoneRegex = /^[0-9\s\-\+\(\)]{10,15}$/
+    const phoneRegex = /^[0-9\s\-+()]{10,15}$/
     if (!formData.telefon.trim()) {
       newErrors.telefon = 'Telefon numarası zorunludur'
     } else if (!phoneRegex.test(formData.telefon.trim())) {
@@ -315,23 +300,6 @@ export default function CreateOrderFixed() {
     }
   }
 
-  const getProfitColor = (karZarar: number) => {
-    if (karZarar > 100) return 'text-green-600'
-    if (karZarar < -100) return 'text-red-600'
-    return 'text-yellow-600' // Başabaş veya çok küçük fark
-  }
-
-  const getProfitBgColor = (karZarar: number) => {
-    if (karZarar > 100) return 'bg-green-50 border-green-200'
-    if (karZarar < -100) return 'bg-red-50 border-red-200'
-    return 'bg-yellow-50 border-yellow-200' // Başabaş
-  }
-
-  const getProfitStatus = (karZarar: number) => {
-    if (karZarar > 100) return { icon: '✅', text: 'KÂR VAR', color: 'green' }
-    if (karZarar < -100) return { icon: '⚠️', text: 'ZARAR VAR', color: 'red' }
-    return { icon: '⚖️', text: 'BAŞABAŞ', color: 'yellow' }
-  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-6 sm:pb-8">
@@ -879,7 +847,6 @@ export default function CreateOrderFixed() {
             const breakEven = analysis.onerilenMinFiyat || 0
             const delta = entered - breakEven
             const pct = entered > 0 ? (delta / entered) * 100 : 0
-            const profitStatus = getProfitStatus(delta)
             const color = delta > 100 ? '#30D158' : delta < -100 ? '#FF453A' : '#FFD60A'
             return (
               <motion.div

@@ -145,6 +145,22 @@ export class MailService {
       
       const settings = db.prepare('SELECT * FROM mail_settings WHERE id = 1').get() as any
       
+      // Company name'i license'dan al (öncelikli), yoksa settings'ten
+      let companyName = 'Şirket Adı'
+      try {
+        const licenseSetting = db.prepare('SELECT value FROM settings WHERE key = ?').get('company_name') as any
+        if (licenseSetting?.value) {
+          companyName = licenseSetting.value
+        } else if (settings?.company_name) {
+          companyName = settings.company_name
+        }
+      } catch (error) {
+        // Fallback to mail settings
+        if (settings?.company_name) {
+          companyName = settings.company_name
+        }
+      }
+      
       // MODERN HTML template oluştur (duruma göre)
       const templateData: EmailTemplateData = {
         orderId: orderData.orderId,
@@ -163,7 +179,7 @@ export class MailService {
         createdAt: orderData.createdAt,
         isSubcontractor: orderData.isSubcontractor,
         subcontractorCompany: orderData.subcontractorCompany,
-        companyName: settings.company_name || 'Şirket Adı',
+        companyName: companyName,
       }
       
       // Eğer özel mesaj varsa, özel template kullan
@@ -292,25 +308,6 @@ export class MailService {
    * Özel mesaj için HTML template oluştur
    */
   private generateCustomMessageTemplate(data: OrderMailData, customMessage: string, companyName: string): string {
-    const formatCurrency = (amount: number) => {
-      return new Intl.NumberFormat('tr-TR', {
-        style: 'currency',
-        currency: 'TRY',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(amount)
-    }
-    
-    const formatDate = (dateString: string) => {
-      return new Date(dateString).toLocaleDateString('tr-TR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    }
-    
     return `
 <!DOCTYPE html>
 <html lang="tr">
@@ -442,8 +439,11 @@ export class MailService {
                             <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px;">
                                 <strong>${companyName || 'Sekersoft'}</strong>
                             </p>
-                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                            <p style="margin: 0 0 8px; color: #9ca3af; font-size: 12px;">
                                 Bu mail size özel olarak gönderilmiştir.
+                            </p>
+                            <p style="margin: 0; color: #d1d5db; font-size: 11px; font-style: italic;">
+                                Bu mail Sekersoft yazılımı ile oluşturulmuştur.
                             </p>
                         </td>
                     </tr>
@@ -492,9 +492,6 @@ export class MailService {
         default: return '#6b7280'
       }
     }
-    
-    const karRenk = data.karZarar >= 0 ? '#10b981' : '#ef4444'
-    const karIcon = data.karZarar >= 0 ? '▲' : '▼'
     
     return `
 <!DOCTYPE html>
@@ -679,8 +676,11 @@ export class MailService {
                             <p style="margin: 0 0 10px; color: #6b7280; font-size: 14px;">
                                 <strong>Sekersoft</strong>
                             </p>
-                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                            <p style="margin: 0 0 8px; color: #9ca3af; font-size: 12px;">
                                 Bu mail otomatik olarak oluşturulmuştur.
+                            </p>
+                            <p style="margin: 0; color: #d1d5db; font-size: 11px; font-style: italic;">
+                                Bu mail Sekersoft yazılımı ile oluşturulmuştur.
                             </p>
                         </td>
                     </tr>
@@ -700,14 +700,6 @@ export class MailService {
    * Özel mesaj için plain text email
    */
   private generateCustomPlainTextEmail(data: OrderMailData, customMessage: string, companyName: string): string {
-    const formatCurrency = (amount: number) => {
-      return new Intl.NumberFormat('tr-TR', {
-        style: 'currency',
-        currency: 'TRY',
-        minimumFractionDigits: 0,
-      }).format(amount)
-    }
-    
     return `
 ${companyName || 'ŞİRKET ADI'}
 SİPARİŞ #${data.orderId} - ${data.musteri}

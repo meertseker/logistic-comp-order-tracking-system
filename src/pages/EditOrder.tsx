@@ -25,7 +25,6 @@ export default function EditOrder() {
   const [saving, setSaving] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
   const [vehicles, setVehicles] = useState<any[]>([])
-  const [tripType, setTripType] = useState<'oneway' | 'roundtrip'>('oneway')
   const [isSubcontractor, setIsSubcontractor] = useState(false)
   
   const [formData, setFormData] = useState({
@@ -53,12 +52,14 @@ export default function EditOrder() {
   useEffect(() => {
     loadOrder()
     loadVehicles()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   useEffect(() => {
     if (formData.plaka && formData.gidisKm) {
       analyzeOrder()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.gidisKm, formData.donusKm, formData.returnLoadRate, formData.plaka, formData.tahminiGun, formData.baslangicFiyati, formData.nereden, formData.nereye])
 
   const loadOrder = async () => {

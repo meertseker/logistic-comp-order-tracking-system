@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Download, Image, FileText, Share2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Button from './Button'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 

@@ -41,6 +41,7 @@ export default function CostCalculator() {
     } else {
       setAnalysis(null)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedVehicle, route.from, route.to, debouncedGidisKm])
 
   const loadVehicles = async () => {

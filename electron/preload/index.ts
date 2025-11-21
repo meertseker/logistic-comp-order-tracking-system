@@ -68,6 +68,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // App utilities
   app: {
     getPath: (name: string) => ipcRenderer.invoke('app:getPath', name),
+    getCompanyName: () => ipcRenderer.invoke('app:getCompanyName'),
   },
   
   // Backup operations

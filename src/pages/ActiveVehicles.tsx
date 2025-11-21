@@ -1,32 +1,23 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { 
   Truck, 
   MapPin, 
   Phone, 
-  Clock, 
-  CheckCircle, 
   Package, 
   Eye,
   ArrowRight,
   RefreshCw,
   AlertCircle,
-  Navigation,
-  FileText,
   User,
   Calendar,
-  DollarSign,
-  MessageSquare,
-  XCircle,
-  PlayCircle,
   Pause,
   Mail
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
-import TextArea from '../components/TextArea'
 import { formatCurrency, formatDate } from '../utils/formatters'
 import { generateOrderPDFForEmail } from '../utils/pdfExport'
 import { useToast } from '../context/ToastContext'
@@ -46,16 +37,11 @@ export default function ActiveVehicles() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
-  const [showStatusModal, setShowStatusModal] = useState(false)
   const [showStatusConfirmModal, setShowStatusConfirmModal] = useState(false)
-  const [showNoteModal, setShowNoteModal] = useState(false)
-  const [statusNote, setStatusNote] = useState('')
-  const [newStatus, setNewStatus] = useState('')
   const [pendingStatus, setPendingStatus] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [mailSettings, setMailSettings] = useState<any>(null)
   const [whatsappSettings, setWhatsappSettings] = useState<any>(null)
-  const [invoices, setInvoices] = useState<any[]>([])
 
   useEffect(() => {
     loadActiveOrders()
@@ -117,11 +103,6 @@ export default function ActiveVehicles() {
     setShowStatusConfirmModal(true)
   }
 
-  const openNoteModal = (order: any) => {
-    setSelectedOrder(order)
-    setStatusNote('')
-    setShowNoteModal(true)
-  }
 
   const handleStatusUpdate = async () => {
     if (!selectedOrder) return

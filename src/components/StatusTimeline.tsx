@@ -1,11 +1,5 @@
 import { formatDate } from '../utils/formatters'
 
-interface TimelineItem {
-  status: string
-  date: string
-  isActive: boolean
-}
-
 interface StatusTimelineProps {
   currentStatus: string
   createdAt: string

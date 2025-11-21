@@ -89,7 +89,6 @@ test.describe('Modüller Arası Entegrasyon Testleri', () => {
   })
 
   test('02 - Güzergah ekle → Siparişte otomatik doldur → Maliyet hesapla', async ({ mainWindow }) => {
-    const routeName = 'İstanbul-İzmir'
     const distance = 480
 
     // ADIM 1: Güzergah ekle

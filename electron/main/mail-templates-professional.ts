@@ -210,8 +210,11 @@ function getFooter(companyName: string = 'Şirket Adı'): string {
           <p style="margin:0 0 8px;color:#6b7280;font-size:13px;">
             Profesyonel Lojistik Çözümleri
           </p>
-          <p style="margin:0;color:#9ca3af;font-size:12px;">
+          <p style="margin:0 0 8px;color:#9ca3af;font-size:12px;">
             Bu mail otomatik olarak gönderilmiştir.
+          </p>
+          <p style="margin:0;color:#d1d5db;font-size:11px;font-style:italic;">
+            Bu mail Sekersoft yazılımı ile oluşturulmuştur.
           </p>
         </div>
       </td>

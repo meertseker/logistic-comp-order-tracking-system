@@ -262,7 +262,7 @@ export class AdvancedLicenseManager {
   /**
    * Lisansı doğrula (Gelişmiş)
    */
-  async validateLicense(licenseKey?: string): Promise<{ 
+  async validateLicense(): Promise<{ 
     valid: boolean; 
     reason?: string; 
     license?: AdvancedLicense 

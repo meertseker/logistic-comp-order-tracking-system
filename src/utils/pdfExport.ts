@@ -1,6 +1,5 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import { formatCurrency } from './formatters'
 
 /**
  * Türkçe karakterleri PDF uyumlu hale getirir
@@ -36,15 +35,16 @@ function formatCurrencyForPDF(value: number): string {
 /**
  * PDF oluşturma helper fonksiyonu - hem download hem mail için kullanılır
  */
-function generateOrderPDF(order: any): jsPDF {
+function generateOrderPDF(order: any, companyName?: string | null): jsPDF {
   const doc = new jsPDF()
   
   // Türkçe karakter desteği için font ayarları
   doc.setFont('helvetica')
   
   // Başlık
+  const companyTitle = companyName ? sanitizeText(companyName.toUpperCase()) : 'SEKERSOFT'
   doc.setFontSize(20)
-  doc.text('SEKERSOFT', 105, 20, { align: 'center' })
+  doc.text(companyTitle, 105, 20, { align: 'center' })
   
   doc.setFontSize(16)
   doc.text(`Siparis #${order.id}`, 105, 30, { align: 'center' })
@@ -168,10 +168,14 @@ function generateOrderPDF(order: any): jsPDF {
   }
   
   // Footer
+  const footerText = companyName ? `${sanitizeText(companyName)} - Lojistik Yonetim Sistemi` : 'Sekersoft - Lojistik Yonetim Sistemi'
   doc.setFontSize(8)
   doc.setTextColor(128, 128, 128)
-  doc.text('Sekersoft - Lojistik Yonetim Sistemi', 105, 285, { align: 'center' })
+  doc.text(footerText, 105, 285, { align: 'center' })
   doc.text(`Olusturulma: ${new Date().toLocaleString('tr-TR')}`, 105, 290, { align: 'center' })
+  doc.setFontSize(7)
+  doc.setTextColor(180, 180, 180)
+  doc.text('Bu rapor Sekersoft yazilimi ile olusturulmustur.', 105, 295, { align: 'center' })
   
   return doc
 }
@@ -179,23 +183,25 @@ function generateOrderPDF(order: any): jsPDF {
 /**
  * Sipariş PDF'ini indir (kullanıcı için)
  */
-export function exportOrderToPDF(order: any) {
-  const doc = generateOrderPDF(order)
+export async function exportOrderToPDF(order: any) {
+  const companyName = await window.electronAPI.app.getCompanyName()
+  const doc = generateOrderPDF(order, companyName)
   doc.save(`siparis_${order.id}_${Date.now()}.pdf`)
 }
 
 /**
  * MÜŞTERİ için sipariş PDF'i oluştur (Maliyetler GİZLİ)
  */
-function generateCustomerOrderPDF(order: any): jsPDF {
+function generateCustomerOrderPDF(order: any, companyName?: string | null): jsPDF {
   const doc = new jsPDF()
   
   // Türkçe karakter desteği için font ayarları
   doc.setFont('helvetica')
   
   // Başlık
+  const companyTitle = companyName ? sanitizeText(companyName.toUpperCase()) : 'SEKERSOFT'
   doc.setFontSize(20)
-  doc.text('SEKERSOFT', 105, 20, { align: 'center' })
+  doc.text(companyTitle, 105, 20, { align: 'center' })
   
   doc.setFontSize(16)
   doc.text(`Siparis #${order.id}`, 105, 30, { align: 'center' })
@@ -278,11 +284,15 @@ function generateCustomerOrderPDF(order: any): jsPDF {
   doc.setTextColor(0, 0, 0)
   
   // Footer
+  const footerText = companyName ? `${sanitizeText(companyName)} - Lojistik Yonetim Sistemi` : 'Sekersoft - Lojistik Yonetim Sistemi'
   doc.setFontSize(8)
   doc.setTextColor(128, 128, 128)
-  doc.text('Sekersoft - Lojistik Yonetim Sistemi', 105, 280, { align: 'center' })
+  doc.text(footerText, 105, 280, { align: 'center' })
   doc.text(`Olusturulma: ${new Date().toLocaleString('tr-TR')}`, 105, 285, { align: 'center' })
   doc.text('Herhangi bir sorunuz icin lutfen bizimle iletisime geciniz.', 105, 290, { align: 'center' })
+  doc.setFontSize(7)
+  doc.setTextColor(180, 180, 180)
+  doc.text('Bu rapor Sekersoft yazilimi ile olusturulmustur.', 105, 295, { align: 'center' })
   
   return doc
 }
@@ -293,7 +303,8 @@ function generateCustomerOrderPDF(order: any): jsPDF {
  * Returns: PDF file path
  */
 export async function generateOrderPDFForEmail(order: any): Promise<string> {
-  const doc = generateCustomerOrderPDF(order) // Müşteri versiyonu kullan!
+  const companyName = await window.electronAPI.app.getCompanyName()
+  const doc = generateCustomerOrderPDF(order, companyName) // Müşteri versiyonu kullan!
   const pdfBlob = doc.output('blob')
   
   // Blob'u ArrayBuffer'a çevir
@@ -313,13 +324,15 @@ export async function generateOrderPDFForEmail(order: any): Promise<string> {
   return result.filePath
 }
 
-export function exportReportToPDF(report: any, year: number, month: number, periodLabel?: string) {
+export async function exportReportToPDF(report: any, year: number, month: number, periodLabel?: string) {
+  const companyName = await window.electronAPI.app.getCompanyName()
   const doc = new jsPDF()
   doc.setFont('helvetica')
   
   // Başlık
+  const companyTitle = companyName ? sanitizeText(companyName.toUpperCase()) : 'SEKERSOFT'
   doc.setFontSize(20)
-  doc.text('SEKERSOFT', 105, 20, { align: 'center' })
+  doc.text(companyTitle, 105, 20, { align: 'center' })
   
   const period = periodLabel || `${month}/${year}`
   doc.setFontSize(14)
@@ -403,8 +416,13 @@ export function exportReportToPDF(report: any, year: number, month: number, peri
   }
   
   // Footer
+  const footerText = companyName ? `${sanitizeText(companyName)} - Lojistik Yonetim Sistemi` : 'Sekersoft - Lojistik Yonetim Sistemi'
   doc.setFontSize(8)
-  doc.text('Sekersoft - Lojistik Yonetim Sistemi', 105, 285, { align: 'center' })
+  doc.setTextColor(128, 128, 128)
+  doc.text(footerText, 105, 285, { align: 'center' })
+  doc.setFontSize(7)
+  doc.setTextColor(180, 180, 180)
+  doc.text('Bu rapor Sekersoft yazilimi ile olusturulmustur.', 105, 290, { align: 'center' })
   
   // PDF'i indir
   const filename = periodLabel ? periodLabel.replace(/\s+/g, '_') : `${year}_${month}`

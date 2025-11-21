@@ -59,7 +59,7 @@ describe('Cost Calculator Performance Tests', () => {
   
   describe('Full Cost Analysis Performance', () => {
     it('100 detaylı maliyet analizi < 500ms olmalı', () => {
-      const routes = Array.from({ length: 100 }, (_, i) => ({
+      const routes = Array.from({ length: 100 }, () => ({
         nereden: 'İstanbul',
         nereye: 'Ankara',
         gidisKm: 400 + Math.random() * 200,
@@ -82,7 +82,7 @@ describe('Cost Calculator Performance Tests', () => {
     })
     
     it('1000 detaylı maliyet analizi < 5 saniye olmalı', () => {
-      const routes = Array.from({ length: 1000 }, (_, i) => ({
+      const routes = Array.from({ length: 1000 }, () => ({
         nereden: 'İstanbul',
         nereye: 'Ankara',
         gidisKm: 400 + Math.random() * 200,

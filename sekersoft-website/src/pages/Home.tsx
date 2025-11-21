@@ -196,7 +196,7 @@ const Home = () => {
 
             <div className="inline-flex flex-col items-center gap-1 glass rounded-2xl px-6 py-4 mb-10">
               <p className="text-sm text-gray-400 uppercase tracking-wide">Tek seferlik lisans</p>
-              <p className="text-3xl font-semibold text-white">49.900 TL + KDV'den başlayan fiyatlarla</p>
+              <p className="text-3xl font-semibold text-white">49.900 TL + KDV&apos;den başlayan fiyatlarla</p>
               <p className="text-xs text-gray-500">İlk yıl güncellemeler ve uzaktan kurulum dahildir.</p>
             </div>
 

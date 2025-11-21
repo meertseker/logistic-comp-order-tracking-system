@@ -25,7 +25,6 @@ import {
   Receipt,
   Building2,
   User,
-  CreditCard
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -118,6 +117,7 @@ export default function OrderDetail() {
     loadWhatsAppSettings()
     loadUyumsoftSettings()
     loadUyumsoftInvoices()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   const loadOrderDetails = async () => {
@@ -332,7 +332,6 @@ export default function OrderDetail() {
       // Durumu güncelle
       await window.electronAPI.db.updateOrderStatus(Number(id), pendingStatus)
       
-      const oldStatus = order.status
       setOrder({ ...order, status: pendingStatus })
       setShowStatusConfirmModal(false)
       
@@ -864,7 +863,7 @@ export default function OrderDetail() {
           )}
           
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button variant="secondary" onClick={() => exportOrderToPDF(order)}>
+            <Button variant="secondary" onClick={async () => await exportOrderToPDF(order)}>
               <Download className="w-4 h-4 mr-2" />
               PDF İndir
             </Button>

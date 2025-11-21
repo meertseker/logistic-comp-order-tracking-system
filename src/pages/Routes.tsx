@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { MapPin, Plus, Edit, Trash2, Navigation } from 'lucide-react'
+import { MapPin, Plus, Edit, Trash2 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
@@ -28,6 +28,7 @@ export default function Routes() {
 
   useEffect(() => {
     loadRoutes()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadRoutes = async () => {
@@ -115,12 +116,6 @@ export default function Routes() {
     }
   }
 
-  // Şehirleri grupla
-  const cityPairs = routes.reduce((acc, route) => {
-    const key = `${route.nereden}-${route.nereye}`
-    acc[key] = route
-    return acc
-  }, {} as Record<string, any>)
 
   return (
     <div className="space-y-6 pb-8">

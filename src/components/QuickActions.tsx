@@ -4,8 +4,6 @@ import {
   Plus, 
   FileText, 
   TrendingUp, 
-  Truck, 
-  MapPin,
   BarChart3,
   Navigation,
   Mail

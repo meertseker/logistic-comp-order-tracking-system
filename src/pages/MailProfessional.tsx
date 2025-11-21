@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   Mail,
   Send,
@@ -8,17 +8,9 @@ import {
   Clock,
   TrendingUp,
   Search,
-  Filter,
-  Download,
   Users,
   FileText,
   Eye,
-  Edit2,
-  Trash2,
-  Copy,
-  Calendar,
-  ArrowUpDown,
-  Plus,
   Loader,
   AlertCircle,
   Inbox,
@@ -86,16 +78,12 @@ export default function MailProfessional() {
   const [activeTab, setActiveTab] = useState<MailTab>('dashboard')
   const [loading, setLoading] = useState(true)
   const [mailLogs, setMailLogs] = useState<MailLog[]>([])
-  const [whatsappLogs, setWhatsappLogs] = useState<any[]>([])
-  const [whatsappStats, setWhatsappStats] = useState<any>(null)
   const [stats, setStats] = useState<MailStats | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [dateFilter, setDateFilter] = useState<string>('all')
   const [selectedLog, setSelectedLog] = useState<MailLog | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
-  const [showSendModal, setShowSendModal] = useState(false)
-  const [showBulkModal, setShowBulkModal] = useState(false)
   const [sending, setSending] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   

@@ -13,6 +13,29 @@ Format [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standardına day
 - Excel export özelliği
 - Gelişmiş grafik ve charts
 
+## [1.1.7] - 2025-01-22
+
+### ✨ Added (New Features)
+- **Multi-tenant Company Branding System**
+  - Company name from license registration is now used throughout the application
+  - All generated PDFs (orders, reports) display customer's company name
+  - All email templates use customer's company name
+  - CSV reports include customer's company name
+  - Settings default to company name from license activation
+
+### 🔧 Changed (Improvements)
+- **Branding Updates**
+  - PDF exports now show customer company name instead of "Sekersoft"
+  - Email templates display customer company name in headers and footers
+  - Reports (PDF and CSV) use customer company name
+  - Mail and WhatsApp settings default to company name from license
+  - Added "Created with Sekersoft" branding to all emails and reports
+
+### 🐛 Fixed (Bug Fixes)
+- Company name is now properly stored in database during license activation
+- Mail service now retrieves company name from license (priority) or settings (fallback)
+- Settings page now loads company name from license for default values
+
 ## [1.1.0] - 2025-01-21
 
 ### ✨ Added (New Features)
