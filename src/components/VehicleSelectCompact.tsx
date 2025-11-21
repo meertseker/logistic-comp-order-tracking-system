@@ -46,12 +46,12 @@ export default function VehicleSelectCompact({ vehicles, value, onChange, disabl
       (v.lastik_maliyet || 8000) / (v.lastik_omur || 50000) +
       (v.buyuk_bakim_maliyet || 3000) / (v.buyuk_bakim_aralik || 15000)
     )
-    const yillikKm = v.hedef_toplam_km || 120000
-    const insurance = (v.sigorta_yillik || 12000) / yillikKm
-    const mtv = (v.mtv_yillik || 5000) / yillikKm
-    const inspection = (v.muayene_yillik || 1500) / yillikKm
+    // ✅ Sabit giderler (sigorta/MTV/muayene) gösterilmiyor
+    // Çünkü bunlar zaman bazlı maliyetlerdir ve gün bazlı hesaplanır
+    // Sipariş oluşturulurken doğru hesaplanacak (piyasa standartlarına uygun)
+    // ÖNCEKİ YANLIŞ YÖNTEM: KM bazlı hesaplama (sigorta_yillik / yillikKm)
     
-    return fuel + driver + meal + maintenance + insurance + mtv + inspection
+    return fuel + driver + meal + maintenance
   }
 
   return (

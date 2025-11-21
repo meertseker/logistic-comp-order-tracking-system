@@ -168,13 +168,12 @@ export default function VehiclesProfessional() {
       (vehicle.lastik_maliyet || 8000) / (vehicle.lastik_omur || 50000) +
       (vehicle.buyuk_bakim_maliyet || 3000) / (vehicle.buyuk_bakim_aralik || 15000)
     )
-    // Sabit giderler (yıllık, km bazlı dönüşüm - ortalama 120000 km/yıl varsayımı)
-    const yillikKm = vehicle.hedef_toplam_km || 120000
-    const sigortaPerKm = (vehicle.sigorta_yillik || 12000) / yillikKm
-    const mtvPerKm = (vehicle.mtv_yillik || 5000) / yillikKm
-    const muayenePerKm = (vehicle.muayene_yillik || 1500) / yillikKm
+    // ✅ Sabit giderler (sigorta/MTV/muayene) gösterilmiyor
+    // Çünkü bunlar zaman bazlı maliyetlerdir ve gün bazlı hesaplanır
+    // Sipariş oluşturulurken doğru hesaplanacak (piyasa standartlarına uygun)
+    // ÖNCEKİ YANLIŞ YÖNTEM: KM bazlı hesaplama (sigorta_yillik / yillikKm)
     
-    return yakitPerKm + surucuPerKm + yemekPerKm + bakimPerKm + sigortaPerKm + mtvPerKm + muayenePerKm
+    return yakitPerKm + surucuPerKm + yemekPerKm + bakimPerKm
   }
 
   return (
@@ -283,20 +282,27 @@ export default function VehiclesProfessional() {
                       {formatCurrency((vehicle.yemek_gunluk || 150) / (vehicle.gunluk_ort_km || 500))}/km
                     </span>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>Sigorta/MTV/Muayene:</span>
-                    <span>{formatCurrency((vehicle.sigorta_yillik || 12000) / 365)}/gün</span>
-                  </div>
                   <div className="flex justify-between border-t pt-2">
                     <span className="text-gray-600">Kar Oranı:</span>
                     <span className="font-semibold text-green-600">%{((vehicle.kar_orani || 0.45) * 100).toFixed(0)}</span>
                   </div>
                 </div>
 
+                {/* Açıklama */}
+                <div className="text-xs text-gray-500 bg-blue-50 p-2 rounded-lg border border-blue-100">
+                  <p className="font-medium text-blue-800 mb-1">ℹ️ Not:</p>
+                  <p className="text-gray-600">
+                    Bu maliyet sadece <strong>değişken maliyetleri</strong> gösterir (yakıt, sürücü, yemek, bakım).
+                    <br />
+                    <strong>Sabit giderler</strong> (sigorta/MTV/muayene) sipariş oluşturulurken <strong>gün bazlı</strong> hesaplanır.
+                  </p>
+                </div>
+
                 {/* Ek Bilgiler */}
                 <div className="text-xs text-gray-500 space-y-1">
                   <p>Yakıt: {vehicle.yakit_tuketimi || 25} lt/100km × {formatCurrency(vehicle.yakit_fiyati || 40)}/lt</p>
                   <p>Sürücü: {formatCurrency(vehicle.gunluk_ucret || 1600)}/gün (~{vehicle.gunluk_ort_km || 500} km)</p>
+                  <p>Sabit Giderler: {formatCurrency((vehicle.sigorta_yillik || 12000) + (vehicle.mtv_yillik || 5000) + (vehicle.muayene_yillik || 1500))}/yıl</p>
                 </div>
               </div>
             </Card>
@@ -509,7 +515,7 @@ export default function VehiclesProfessional() {
               />
             </div>
             <div className="mt-2 p-2 bg-amber-50 rounded text-sm text-amber-800">
-              <strong>Bilgi:</strong> Bu sabit giderler otomatik olarak maliyetlere dahil edilir (gün/km bazlı dönüştürülür)
+              <strong>Bilgi:</strong> Bu sabit giderler sipariş oluşturulurken <strong>gün bazlı</strong> hesaplanır (piyasa standartlarına uygun). Araç kartlarında gösterilmez.
             </div>
           </div>
 

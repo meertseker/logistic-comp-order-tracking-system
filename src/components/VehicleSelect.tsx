@@ -71,13 +71,12 @@ export default function VehicleSelect({ vehicles, value, onChange, disabled }: V
       (v.lastik_maliyet || 8000) / (v.lastik_omur || 50000) +
       (v.buyuk_bakim_maliyet || 3000) / (v.buyuk_bakim_aralik || 15000)
     )
-    // Sabit giderler (Sigorta/MTV/Muayene) dahil - araçtan al, yoksa varsayılan
-    const yillikKm = v.hedef_toplam_km || 120000
-    const insurance = (v.sigorta_yillik || 12000) / yillikKm
-    const mtv = (v.mtv_yillik || 5000) / yillikKm
-    const inspection = (v.muayene_yillik || 1500) / yillikKm
+    // ✅ Sabit giderler (sigorta/MTV/muayene) gösterilmiyor
+    // Çünkü bunlar zaman bazlı maliyetlerdir ve gün bazlı hesaplanır
+    // Sipariş oluşturulurken doğru hesaplanacak (piyasa standartlarına uygun)
+    // ÖNCEKİ YANLIŞ YÖNTEM: KM bazlı hesaplama (sigorta_yillik / yillikKm)
     
-    return fuel + driver + meal + maintenance + insurance + mtv + inspection
+    return fuel + driver + meal + maintenance
   }
 
   // Breakdown fetch kaldırıldı (Toplam gösterimi için gerek yok)
@@ -166,20 +165,16 @@ export default function VehicleSelect({ vehicles, value, onChange, disabled }: V
                           <p className="font-semibold" style={{ color: '#FFFFFF' }}>{maintenance.toFixed(2)}</p>
                         </div>
                       </div>
-                      <div className="rounded-lg px-2.5 py-2" style={{ backgroundColor: 'rgba(99, 102, 241, 0.1)', border: '0.5px solid rgba(99, 102, 241, 0.3)' }}>
-                        <div className="flex justify-between items-center">
-                          <p className="font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Sabit Giderler</p>
-                          <p className="font-semibold" style={{ color: '#FFFFFF' }}>{sabitGiderler.toFixed(2)} ₺/km</p>
-                        </div>
-                        <p className="text-[10px] mt-0.5" style={{ color: 'rgba(235, 235, 245, 0.4)' }}>Sigorta, MTV, Muayene</p>
-                      </div>
                       <div className="rounded-lg px-2.5 py-2" style={{ backgroundColor: 'rgba(48, 209, 88, 0.15)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}>
                         <div className="flex justify-between items-center">
-                          <p className="font-medium" style={{ color: '#30D158' }}>Toplam Maliyet</p>
+                          <p className="font-medium" style={{ color: '#30D158' }}>Değişken Maliyet</p>
                           <p className="font-semibold text-sm" style={{ color: '#30D158' }}>
                             {costPerKm(v).toFixed(2)} ₺/km
                           </p>
                         </div>
+                        <p className="text-[10px] mt-0.5" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>
+                          *Sabit giderler (sigorta/MTV/muayene) sipariş oluşturulurken gün bazlı hesaplanır
+                        </p>
                         <p className="text-[10px] mt-0.5" style={{ color: 'rgba(235, 235, 245, 0.4)' }}>HGS güzergahtan eklenir</p>
                       </div>
                     </>

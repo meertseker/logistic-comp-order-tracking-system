@@ -498,11 +498,12 @@ ipcMain.handle('db:createOrder', async (_, orderData) => {
         plaka, musteri, telefon, customer_email, nereden, nereye, yuk_aciklamasi, baslangic_fiyati,
         gidis_km, donus_km, return_load_rate, etkin_km, tahmini_gun,
         yakit_litre, yakit_maliyet, surucu_maliyet, yemek_maliyet, hgs_maliyet, bakim_maliyet,
+        sigorta_maliyet, mtv_maliyet, muayene_maliyet,
         toplam_maliyet, onerilen_fiyat, kar_zarar, kar_zarar_yuzde,
         is_subcontractor, subcontractor_company, subcontractor_vehicle, subcontractor_cost,
         status, created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `)
     
     const result = stmt.run(
@@ -525,6 +526,9 @@ ipcMain.handle('db:createOrder', async (_, orderData) => {
       orderData.yemekMaliyet || 0,
       orderData.hgsMaliyet || 0,
       orderData.bakimMaliyet || 0,
+      orderData.sigortaMaliyet || 0,
+      orderData.mtvMaliyet || 0,
+      orderData.muayeneMaliyet || 0,
       orderData.toplamMaliyet || 0,
       orderData.onerilenFiyat || 0,
       orderData.karZarar || 0,
@@ -552,7 +556,9 @@ ipcMain.handle('db:updateOrder', async (_, id, orderData) => {
           yuk_aciklamasi = ?, baslangic_fiyati = ?,
           gidis_km = ?, donus_km = ?, return_load_rate = ?, etkin_km = ?, tahmini_gun = ?,
           yakit_litre = ?, yakit_maliyet = ?, surucu_maliyet = ?, yemek_maliyet = ?, 
-          hgs_maliyet = ?, bakim_maliyet = ?, toplam_maliyet = ?,
+          hgs_maliyet = ?, bakim_maliyet = ?, 
+          sigorta_maliyet = ?, mtv_maliyet = ?, muayene_maliyet = ?,
+          toplam_maliyet = ?,
           onerilen_fiyat = ?, kar_zarar = ?, kar_zarar_yuzde = ?, status = ?,
           is_subcontractor = ?, subcontractor_company = ?, subcontractor_vehicle = ?, subcontractor_cost = ?,
           updated_at = datetime('now')
@@ -579,6 +585,9 @@ ipcMain.handle('db:updateOrder', async (_, id, orderData) => {
       orderData.yemekMaliyet || 0,
       orderData.hgsMaliyet || 0,
       orderData.bakimMaliyet || 0,
+      orderData.sigortaMaliyet || 0,
+      orderData.mtvMaliyet || 0,
+      orderData.muayeneMaliyet || 0,
       orderData.toplamMaliyet || 0,
       orderData.onerilenFiyat || 0,
       orderData.karZarar || 0,

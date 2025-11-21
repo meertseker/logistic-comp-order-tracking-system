@@ -276,6 +276,9 @@ export default function CreateOrderFixed() {
         yemekMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.yemekMaliyet || 0),
         hgsMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.hgsMaliyet || 0),
         bakimMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.toplamBakimMaliyet || 0),
+        sigortaMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.sigortaMaliyet || 0),
+        mtvMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.mtvMaliyet || 0),
+        muayeneMaliyet: isSubcontractor ? 0 : (analysis?.costBreakdown?.muayeneMaliyet || 0),
         toplamMaliyet: isSubcontractor ? Number(formData.subcontractorCost) : (analysis?.toplamMaliyet || 0),
         
         onerilenFiyat: isSubcontractor ? 0 : (analysis?.fiyatKdvli || 0),
@@ -493,18 +496,17 @@ export default function CreateOrderFixed() {
                             const surucu = (v.gunluk_ucret || 1600) / (v.gunluk_ort_km || 500)
                             const yemek = (v.yemek_gunluk || 150) / (v.gunluk_ort_km || 500)
                             const bakim = ((v.yag_maliyet || 500) / (v.yag_aralik || 5000)) + ((v.lastik_maliyet || 8000) / (v.lastik_omur || 50000)) + ((v.buyuk_bakim_maliyet || 3000) / (v.buyuk_bakim_aralik || 15000))
-                            // HGS güzergah bazlı hesaplanır, araç bazında değil. Sabit giderler (sigorta/MTV/muayene) dahil.
-                            const yillikKm = v.hedef_toplam_km || 120000
-                            const sigortaPerKm = (v.sigorta_yillik || 12000) / yillikKm
-                            const mtvPerKm = (v.mtv_yillik || 5000) / yillikKm
-                            const muayenePerKm = (v.muayene_yillik || 1500) / yillikKm
-                            const toplam = yakit + surucu + yemek + bakim + sigortaPerKm + mtvPerKm + muayenePerKm
+                            // ✅ HGS güzergah bazlı hesaplanır, araç bazında değil
+                            // ✅ Sabit giderler (sigorta/MTV/muayene) gösterilmiyor
+                            // Çünkü bunlar zaman bazlı maliyetlerdir ve gün bazlı hesaplanır
+                            // Sipariş oluşturulurken doğru hesaplanacak (piyasa standartlarına uygun)
+                            // ÖNCEKİ YANLIŞ YÖNTEM: KM bazlı hesaplama (sigorta_yillik / yillikKm)
+                            const toplam = yakit + surucu + yemek + bakim
                             
                             console.log('Yakıt:', yakit.toFixed(2), 'Sürücü:', surucu.toFixed(2), 'Yemek:', yemek.toFixed(2), 'Bakım:', bakim.toFixed(2))
-                            console.log('Sigorta/km:', sigortaPerKm.toFixed(2), 'MTV/km:', mtvPerKm.toFixed(2), 'Muayene/km:', muayenePerKm.toFixed(2))
-                            console.log('Toplam maliyet:', toplam.toFixed(2), '₺/km')
+                            console.log('Toplam değişken maliyet:', toplam.toFixed(2), '₺/km (Sabit giderler sipariş oluşturulurken gün bazlı hesaplanır)')
                             
-                            return `${toplam.toFixed(2)} ₺/km (Yakıt: ${yakit.toFixed(2)} + Sürücü: ${surucu.toFixed(2)} + Yemek: ${yemek.toFixed(2)} + Bakım: ${bakim.toFixed(2)} + Sigorta/MTV/Muayene: ${(sigortaPerKm + mtvPerKm + muayenePerKm).toFixed(2)})`
+                            return `${toplam.toFixed(2)} ₺/km (Değişken: Yakıt ${yakit.toFixed(2)} + Sürücü ${surucu.toFixed(2)} + Yemek ${yemek.toFixed(2)} + Bakım ${bakim.toFixed(2)}) | *Sabit giderler gün bazlı hesaplanır`
                           })()}
                         </p>
                       </div>
@@ -996,8 +998,43 @@ export default function CreateOrderFixed() {
                     </div>
                   </div>
                   
+                  {/* Hesaplama Detayları */}
+                  <div className="p-3 rounded-lg mt-3" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}>
+                    <p className="text-xs font-semibold mb-2" style={{ color: '#0A84FF' }}>📊 Hesaplama Detayları:</p>
+                    <div className="space-y-1 text-xs" style={{ color: 'rgba(235, 235, 245, 0.7)' }}>
+                      <div className="flex justify-between">
+                        <span>Değişken Maliyetler:</span>
+                        <span className="font-semibold">{formatCurrency(analysis.costBreakdown.toplamDirektMaliyet)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Sabit Maliyetler (Sigorta/MTV/Muayene):</span>
+                        <span className="font-semibold">{formatCurrency((analysis.costBreakdown.sigortaMaliyet || 0) + (analysis.costBreakdown.mtvMaliyet || 0) + (analysis.costBreakdown.muayeneMaliyet || 0))}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-1" style={{ borderColor: 'rgba(84, 84, 88, 0.35)' }}>
+                        <span>Toplam Maliyet:</span>
+                        <span className="font-semibold">{formatCurrency(analysis.toplamMaliyet)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>+ Kar (%45):</span>
+                        <span className="font-semibold">{formatCurrency(analysis.fiyatKarli - analysis.toplamMaliyet)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Kar Eklendikten Sonra:</span>
+                        <span className="font-semibold">{formatCurrency(analysis.fiyatKarli)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>+ KDV (%20):</span>
+                        <span className="font-semibold">{formatCurrency(analysis.fiyatKdvli - analysis.fiyatKarli)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-1 font-bold" style={{ borderColor: 'rgba(84, 84, 88, 0.35)', color: '#FFFFFF' }}>
+                        <span>Önerilen Fiyat (KDV Dahil):</span>
+                        <span>{formatCurrency(analysis.fiyatKdvli)}</span>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Önerilen Fiyat & Başabaş - Yan Yana */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2 mt-3">
                     <div className="p-2.5 rounded-lg" style={{ backgroundColor: 'rgba(48, 209, 88, 0.15)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}>
                       <p className="text-[10px] mb-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Önerilen</p>
                       <p className="text-sm font-bold" style={{ color: '#30D158' }}>{formatCurrency(analysis.fiyatKdvli)}</p>

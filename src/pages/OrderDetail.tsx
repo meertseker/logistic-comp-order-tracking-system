@@ -63,6 +63,7 @@ export default function OrderDetail() {
   const [order, setOrder] = useState<any>(null)
   const [expenses, setExpenses] = useState<any[]>([])
   const [invoices, setInvoices] = useState<any[]>([])
+  const [calculatedFixedCosts, setCalculatedFixedCosts] = useState<{ sigorta: number; mtv: number; muayene: number } | null>(null)
   
   // Modals
   const [showExpenseModal, setShowExpenseModal] = useState(false)
@@ -139,6 +140,34 @@ export default function OrderDetail() {
           amount: data.order.baslangic_fiyati?.toString() || '',
         })
         setRecipientEmail(data.order.customer_email || '')
+        
+        // Eğer sigorta/MTV/muayene değerleri 0 ise, gerçek zamanlı hesapla
+        if (data.order && !data.order.is_subcontractor && 
+            (data.order.sigorta_maliyet === 0 || data.order.mtv_maliyet === 0 || data.order.muayene_maliyet === 0) &&
+            data.order.plaka && data.order.tahmini_gun) {
+          try {
+            const analysis = await window.electronAPI.cost.analyze({
+              plaka: data.order.plaka,
+              nereden: data.order.nereden,
+              nereye: data.order.nereye,
+              gidisKm: data.order.gidis_km || 0,
+              donusKm: data.order.donus_km || 0,
+              returnLoadRate: data.order.return_load_rate || 0,
+              tahminiGun: data.order.tahmini_gun || 1,
+              baslangicFiyati: data.order.baslangic_fiyati || 0,
+            })
+            
+            if (analysis?.costBreakdown) {
+              setCalculatedFixedCosts({
+                sigorta: analysis.costBreakdown.sigortaMaliyet || 0,
+                mtv: analysis.costBreakdown.mtvMaliyet || 0,
+                muayene: analysis.costBreakdown.muayeneMaliyet || 0,
+              })
+            }
+          } catch (error) {
+            console.error('Failed to calculate fixed costs:', error)
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to load order:', error)
@@ -1128,7 +1157,7 @@ export default function OrderDetail() {
           <h3 className="text-lg font-semibold mb-6" style={{ color: '#FFFFFF' }}>
             💰 Maliyet Dökümü
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {order.yakit_maliyet > 0 && (
               <motion.div
                 whileHover={{ scale: 1.05, y: -4 }}
@@ -1199,6 +1228,67 @@ export default function OrderDetail() {
                 </p>
               </motion.div>
             )}
+            {/* Sabit Giderler - Her zaman göster (değer 0 olsa bile, hesaplanmış değerler varsa onları kullan) */}
+            <motion.div
+              whileHover={{ scale: 1.05, y: -4 }}
+              className="text-center p-4 rounded-xl"
+              style={{ backgroundColor: 'rgba(99, 102, 241, 0.1)', border: '0.5px solid rgba(99, 102, 241, 0.2)' }}
+            >
+              <p className="text-xs mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>🛡️ Sigorta</p>
+              <p className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
+                {formatCurrency(order.sigorta_maliyet || calculatedFixedCosts?.sigorta || 0)}
+              </p>
+              {order.tahmini_gun > 0 && (
+                <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>
+                  {order.tahmini_gun} gün
+                </p>
+              )}
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05, y: -4 }}
+              className="text-center p-4 rounded-xl"
+              style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', border: '0.5px solid rgba(139, 92, 246, 0.2)' }}
+            >
+              <p className="text-xs mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>📋 MTV</p>
+              <p className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
+                {formatCurrency(order.mtv_maliyet || calculatedFixedCosts?.mtv || 0)}
+              </p>
+              {order.tahmini_gun > 0 && (
+                <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>
+                  {order.tahmini_gun} gün
+                </p>
+              )}
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05, y: -4 }}
+              className="text-center p-4 rounded-xl"
+              style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)', border: '0.5px solid rgba(168, 85, 247, 0.2)' }}
+            >
+              <p className="text-xs mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>🔍 Muayene</p>
+              <p className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
+                {formatCurrency(order.muayene_maliyet || calculatedFixedCosts?.muayene || 0)}
+              </p>
+              {order.tahmini_gun > 0 && (
+                <p className="text-xs mt-1" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>
+                  {order.tahmini_gun} gün
+                </p>
+              )}
+            </motion.div>
+          </div>
+          <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}>
+            <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.7)' }}>
+              ℹ️ Sabit giderler (sigorta/MTV/muayene) <strong>gün bazlı</strong> hesaplanmıştır (piyasa standartlarına uygun)
+              {(order.sigorta_maliyet === 0 && order.mtv_maliyet === 0 && order.muayene_maliyet === 0 && calculatedFixedCosts) && (
+                <span className="block mt-1 text-[10px]" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>
+                  * Bu sipariş eski sistemde oluşturulmuştu, değerler gerçek zamanlı olarak hesaplanmıştır.
+                </span>
+              )}
+              {(order.sigorta_maliyet === 0 && order.mtv_maliyet === 0 && order.muayene_maliyet === 0 && !calculatedFixedCosts) && (
+                <span className="block mt-1 text-[10px]" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>
+                  * Bu sipariş eski sistemde oluşturulmuş, sabit giderler toplam maliyet içinde dahil edilmiş olabilir.
+                </span>
+              )}
+            </p>
           </div>
         </motion.div>
       )}

@@ -267,6 +267,46 @@ export default function CostCalculator() {
                   {formatCurrency(analysis.costBreakdown.sigortaMaliyet + analysis.costBreakdown.mtvMaliyet + analysis.costBreakdown.muayeneMaliyet)}
                 </span>
               </div>
+              <div className="mt-2 p-2 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}>
+                <p className="text-[10px]" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                  ℹ️ Sabit giderler (sigorta/MTV/muayene) <strong>gün bazlı</strong> hesaplanır (piyasa standartlarına uygun)
+                </p>
+              </div>
+            </div>
+
+            {/* Hesaplama Detayları */}
+            <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)', border: '0.5px solid rgba(10, 132, 255, 0.3)' }}>
+              <p className="text-xs font-semibold mb-2" style={{ color: '#0A84FF' }}>📊 Hesaplama Detayları:</p>
+              <div className="space-y-1 text-xs" style={{ color: 'rgba(235, 235, 245, 0.7)' }}>
+                <div className="flex justify-between">
+                  <span>Değişken Maliyetler:</span>
+                  <span className="font-semibold">{formatCurrency(analysis.costBreakdown.toplamDirektMaliyet)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Sabit Maliyetler (Sigorta/MTV/Muayene):</span>
+                  <span className="font-semibold">{formatCurrency((analysis.costBreakdown.sigortaMaliyet || 0) + (analysis.costBreakdown.mtvMaliyet || 0) + (analysis.costBreakdown.muayeneMaliyet || 0))}</span>
+                </div>
+                <div className="flex justify-between border-t pt-1" style={{ borderColor: 'rgba(84, 84, 88, 0.35)' }}>
+                  <span>Toplam Maliyet:</span>
+                  <span className="font-semibold">{formatCurrency(analysis.toplamMaliyet)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>+ Kar (%45):</span>
+                  <span className="font-semibold">{formatCurrency(analysis.fiyatKarli - analysis.toplamMaliyet)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Kar Eklendikten Sonra:</span>
+                  <span className="font-semibold">{formatCurrency(analysis.fiyatKarli)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>+ KDV (%20):</span>
+                  <span className="font-semibold">{formatCurrency(analysis.fiyatKdvli - analysis.fiyatKarli)}</span>
+                </div>
+                <div className="flex justify-between border-t pt-1 font-bold" style={{ borderColor: 'rgba(84, 84, 88, 0.35)', color: '#FFFFFF' }}>
+                  <span>Önerilen Fiyat (KDV Dahil):</span>
+                  <span>{formatCurrency(analysis.fiyatKdvli)}</span>
+                </div>
+              </div>
             </div>
 
             {/* Önerilen Fiyat ve Başabaş */}
