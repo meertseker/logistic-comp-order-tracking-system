@@ -1,6 +1,6 @@
 {
   "name": "sekersoft",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Offline Desktop Transportation Management System",
   "main": "dist-electron/main/index.cjs",
   "type": "module",

@@ -13,7 +13,8 @@ import {
   Layers,
   Mail,
   X,
-  Calendar
+  Calendar,
+  Settings as SettingsIcon
 } from 'lucide-react'
 
 interface LayoutProps {
