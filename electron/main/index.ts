@@ -903,6 +903,21 @@ ipcMain.handle('db:getDashboardStats', async () => {
       LIMIT 5
     `).all(thisMonthStart)
     
+    // En çok kazandıran müşteriler (tüm zamanlar)
+    const topCustomers = db.prepare(`
+      SELECT 
+        musteri,
+        COUNT(*) as orderCount,
+        SUM(baslangic_fiyati) as totalEarnings,
+        SUM(toplam_maliyet) as totalCosts,
+        SUM(baslangic_fiyati - toplam_maliyet) as totalProfit
+      FROM orders
+      WHERE status != 'İptal'
+      GROUP BY musteri
+      ORDER BY totalEarnings DESC
+      LIMIT 5
+    `).all()
+    
     // Durum dağılımı
     const statusDistribution = db.prepare(`
       SELECT 
@@ -969,6 +984,7 @@ ipcMain.handle('db:getDashboardStats', async () => {
       dailyData,
       weeklyData,
       topVehicles,
+      topCustomers,
       statusDistribution,
       
       // Listeler
