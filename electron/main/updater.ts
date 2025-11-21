@@ -105,6 +105,13 @@ export class UpdateManager {
     try {
       log.info('Checking for updates...')
       log.info(`GitHub repository: ${GITHUB_OWNER}/${GITHUB_REPO}`)
+      log.info(`Current app version: ${require('electron').app.getVersion()}`)
+      
+      // electron-updater otomatik olarak package.json'daki publish ayarlarını kullanır
+      // Windows için: https://github.com/{owner}/{repo}/releases/latest/download/latest.yml
+      // macOS için: https://github.com/{owner}/{repo}/releases/latest/download/latest-mac.yml
+      const expectedUrl = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest/download/${process.platform === 'win32' ? 'latest.yml' : 'latest-mac.yml'}`
+      log.info(`Expected update URL: ${expectedUrl}`)
       
       // electron-updater otomatik olarak package.json'daki publish ayarlarını kullanır
       // Eğer latest.yml bulunamazsa, hata event'i tetiklenir
@@ -112,15 +119,22 @@ export class UpdateManager {
       
       if (result) {
         log.info('Update check completed:', result.updateInfo)
+        log.info('Update feed URL:', result.feedUrl)
       }
     } catch (error: any) {
       log.error('Error checking for updates:', error)
+      log.error('Error stack:', error.stack)
+      log.error('Error details:', JSON.stringify(error, null, 2))
       
       // YML dosyası bulunamadı hatasını özel olarak handle et
       let errorMessage = error.message || 'Güncelleme kontrolü başarısız'
-      if (error.message && (error.message.includes('yml') || error.message.includes('YML') || error.message.includes('404') || error.message.includes('Not Found'))) {
-        errorMessage = 'Güncelleme dosyası bulunamadı. Lütfen GitHub release sayfasından manuel olarak indirin: https://github.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/releases'
-        log.warn('Update YML file not found - user should download manually from GitHub releases')
+      const errorStr = error.message?.toLowerCase() || ''
+      
+      if (errorStr.includes('yml') || errorStr.includes('404') || errorStr.includes('not found') || errorStr.includes('resource not accessible')) {
+        const releaseUrl = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases`
+        errorMessage = `Güncelleme dosyası bulunamadı. Lütfen GitHub release sayfasından manuel olarak indirin:\n${releaseUrl}`
+        log.warn('Update YML file not found - this usually means the file is missing from GitHub release')
+        log.warn(`Please check if latest.yml exists at: https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`)
       }
       
       this.sendStatusToWindow(`Güncelleme kontrolü hatası: ${errorMessage}`)
