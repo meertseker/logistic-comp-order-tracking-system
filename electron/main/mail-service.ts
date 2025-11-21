@@ -48,10 +48,11 @@ export class MailService {
    */
   async initialize(skipEnabledCheck: boolean = false): Promise<void> {
     const db = getDB()
-    const settings = db.prepare('SELECT * FROM mail_settings WHERE id = 1').get() as any
+    // Aktif mail servisini kullan
+    const settings = db.prepare('SELECT * FROM mail_settings WHERE is_active = 1 LIMIT 1').get() as any
     
     if (!settings) {
-      throw new Error('Mail servisi yapılandırılmamış')
+      throw new Error('Aktif mail servisi bulunamadı. Lütfen bir mail servisi ekleyin ve aktif hale getirin.')
     }
     
     // Test için enabled kontrolünü atla
@@ -86,6 +87,35 @@ export class MailService {
       }
       
       await this.transporter.verify()
+      return { success: true, message: 'SMTP bağlantısı başarılı!' }
+    } catch (error: any) {
+      return { 
+        success: false, 
+        message: error.message 
+      }
+    }
+  }
+  
+  /**
+   * Belirli ayarlarla SMTP bağlantısını test et
+   */
+  async testConnectionWithSettings(settings: any): Promise<{ success: boolean; message: string }> {
+    try {
+      if (!settings.smtp_host || !settings.smtp_user || !settings.smtp_password) {
+        return { success: false, message: 'Mail ayarları eksik' }
+      }
+      
+      const testTransporter = nodemailer.createTransport({
+        host: settings.smtp_host,
+        port: settings.smtp_port,
+        secure: settings.smtp_secure === 1,
+        auth: {
+          user: settings.smtp_user,
+          pass: settings.smtp_password,
+        },
+      })
+      
+      await testTransporter.verify()
       return { success: true, message: 'SMTP bağlantısı başarılı!' }
     } catch (error: any) {
       return { 

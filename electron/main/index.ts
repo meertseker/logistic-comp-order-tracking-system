@@ -1780,11 +1780,23 @@ ipcMain.handle('db:checkTrailerCapacity', async (_, trailerId, enCm, boyCm, yuks
 // MAIL OPERATIONS
 // ============================================================================
 
-// Mail ayarlarını getir
+// Tüm mail servislerini listele
+ipcMain.handle('mail:listSettings', async () => {
+  const db = getDB()
+  try {
+    const settings = db.prepare('SELECT * FROM mail_settings ORDER BY is_active DESC, created_at DESC').all()
+    return settings || []
+  } catch (error) {
+    console.error('Error listing mail settings:', error)
+    throw error
+  }
+})
+
+// Aktif mail ayarlarını getir
 ipcMain.handle('mail:getSettings', async () => {
   const db = getDB()
   try {
-    const settings = db.prepare('SELECT * FROM mail_settings WHERE id = 1').get()
+    const settings = db.prepare('SELECT * FROM mail_settings WHERE is_active = 1 LIMIT 1').get()
     return settings || null
   } catch (error) {
     console.error('Error getting mail settings:', error)
@@ -1792,39 +1804,186 @@ ipcMain.handle('mail:getSettings', async () => {
   }
 })
 
-// Mail ayarlarını kaydet
-ipcMain.handle('mail:saveSettings', async (_, settings) => {
+// Belirli bir mail servisini getir
+ipcMain.handle('mail:getSettingById', async (_, id) => {
   const db = getDB()
   try {
-    db.prepare(`
-      INSERT OR REPLACE INTO mail_settings (
-        id, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_password,
-        from_email, from_name, company_name, enabled, updated_at
-      ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    const settings = db.prepare('SELECT * FROM mail_settings WHERE id = ?').get(id)
+    return settings || null
+  } catch (error) {
+    console.error('Error getting mail setting by id:', error)
+    throw error
+  }
+})
+
+// Yeni mail servisi ekle
+ipcMain.handle('mail:addSettings', async (_, settings) => {
+  const db = getDB()
+  try {
+    const result = db.prepare(`
+      INSERT INTO mail_settings (
+        name, provider, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_password,
+        from_email, from_name, company_name, is_active, enabled, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `).run(
+      settings.name || 'Mail Servisi',
+      settings.provider || 'custom',
       settings.smtp_host,
-      settings.smtp_port,
+      settings.smtp_port || 587,
       settings.smtp_secure ? 1 : 0,
       settings.smtp_user,
       settings.smtp_password,
       settings.from_email,
-      settings.from_name,
+      settings.from_name || 'Sekersoft',
       settings.company_name || 'Şirket Adı',
+      settings.is_active ? 1 : 0,
       settings.enabled ? 1 : 0
     )
     
+    return { success: true, id: result.lastInsertRowid }
+  } catch (error) {
+    console.error('Error adding mail settings:', error)
+    throw error
+  }
+})
+
+// Mail ayarlarını güncelle
+ipcMain.handle('mail:updateSettings', async (_, id, settings) => {
+  const db = getDB()
+  try {
+    db.prepare(`
+      UPDATE mail_settings SET
+        name = ?, provider = ?, smtp_host = ?, smtp_port = ?, smtp_secure = ?,
+        smtp_user = ?, smtp_password = ?, from_email = ?, from_name = ?,
+        company_name = ?, enabled = ?, updated_at = datetime('now')
+      WHERE id = ?
+    `).run(
+      settings.name || 'Mail Servisi',
+      settings.provider || 'custom',
+      settings.smtp_host,
+      settings.smtp_port || 587,
+      settings.smtp_secure ? 1 : 0,
+      settings.smtp_user,
+      settings.smtp_password,
+      settings.from_email,
+      settings.from_name || 'Sekersoft',
+      settings.company_name || 'Şirket Adı',
+      settings.enabled ? 1 : 0,
+      id
+    )
+    
     return { success: true }
+  } catch (error) {
+    console.error('Error updating mail settings:', error)
+    throw error
+  }
+})
+
+// Mail servisini sil
+ipcMain.handle('mail:deleteSettings', async (_, id) => {
+  const db = getDB()
+  try {
+    db.prepare('DELETE FROM mail_settings WHERE id = ?').run(id)
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting mail settings:', error)
+    throw error
+  }
+})
+
+// Aktif mail servisini değiştir
+ipcMain.handle('mail:setActive', async (_, id) => {
+  const db = getDB()
+  try {
+    // Önce tüm servisleri pasif yap
+    db.prepare('UPDATE mail_settings SET is_active = 0').run()
+    // Seçilen servisi aktif yap
+    db.prepare('UPDATE mail_settings SET is_active = 1, updated_at = datetime("now") WHERE id = ?').run(id)
+    return { success: true }
+  } catch (error) {
+    console.error('Error setting active mail settings:', error)
+    throw error
+  }
+})
+
+// Mail ayarlarını kaydet (geriye uyumluluk için)
+ipcMain.handle('mail:saveSettings', async (_, settings) => {
+  const db = getDB()
+  try {
+    // Eğer id varsa güncelle, yoksa yeni ekle
+    if (settings.id) {
+      db.prepare(`
+        UPDATE mail_settings SET
+          name = ?, provider = ?, smtp_host = ?, smtp_port = ?, smtp_secure = ?,
+          smtp_user = ?, smtp_password = ?, from_email = ?, from_name = ?,
+          company_name = ?, enabled = ?, updated_at = datetime('now')
+        WHERE id = ?
+      `).run(
+        settings.name || 'Mail Servisi',
+        settings.provider || 'custom',
+        settings.smtp_host,
+        settings.smtp_port || 587,
+        settings.smtp_secure ? 1 : 0,
+        settings.smtp_user,
+        settings.smtp_password,
+        settings.from_email,
+        settings.from_name || 'Sekersoft',
+        settings.company_name || 'Şirket Adı',
+        settings.enabled ? 1 : 0,
+        settings.id
+      )
+      return { success: true }
+    } else {
+      // Aktif servis yoksa bu servisi aktif yap
+      const activeCount = db.prepare('SELECT COUNT(*) as count FROM mail_settings WHERE is_active = 1').get() as any
+      const isActive = activeCount.count === 0 ? 1 : 0
+      
+      const result = db.prepare(`
+        INSERT INTO mail_settings (
+          name, provider, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_password,
+          from_email, from_name, company_name, is_active, enabled, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      `).run(
+        settings.name || 'Mail Servisi',
+        settings.provider || 'custom',
+        settings.smtp_host,
+        settings.smtp_port || 587,
+        settings.smtp_secure ? 1 : 0,
+        settings.smtp_user,
+        settings.smtp_password,
+        settings.from_email,
+        settings.from_name || 'Sekersoft',
+        settings.company_name || 'Şirket Adı',
+        isActive,
+        settings.enabled ? 1 : 0
+      )
+      return { success: true, id: result.lastInsertRowid }
+    }
   } catch (error) {
     console.error('Error saving mail settings:', error)
     throw error
   }
 })
 
-// SMTP bağlantısını test et
-ipcMain.handle('mail:testConnection', async () => {
+// SMTP bağlantısını test et (belirli bir servis için)
+ipcMain.handle('mail:testConnection', async (_, id?: number) => {
   try {
+    const db = getDB()
+    let settings: any
+    
+    if (id) {
+      settings = db.prepare('SELECT * FROM mail_settings WHERE id = ?').get(id)
+    } else {
+      settings = db.prepare('SELECT * FROM mail_settings WHERE is_active = 1 LIMIT 1').get()
+    }
+    
+    if (!settings) {
+      return { success: false, message: 'Mail servisi bulunamadı' }
+    }
+    
+    // Geçici olarak bu servisi kullanarak test et
     const mailService = getMailService()
-    const result = await mailService.testConnection()
+    const result = await mailService.testConnectionWithSettings(settings)
     return result
   } catch (error: any) {
     console.error('Error testing mail connection:', error)
@@ -2347,8 +2506,33 @@ ipcMain.handle('uyumsoft:resendInvoiceEmail', async (_, invoiceId, email) => {
 })
 
 // ============================================
-// DEVELOPMENT: Enable Test Mode
+// DEVELOPMENT: Test Mode Management
 // ============================================
+ipcMain.handle('dev:getTestModeStatus', async () => {
+  try {
+    const db = getDB()
+    
+    // Check WhatsApp test mode
+    const whatsappSettings = db.prepare('SELECT enabled, api_key FROM whatsapp_settings WHERE id = 1').get() as any
+    const isWhatsAppTestMode = whatsappSettings?.enabled === 1 && whatsappSettings?.api_key === 'TEST_API_KEY'
+    
+    // Check Uyumsoft test mode
+    const uyumsoftSettings = db.prepare('SELECT enabled, api_key FROM uyumsoft_settings WHERE id = 1').get() as any
+    const isUyumsoftTestMode = uyumsoftSettings?.enabled === 1 && uyumsoftSettings?.api_key === 'TEST_UYUMSOFT_API_KEY'
+    
+    const isTestModeActive = isWhatsAppTestMode && isUyumsoftTestMode
+    
+    return { 
+      isActive: isTestModeActive,
+      whatsapp: isWhatsAppTestMode,
+      uyumsoft: isUyumsoftTestMode
+    }
+  } catch (error: any) {
+    console.error('Error getting test mode status:', error)
+    return { isActive: false, whatsapp: false, uyumsoft: false }
+  }
+})
+
 ipcMain.handle('dev:enableTestMode', async () => {
   try {
     const db = getDB()
@@ -2407,6 +2591,42 @@ ipcMain.handle('dev:enableTestMode', async () => {
     }
   } catch (error: any) {
     console.error('Error enabling test mode:', error)
+    return { success: false, message: error.message }
+  }
+})
+
+ipcMain.handle('dev:disableTestMode', async () => {
+  try {
+    const db = getDB()
+    
+    console.log('🛑 Disabling test mode for WhatsApp and Uyumsoft...')
+    
+    // Disable WhatsApp
+    db.prepare(`
+      UPDATE whatsapp_settings 
+      SET enabled = 0,
+          updated_at = datetime('now')
+      WHERE id = 1
+    `).run()
+    
+    console.log('✅ WhatsApp test mode disabled')
+    
+    // Disable Uyumsoft
+    db.prepare(`
+      UPDATE uyumsoft_settings 
+      SET enabled = 0,
+          updated_at = datetime('now')
+      WHERE id = 1
+    `).run()
+    
+    console.log('✅ Uyumsoft test mode disabled')
+    
+    return { 
+      success: true, 
+      message: 'Test modu kapatıldı! Lütfen uygulamayı yeniden başlatın.' 
+    }
+  } catch (error: any) {
+    console.error('Error disabling test mode:', error)
     return { success: false, message: error.message }
   }
 })

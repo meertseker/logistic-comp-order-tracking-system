@@ -67,15 +67,21 @@ export class UpdateManager {
    * Güncellemeleri kontrol et
    */
   async checkForUpdates(): Promise<void> {
-    if (process.env.NODE_ENV === 'development') {
+    // Development modda güncelleme kontrolü yapma
+    if (process.env.NODE_ENV === 'development' || process.env.VITE_DEV_SERVER_URL) {
       log.info('Development mode - skipping update check')
+      this.sendStatusToWindow('Development modda güncelleme kontrolü yapılamaz')
+      this.mainWindow?.webContents.send('update-error', 'Development modda güncelleme kontrolü yapılamaz. Production build kullanın.')
       return
     }
 
     try {
+      log.info('Checking for updates...')
       await autoUpdater.checkForUpdates()
-    } catch (error) {
+    } catch (error: any) {
       log.error('Error checking for updates:', error)
+      this.sendStatusToWindow(`Güncelleme kontrolü hatası: ${error.message}`)
+      this.mainWindow?.webContents.send('update-error', error.message || 'Güncelleme kontrolü başarısız')
     }
   }
 

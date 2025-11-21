@@ -198,7 +198,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Development tools
   dev: {
+    getTestModeStatus: () => ipcRenderer.invoke('dev:getTestModeStatus'),
     enableTestMode: () => ipcRenderer.invoke('dev:enableTestMode'),
+    disableTestMode: () => ipcRenderer.invoke('dev:disableTestMode'),
   },
 })
 

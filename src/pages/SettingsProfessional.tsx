@@ -100,9 +100,43 @@ export default function SettingsProfessional() {
   
   const [systemInfo, setSystemInfo] = useState<any>(null)
   const [licenseInfo, setLicenseInfo] = useState<any>(null)
+  const [isTestModeActive, setIsTestModeActive] = useState(false)
+  const [checkingUpdate, setCheckingUpdate] = useState(false)
 
   useEffect(() => {
     loadSettings()
+    
+    // Güncelleme event'lerini dinle
+    const electronAPI = (window as any).electronAPI
+    if (electronAPI?.update) {
+      const handleUpdateAvailable = (info: any) => {
+        setCheckingUpdate(false)
+        showToast(`Yeni güncelleme mevcut: v${info.version}`, 'success')
+      }
+      
+      const handleUpdateNotAvailable = () => {
+        setCheckingUpdate(false)
+        showToast('Uygulama güncel - en son versiyonu kullanıyorsunuz', 'success')
+      }
+      
+      const handleUpdateError = (message: string) => {
+        setCheckingUpdate(false)
+        showToast(`Güncelleme hatası: ${message}`, 'error')
+      }
+      
+      const handleUpdateStatus = (message: string) => {
+        console.log('Update status:', message)
+      }
+      
+      electronAPI.update.onUpdateAvailable(handleUpdateAvailable)
+      electronAPI.update.onUpdateNotAvailable(handleUpdateNotAvailable)
+      electronAPI.update.onUpdateError(handleUpdateError)
+      electronAPI.update.onUpdateStatus(handleUpdateStatus)
+      
+      return () => {
+        electronAPI.update.removeAllListeners()
+      }
+    }
   }, [])
 
   const loadSettings = async () => {
@@ -194,6 +228,10 @@ export default function SettingsProfessional() {
       // Lisans bilgilerini yükle
       const licInfo = await window.electronAPI.license.getInfo()
       setLicenseInfo(licInfo)
+      
+      // Test modu durumunu kontrol et
+      const testModeStatus = await window.electronAPI.dev.getTestModeStatus()
+      setIsTestModeActive(testModeStatus.isActive)
     } catch (error) {
       console.error('Failed to load settings:', error)
       showToast('Ayarlar yüklenemedi', 'error')
@@ -1564,30 +1602,31 @@ export default function SettingsProfessional() {
               <Button
                 onClick={async () => {
                   try {
-                    setSaving(true)
+                    setCheckingUpdate(true)
                     const electronAPI = (window as any).electronAPI
                     if (electronAPI?.update) {
+                      showToast('Güncellemeler kontrol ediliyor...', 'info')
                       const result = await electronAPI.update.check()
-                      if (result.success) {
-                        showToast('Güncellemeler kontrol ediliyor...', 'info')
-                      } else {
+                      if (!result.success) {
+                        setCheckingUpdate(false)
                         showToast(result.message || 'Güncelleme kontrolü başarısız', 'error')
                       }
+                      // Event'ler sonucu gösterecek, burada sadece başlatıyoruz
                     } else {
+                      setCheckingUpdate(false)
                       showToast('Güncelleme özelliği kullanılamıyor', 'warning')
                     }
-                  } catch (error) {
+                  } catch (error: any) {
                     console.error('Update check error:', error)
-                    showToast('Güncelleme kontrolünde hata oluştu', 'error')
-                  } finally {
-                    setSaving(false)
+                    setCheckingUpdate(false)
+                    showToast(error.message || 'Güncelleme kontrolünde hata oluştu', 'error')
                   }
                 }}
-                disabled={saving}
+                disabled={checkingUpdate || saving}
                 className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
                 <Download className="w-5 h-5 mr-2" />
-                {saving ? 'Kontrol Ediliyor...' : 'Güncellemeleri Kontrol Et'}
+                {checkingUpdate ? 'Kontrol Ediliyor...' : 'Güncellemeleri Kontrol Et'}
               </Button>
             </div>
           </Card>
@@ -1605,6 +1644,18 @@ export default function SettingsProfessional() {
                 </div>
               </div>
               
+              {isTestModeActive && (
+                <div className="mb-4 p-4 bg-green-500/20 border border-green-500/50 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <p className="text-sm font-semibold text-green-300">Test Modu Aktif</p>
+                  </div>
+                  <p className="text-sm text-gray-300">
+                    WhatsApp ve Uyumsoft test modunda çalışıyor. API çağrıları başarısız olacak (normal).
+                  </p>
+                </div>
+              )}
+              
               <div className="mb-4 p-4 bg-gray-800/50 rounded-lg">
                 <p className="text-sm text-gray-300 mb-2">✅ Test modunda neler aktifleşir:</p>
                 <ul className="text-sm text-gray-400 space-y-1 ml-4">
@@ -1616,45 +1667,87 @@ export default function SettingsProfessional() {
                 <p className="text-sm text-yellow-300 mt-3">⚠️ API çağrıları başarısız olur (test verisi)</p>
               </div>
               
-              <Button
-                onClick={async () => {
-                  try {
-                    setSaving(true)
-                    const result = await window.electronAPI.dev.enableTestMode()
-                    if (result.success) {
-                      showToast(result.message, 'success')
-                      // Reload to apply changes
-                      setTimeout(() => {
-                        window.location.reload()
-                      }, 2000)
-                    } else {
-                      showToast(result.message || 'Test modu aktif edilemedi', 'error')
+              {isTestModeActive ? (
+                <Button
+                  onClick={async () => {
+                    try {
+                      setSaving(true)
+                      const result = await window.electronAPI.dev.disableTestMode()
+                      if (result.success) {
+                        showToast(result.message, 'success')
+                        // Reload to apply changes
+                        setTimeout(() => {
+                          window.location.reload()
+                        }, 2000)
+                      } else {
+                        showToast(result.message || 'Test modu kapatılamadı', 'error')
+                      }
+                    } catch (error: any) {
+                      console.error('Disable test mode error:', error)
+                      showToast(error.message || 'Test modu kapatılırken hata oluştu', 'error')
+                    } finally {
+                      setSaving(false)
                     }
-                  } catch (error: any) {
-                    console.error('Enable test mode error:', error)
-                    showToast(error.message || 'Test modu aktif edilirken hata oluştu', 'error')
-                  } finally {
-                    setSaving(false)
-                  }
-                }}
-                disabled={saving}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-              >
-                {saving ? (
-                  <>
-                    <Loader className="w-5 h-5 mr-2 animate-spin" />
-                    Aktifleştiriliyor...
-                  </>
-                ) : (
-                  <>
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    Test Modunu Aktifleştir
-                  </>
-                )}
-              </Button>
+                  }}
+                  disabled={saving}
+                  className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
+                >
+                  {saving ? (
+                    <>
+                      <Loader className="w-5 h-5 mr-2 animate-spin" />
+                      Kapatılıyor...
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="w-5 h-5 mr-2" />
+                      Test Modunu Kapat
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={async () => {
+                    try {
+                      setSaving(true)
+                      const result = await window.electronAPI.dev.enableTestMode()
+                      if (result.success) {
+                        showToast(result.message, 'success')
+                        // Reload to apply changes
+                        setTimeout(() => {
+                          window.location.reload()
+                        }, 2000)
+                      } else {
+                        showToast(result.message || 'Test modu aktif edilemedi', 'error')
+                      }
+                    } catch (error: any) {
+                      console.error('Enable test mode error:', error)
+                      showToast(error.message || 'Test modu aktif edilirken hata oluştu', 'error')
+                    } finally {
+                      setSaving(false)
+                    }
+                  }}
+                  disabled={saving}
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                >
+                  {saving ? (
+                    <>
+                      <Loader className="w-5 h-5 mr-2 animate-spin" />
+                      Aktifleştiriliyor...
+                    </>
+                  ) : (
+                    <>
+                      <MessageCircle className="w-5 h-5 mr-2" />
+                      Test Modunu Aktifleştir
+                    </>
+                  )}
+                </Button>
+              )}
               
               <p className="text-xs text-gray-400 mt-3 text-center">
-                Aktifleştirdikten sonra sayfa otomatik yeniden yüklenecek
+                {isTestModeActive 
+                  ? 'Kapatıldıktan sonra sayfa otomatik yeniden yüklenecek'
+                  : 'Aktifleştirdikten sonra sayfa otomatik yeniden yüklenecek'
+                }
               </p>
             </div>
           </Card>

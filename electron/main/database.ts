@@ -334,21 +334,124 @@ const createTables = () => {
     `).run(key, value, description)
   })
   
-  // Mail Settings table - SMTP yapılandırması
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS mail_settings (
-      id INTEGER PRIMARY KEY CHECK (id = 1),
-      smtp_host TEXT,
-      smtp_port INTEGER DEFAULT 587,
-      smtp_secure INTEGER DEFAULT 0,
-      smtp_user TEXT,
-      smtp_password TEXT,
-      from_email TEXT,
-      from_name TEXT DEFAULT 'Sekersoft',
-      enabled INTEGER DEFAULT 0,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
+  // Mail Settings table - SMTP yapılandırması (birden fazla servis desteği)
+  // Önce eski tabloyu kontrol et ve migration yap
+  try {
+    const tableInfo = db.prepare("PRAGMA table_info(mail_settings)").all() as any[]
+    const hasOldStructure = tableInfo.length > 0 && tableInfo.some(col => col.name === 'id' && col.pk === 1)
+    
+    if (hasOldStructure) {
+      // Eski veriyi yedekle
+      const oldData = db.prepare('SELECT * FROM mail_settings WHERE id = 1').get() as any
+      
+      // Eski tabloyu yedekle
+      db.exec('DROP TABLE IF EXISTS mail_settings_backup')
+      db.exec('CREATE TABLE mail_settings_backup AS SELECT * FROM mail_settings')
+      
+      // Yeni tabloyu oluştur
+      db.exec('DROP TABLE IF EXISTS mail_settings')
+      db.exec(`
+        CREATE TABLE mail_settings (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT DEFAULT 'Mail Servisi',
+          provider TEXT,
+          smtp_host TEXT,
+          smtp_port INTEGER DEFAULT 587,
+          smtp_secure INTEGER DEFAULT 0,
+          smtp_user TEXT,
+          smtp_password TEXT,
+          from_email TEXT,
+          from_name TEXT DEFAULT 'Sekersoft',
+          company_name TEXT DEFAULT 'Şirket Adı',
+          is_active INTEGER DEFAULT 0,
+          enabled INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+      
+      // Eski veriyi yeni tabloya taşı
+      if (oldData && oldData.smtp_host) {
+        const detectProvider = (host: string) => {
+          if (host.includes('gmail')) return { name: 'Gmail', provider: 'gmail' }
+          if (host.includes('outlook') || host.includes('hotmail')) return { name: 'Outlook', provider: 'outlook' }
+          if (host.includes('yandex')) return { name: 'Yandex', provider: 'yandex' }
+          if (host.includes('yahoo')) return { name: 'Yahoo', provider: 'yahoo' }
+          if (host.includes('zoho')) return { name: 'Zoho', provider: 'zoho' }
+          if (host.includes('mail.me.com') || host.includes('icloud')) return { name: 'iCloud', provider: 'icloud' }
+          return { name: 'Özel SMTP', provider: 'custom' }
+        }
+        
+        const providerInfo = detectProvider(oldData.smtp_host)
+        
+        db.prepare(`
+          INSERT INTO mail_settings (
+            name, provider, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_password,
+            from_email, from_name, company_name, is_active, enabled, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+        `).run(
+          providerInfo.name,
+          providerInfo.provider,
+          oldData.smtp_host,
+          oldData.smtp_port || 587,
+          oldData.smtp_secure || 0,
+          oldData.smtp_user,
+          oldData.smtp_password,
+          oldData.from_email,
+          oldData.from_name || 'Sekersoft',
+          oldData.company_name || 'Şirket Adı',
+          oldData.enabled || 0,
+          oldData.updated_at || new Date().toISOString()
+        )
+      }
+      
+      // Yedek tabloyu sil
+      db.exec('DROP TABLE IF EXISTS mail_settings_backup')
+    } else {
+      // Yeni kurulum - direkt oluştur
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS mail_settings (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT DEFAULT 'Mail Servisi',
+          provider TEXT,
+          smtp_host TEXT,
+          smtp_port INTEGER DEFAULT 587,
+          smtp_secure INTEGER DEFAULT 0,
+          smtp_user TEXT,
+          smtp_password TEXT,
+          from_email TEXT,
+          from_name TEXT DEFAULT 'Sekersoft',
+          company_name TEXT DEFAULT 'Şirket Adı',
+          is_active INTEGER DEFAULT 0,
+          enabled INTEGER DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+    }
+  } catch (error) {
+    console.log('Mail settings migration error:', error)
+    // Hata durumunda yeni tabloyu oluştur
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS mail_settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT DEFAULT 'Mail Servisi',
+        provider TEXT,
+        smtp_host TEXT,
+        smtp_port INTEGER DEFAULT 587,
+        smtp_secure INTEGER DEFAULT 0,
+        smtp_user TEXT,
+        smtp_password TEXT,
+        from_email TEXT,
+        from_name TEXT DEFAULT 'Sekersoft',
+        company_name TEXT DEFAULT 'Şirket Adı',
+        is_active INTEGER DEFAULT 0,
+        enabled INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+  }
   
   // Mail Logs table - Gönderilen maillerin kaydı
   db.exec(`

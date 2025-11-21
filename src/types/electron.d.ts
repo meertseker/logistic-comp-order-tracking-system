@@ -129,7 +129,9 @@ export interface ElectronAPI {
   }
   
   dev: {
+    getTestModeStatus: () => Promise<{ isActive: boolean; whatsapp: boolean; uyumsoft: boolean }>
     enableTestMode: () => Promise<{ success: boolean; message: string }>
+    disableTestMode: () => Promise<{ success: boolean; message: string }>
   }
 }
 
