@@ -184,7 +184,15 @@ function generateOrderPDF(order: any, companyName?: string | null): jsPDF {
  * Sipariş PDF'ini indir (kullanıcı için)
  */
 export async function exportOrderToPDF(order: any) {
-  const companyName = await window.electronAPI.app.getCompanyName()
+  let companyName: string | null = null
+  try {
+    if (window.electronAPI?.app?.getCompanyName) {
+      companyName = await window.electronAPI.app.getCompanyName()
+    }
+  } catch (error) {
+    console.error('Error getting company name:', error)
+    // Continue with null, will use default
+  }
   const doc = generateOrderPDF(order, companyName)
   doc.save(`siparis_${order.id}_${Date.now()}.pdf`)
 }
@@ -303,7 +311,15 @@ function generateCustomerOrderPDF(order: any, companyName?: string | null): jsPD
  * Returns: PDF file path
  */
 export async function generateOrderPDFForEmail(order: any): Promise<string> {
-  const companyName = await window.electronAPI.app.getCompanyName()
+  let companyName: string | null = null
+  try {
+    if (window.electronAPI?.app?.getCompanyName) {
+      companyName = await window.electronAPI.app.getCompanyName()
+    }
+  } catch (error) {
+    console.error('Error getting company name:', error)
+    // Continue with null, will use default
+  }
   const doc = generateCustomerOrderPDF(order, companyName) // Müşteri versiyonu kullan!
   const pdfBlob = doc.output('blob')
   
@@ -325,7 +341,15 @@ export async function generateOrderPDFForEmail(order: any): Promise<string> {
 }
 
 export async function exportReportToPDF(report: any, year: number, month: number, periodLabel?: string) {
-  const companyName = await window.electronAPI.app.getCompanyName()
+  let companyName: string | null = null
+  try {
+    if (window.electronAPI?.app?.getCompanyName) {
+      companyName = await window.electronAPI.app.getCompanyName()
+    }
+  } catch (error) {
+    console.error('Error getting company name:', error)
+    // Continue with null, will use default
+  }
   const doc = new jsPDF()
   doc.setFont('helvetica')
   

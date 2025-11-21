@@ -64,7 +64,15 @@ export default function Reports() {
   const exportToCSV = async () => {
     if (!report) return
 
-    const companyName = await window.electronAPI.app.getCompanyName()
+    let companyName: string | null = null
+    try {
+      if (window.electronAPI?.app?.getCompanyName) {
+        companyName = await window.electronAPI.app.getCompanyName()
+      }
+    } catch (error) {
+      console.error('Error getting company name:', error)
+      // Continue with null, will use default
+    }
     const reportTitle = companyName ? `${companyName} - Aylık Rapor` : 'Sekersoft - Aylık Rapor'
     let csv = `${reportTitle}\n`
     csv += `Dönem: ${months.find(m => m.value === month.toString())?.label} ${year}\n\n`

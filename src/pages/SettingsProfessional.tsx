@@ -144,7 +144,15 @@ export default function SettingsProfessional() {
       setLoading(true)
       
       // Company name'i license'dan al (en başta, diğer ayarlar için kullanılacak)
-      const companyName = await window.electronAPI.app.getCompanyName()
+      let companyName: string | null = null
+      try {
+        if (window.electronAPI?.app?.getCompanyName) {
+          companyName = await window.electronAPI.app.getCompanyName()
+        }
+      } catch (error) {
+        console.error('Error getting company name:', error)
+        // Continue with default value
+      }
       const defaultCompanyName = companyName || 'Şirket Adı'
       
       // Mail ayarlarını yükle

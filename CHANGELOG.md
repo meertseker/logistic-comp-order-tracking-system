@@ -13,6 +13,33 @@ Format [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standardına day
 - Excel export özelliği
 - Gelişmiş grafik ve charts
 
+## [1.1.8] - 2025-11-21
+
+### 🐛 Fixed (Bug Fixes)
+- **Settings Page Crash Fix**
+  - Fixed black screen issue when opening Settings page
+  - Added error handling for `getCompanyName()` API calls
+  - Settings page now gracefully handles missing or unavailable company name API
+  
+- **Mail Management Page Fix**
+  - Fixed missing `Calendar` icon import causing page crash
+  - Mail Professional page now loads correctly
+  
+- **PDF Export Stability**
+  - Added error handling for company name retrieval in PDF exports
+  - PDF generation now works even if company name API is unavailable
+  - All PDF export functions (order, report, email) are now more resilient
+  
+- **Reports Page Stability**
+  - Fixed CSV export crash when company name API is unavailable
+  - Added proper error handling for company name retrieval
+
+### 🔧 Changed (Improvements)
+- **Error Handling**
+  - All `getCompanyName()` calls now use optional chaining and try-catch
+  - Default fallback values used when company name cannot be retrieved
+  - Better error logging for debugging
+
 ## [1.1.7] - 2025-01-22
 
 ### ✨ Added (New Features)

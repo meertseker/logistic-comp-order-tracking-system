@@ -20,6 +20,7 @@ import {
   Zap,
   BarChart3,
   MapPin,
+  Calendar,
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
