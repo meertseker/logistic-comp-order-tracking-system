@@ -1,5 +1,5 @@
 import { autoUpdater } from 'electron-updater'
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, app } from 'electron'
 import log from 'electron-log'
 
 // Configure logging
@@ -105,7 +105,7 @@ export class UpdateManager {
     try {
       log.info('Checking for updates...')
       log.info(`GitHub repository: ${GITHUB_OWNER}/${GITHUB_REPO}`)
-      log.info(`Current app version: ${require('electron').app.getVersion()}`)
+      log.info(`Current app version: ${app.getVersion()}`)
       
       // electron-updater otomatik olarak package.json'daki publish ayarlarını kullanır
       // Windows için: https://github.com/{owner}/{repo}/releases/latest/download/latest.yml
