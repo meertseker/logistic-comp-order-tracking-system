@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Route, Clock, DollarSign, Bridge } from 'lucide-react'
+import { MapPin, Route, Clock, DollarSign, Navigation } from 'lucide-react'
 import Input from './Input'
 import Button from './Button'
 import Modal from './Modal'
@@ -491,7 +491,7 @@ export default function RoutePicker({ from, to, onChange, disabled }: RoutePicke
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Bridge className="w-3.5 h-3.5" style={{ color: '#FFD60A' }} />
+                  <Navigation className="w-3.5 h-3.5" style={{ color: '#FFD60A' }} />
                   <label className="text-xs font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>HGS (₺)</label>
                 </div>
                 <Input 
@@ -505,7 +505,7 @@ export default function RoutePicker({ from, to, onChange, disabled }: RoutePicke
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Bridge className="w-3.5 h-3.5" style={{ color: '#FFD60A' }} />
+                  <Navigation className="w-3.5 h-3.5" style={{ color: '#FFD60A' }} />
                   <label className="text-xs font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Köprü (₺)</label>
                 </div>
                 <Input 
