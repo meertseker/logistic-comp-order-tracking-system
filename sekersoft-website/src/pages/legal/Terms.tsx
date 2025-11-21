@@ -90,7 +90,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-bold text-white mb-4">8. Fikri Mülkiyet</h2>
               <p className="leading-relaxed">
-                Sekersoft platformu ve içeriği Sekersoft'un fikri mülkiyetidir. Kullanıcılar 
+                Sekersoft platformu ve içeriği Sekersoft&apos;un fikri mülkiyetidir. Kullanıcılar 
                 yalnızca kişisel verilerinin sahibidir. Platform üzerinde oluşturulan içeriklerin 
                 tüm hakları kullanıcıya aittir.
               </p>

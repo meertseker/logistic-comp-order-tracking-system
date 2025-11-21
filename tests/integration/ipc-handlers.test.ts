@@ -21,6 +21,7 @@ import * as path from 'path'
 import * as os from 'os'
 
 // better-sqlite3 import for tests
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Database = require('better-sqlite3')
 
 // Mock database için test database path
@@ -658,6 +659,7 @@ describe.skip('Integration Tests - Database IPC Handlers', () => {
 describe('Integration Tests - Cost Calculator IPC Handlers', () => {
   test('cost:analyze handler logic testi', () => {
     // Bu test gerçek calculator'ı kullanır
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { ProfessionalCostCalculator, DEFAULT_PROFESSIONAL_PARAMS } = require('../../electron/main/professional-cost-calculator')
 
     const calculator = new ProfessionalCostCalculator(DEFAULT_PROFESSIONAL_PARAMS)
@@ -681,6 +683,7 @@ describe('Integration Tests - Cost Calculator IPC Handlers', () => {
   })
 
   test('cost:calculateRecommended handler logic testi', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { ProfessionalCostCalculator, DEFAULT_PROFESSIONAL_PARAMS } = require('../../electron/main/professional-cost-calculator')
 
     const calculator = new ProfessionalCostCalculator(DEFAULT_PROFESSIONAL_PARAMS)

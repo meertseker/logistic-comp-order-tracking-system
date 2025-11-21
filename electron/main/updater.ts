@@ -1,10 +1,14 @@
 import { autoUpdater } from 'electron-updater'
-import { BrowserWindow, dialog } from 'electron'
+import { BrowserWindow } from 'electron'
 import log from 'electron-log'
 
 // Configure logging
 log.transports.file.level = 'info'
 autoUpdater.logger = log
+
+// GitHub release configuration
+const GITHUB_OWNER = 'meertseker'
+const GITHUB_REPO = 'logistic-comp-order-tracking-system'
 
 export class UpdateManager {
   private mainWindow: BrowserWindow | null
@@ -23,6 +27,21 @@ export class UpdateManager {
     if (process.env.NODE_ENV === 'development') {
       log.info('Development mode - auto-update disabled')
       return
+    }
+
+    // GitHub release URL'ini yapılandır
+    // electron-updater otomatik olarak package.json'daki publish ayarlarını kullanır
+    // Ancak manuel olarak da ayarlayabiliriz
+    try {
+      // electron-updater'ın GitHub provider'ı kullanırken, otomatik olarak şu URL'den güncellemeleri kontrol eder:
+      // Windows: https://github.com/{owner}/{repo}/releases/latest/download/latest.yml
+      // macOS: https://github.com/{owner}/{repo}/releases/latest/download/latest-mac.yml
+      const updateServerUrl = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest/download/`
+      log.info(`Update server URL: ${updateServerUrl}`)
+      log.info(`Platform: ${process.platform}`)
+      log.info(`Expected YML file: ${process.platform === 'win32' ? 'latest.yml' : 'latest-mac.yml'}`)
+    } catch (error) {
+      log.error('Error configuring update server URL:', error)
     }
 
     // Event Handlers
@@ -45,8 +64,16 @@ export class UpdateManager {
 
     autoUpdater.on('error', (err) => {
       log.error('Auto-updater error:', err)
-      this.sendStatusToWindow(`Güncelleme hatası: ${err.message}`)
-      this.mainWindow?.webContents.send('update-error', err.message)
+      
+      // YML dosyası bulunamadı hatasını özel olarak handle et
+      let errorMessage = err.message
+      if (err.message && (err.message.includes('yml') || err.message.includes('YML') || err.message.includes('404'))) {
+        errorMessage = 'Güncelleme dosyası bulunamadı. Lütfen GitHub release sayfasından manuel olarak indirin.'
+        log.warn('Update YML file not found - this might be the first release or the file is missing from GitHub release')
+      }
+      
+      this.sendStatusToWindow(`Güncelleme hatası: ${errorMessage}`)
+      this.mainWindow?.webContents.send('update-error', errorMessage)
     })
 
     autoUpdater.on('download-progress', (progressObj) => {
@@ -77,11 +104,27 @@ export class UpdateManager {
 
     try {
       log.info('Checking for updates...')
-      await autoUpdater.checkForUpdates()
+      log.info(`GitHub repository: ${GITHUB_OWNER}/${GITHUB_REPO}`)
+      
+      // electron-updater otomatik olarak package.json'daki publish ayarlarını kullanır
+      // Eğer latest.yml bulunamazsa, hata event'i tetiklenir
+      const result = await autoUpdater.checkForUpdates()
+      
+      if (result) {
+        log.info('Update check completed:', result.updateInfo)
+      }
     } catch (error: any) {
       log.error('Error checking for updates:', error)
-      this.sendStatusToWindow(`Güncelleme kontrolü hatası: ${error.message}`)
-      this.mainWindow?.webContents.send('update-error', error.message || 'Güncelleme kontrolü başarısız')
+      
+      // YML dosyası bulunamadı hatasını özel olarak handle et
+      let errorMessage = error.message || 'Güncelleme kontrolü başarısız'
+      if (error.message && (error.message.includes('yml') || error.message.includes('YML') || error.message.includes('404') || error.message.includes('Not Found'))) {
+        errorMessage = 'Güncelleme dosyası bulunamadı. Lütfen GitHub release sayfasından manuel olarak indirin: https://github.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/releases'
+        log.warn('Update YML file not found - user should download manually from GitHub releases')
+      }
+      
+      this.sendStatusToWindow(`Güncelleme kontrolü hatası: ${errorMessage}`)
+      this.mainWindow?.webContents.send('update-error', errorMessage)
     }
   }
 

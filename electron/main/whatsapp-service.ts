@@ -1,5 +1,4 @@
 import { getDB } from './database'
-import * as fs from 'fs'
 import * as https from 'https'
 import * as http from 'http'
 import { URL } from 'url'
@@ -157,8 +156,7 @@ export class WhatsAppService {
     recipientPhone: string,
     orderData: OrderWhatsAppData,
     messageType: 'created' | 'on_way' | 'delivered' | 'invoiced' | 'cancelled' | 'custom',
-    customMessage?: string,
-    pdfPath?: string
+    customMessage?: string
   ): Promise<{ success: boolean; message: string }> {
     const db = getDB()
     
@@ -282,7 +280,7 @@ export class WhatsAppService {
    */
   private formatPhone(phone: string): string {
     // Boşluk, tire, parantez temizle
-    let cleaned = phone.replace(/[\s\-\(\)]/g, '')
+    const cleaned = phone.replace(/[\s\-()]/g, '')
     
     // +90 veya 90 ile başlıyorsa
     if (cleaned.startsWith('+90')) {

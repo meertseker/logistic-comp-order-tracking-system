@@ -458,7 +458,7 @@ const Home = () => {
                 Neden <span className="gradient-text">Sekersoft?</span>
               </h2>
               <p className="text-xl text-gray-400 mb-8">
-                Binlerce şirket operasyonlarını optimize etmek için Sekersoft'u tercih ediyor.
+                Binlerce şirket operasyonlarını optimize etmek için Sekersoft&apos;u tercih ediyor.
               </p>
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
@@ -538,7 +538,7 @@ const Home = () => {
                     <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-gray-300 mb-6 italic">"{testimonial.content}"</p>
+                <p className="text-gray-300 mb-6 italic">&quot;{testimonial.content}&quot;</p>
                 <div>
                   <p className="font-semibold">{testimonial.name}</p>
                   <p className="text-sm text-gray-400">{testimonial.role}</p>

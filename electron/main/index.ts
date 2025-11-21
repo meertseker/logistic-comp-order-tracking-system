@@ -135,7 +135,6 @@ function seedSampleData() {
     const letters = 'ABCDEFGHJKLMNPRSTUVYZ';
     const letter1 = letters[Math.floor(Math.random() * letters.length)];
     const letter2 = letters[Math.floor(Math.random() * letters.length)];
-    const letter3 = letters[Math.floor(Math.random() * letters.length)];
     const number = Math.floor(Math.random() * 900) + 100;
     return `${city} ${letter1}${letter2} ${number}`;
   }

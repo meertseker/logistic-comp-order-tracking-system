@@ -89,7 +89,7 @@ class UyumsoftAPI {
       }
 
       // Test endpoint - Uyumsoft API'ye göre ayarlanmalı
-      const response = await this.apiClient.get('/auth/test')
+      await this.apiClient.get('/auth/test')
       
       return {
         success: true,
@@ -229,7 +229,9 @@ class UyumsoftAPI {
           this.getErrorMessage(error),
           new Date().toISOString()
         )
-      } catch {}
+      } catch {
+        // Ignore logging error
+      }
 
       throw new Error(this.getErrorMessage(error))
     }
@@ -362,7 +364,9 @@ class UyumsoftAPI {
           this.getErrorMessage(error),
           new Date().toISOString()
         )
-      } catch {}
+      } catch {
+        // Ignore logging error
+      }
 
       throw new Error(this.getErrorMessage(error))
     }
@@ -411,7 +415,7 @@ class UyumsoftAPI {
       }
 
       // Uyumsoft API'ye iptal isteği gönder
-      const response = await this.apiClient.post(`/invoices/${invoice.invoice_uuid}/cancel`, {
+      await this.apiClient.post(`/invoices/${invoice.invoice_uuid}/cancel`, {
         reason
       })
 

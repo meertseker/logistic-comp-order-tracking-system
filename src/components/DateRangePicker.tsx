@@ -13,14 +13,12 @@ interface DateRangePickerProps {
   value: DateRange
   onChange: (range: DateRange) => void
   showPresets?: boolean
-  showComparison?: boolean
 }
 
 export default function DateRangePicker({
   value,
   onChange,
-  showPresets = true,
-  showComparison = false
+  showPresets = true
 }: DateRangePickerProps) {
   const [showDropdown, setShowDropdown] = useState(false)
   const [customMode, setCustomMode] = useState(false)
@@ -72,19 +70,21 @@ export default function DateRangePicker({
         endDate = new Date(year, month, day, 23, 59, 59)
         break
 
-      case 'thisWeek':
+      case 'thisWeek': {
         // Pazartesi başlangıç
         const monday = day - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)
         startDate = new Date(year, month, monday)
         endDate = new Date(year, month, day, 23, 59, 59)
         break
+      }
 
-      case 'lastWeek':
+      case 'lastWeek': {
         const lastMonday = day - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) - 7
         const lastSunday = lastMonday + 6
         startDate = new Date(year, month, lastMonday)
         endDate = new Date(year, month, lastSunday, 23, 59, 59)
         break
+      }
 
       case 'thisMonth':
         startDate = new Date(year, month, 1)
@@ -96,17 +96,20 @@ export default function DateRangePicker({
         endDate = new Date(year, month, 0, 23, 59, 59)
         break
 
-      case 'thisQuarter':
+      case 'thisQuarter': {
         const quarterStartMonth = Math.floor(month / 3) * 3
         startDate = new Date(year, quarterStartMonth, 1)
         endDate = new Date(year, month, day, 23, 59, 59)
         break
+      }
 
-      case 'lastQuarter':
+      case 'lastQuarter': {
         const lastQuarterStartMonth = Math.floor(month / 3) * 3 - 3
         const lastQuarterEndMonth = lastQuarterStartMonth + 3
         startDate = new Date(year, lastQuarterStartMonth, 1)
         endDate = new Date(year, lastQuarterEndMonth, 0, 23, 59, 59)
+        break
+      }
         break
 
       case 'thisYear':

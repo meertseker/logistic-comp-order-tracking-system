@@ -179,7 +179,7 @@ const About = () => {
           </div>
           <p className="text-center text-gray-400 mt-8">
             Sekersoft, en son web teknolojileri kullanılarak geliştirilmiş modern bir masaüstü uygulamasıdır.
-            Electron framework'ü sayesinde hem Windows hem de macOS'ta sorunsuz çalışır.
+            Electron framework&apos;ü sayesinde hem Windows hem de macOS&apos;ta sorunsuz çalışır.
           </p>
         </motion.div>
 
@@ -232,7 +232,7 @@ const About = () => {
               güvenli ve uygun fiyatlı bir çözüm geliştirmeye karar verdik.
             </p>
             <p>
-              Sekersoft'u geliştirirken en önemli prensiplerimiz şunlar oldu:
+              Sekersoft&apos;u geliştirirken en önemli prensiplerimiz şunlar oldu:
             </p>
             <ul className="list-disc list-inside space-y-2 pl-4">
               <li><strong>Basitlik:</strong> Karmaşık menüler değil, ihtiyacınız olanı kolayca bulun</li>
@@ -258,7 +258,7 @@ const About = () => {
         >
           <div className="glass rounded-3xl p-12">
             <h2 className="text-3xl font-bold mb-4">
-              Sekersoft'u Keşfedin
+              Sekersoft&apos;u Keşfedin
             </h2>
             <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
               Demo talep edin, tüm özellikleri test edin ve işletmenizi dijitalleştirmeye başlayın.

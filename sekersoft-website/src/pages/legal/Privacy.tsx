@@ -101,7 +101,7 @@ const Privacy = () => {
             <section>
               <h2 className="text-2xl font-bold text-white mb-4">9. Değişiklikler</h2>
               <p className="leading-relaxed">
-                Bu Gizlilik Politikası'nı zaman zaman güncelleyebiliriz. Önemli değişiklikler 
+                Bu Gizlilik Politikası&apos;nı zaman zaman güncelleyebiliriz. Önemli değişiklikler 
                 e-posta yoluyla bildirilecektir.
               </p>
             </section>

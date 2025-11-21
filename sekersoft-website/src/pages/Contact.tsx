@@ -280,7 +280,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="font-semibold mb-2 text-blue-400">Teknik destek nasıl alınır?</p>
-                  <p className="text-sm text-gray-400">Teknik destek için formdan "Teknik Destek" konusunu seçerek mesaj iletebilir veya destek ekibimizi arayabilirsiniz.</p>
+                  <p className="text-sm text-gray-400">Teknik destek için formdan &quot;Teknik Destek&quot; konusunu seçerek mesaj iletebilir veya destek ekibimizi arayabilirsiniz.</p>
                 </div>
               </div>
             </div>

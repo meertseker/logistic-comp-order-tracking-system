@@ -627,7 +627,7 @@ export default function SettingsProfessional() {
                       </div>
 
                       <p className="text-gray-400 text-sm mt-4">
-                        Sipariş detay sayfalarında "Mail Gönder" butonu ile müşterilerinize otomatik mail gönderebilirsiniz.
+                        Sipariş detay sayfalarında &quot;Mail Gönder&quot; butonu ile müşterilerinize otomatik mail gönderebilirsiniz.
                       </p>
                     </div>
 
@@ -678,8 +678,8 @@ export default function SettingsProfessional() {
                         <div className="mt-4 p-4 bg-yellow-500/10 border-2 border-yellow-500/30 rounded-lg">
                           <p className="text-sm text-yellow-200 font-medium mb-2">⚠️ Gmail kullanıcılarına özel:</p>
                           <p className="text-sm text-yellow-100 mb-3">
-                            Gmail'de 2 adımlı doğrulama <strong>açıksa</strong>, normal şifreniz <strong>çalışmaz</strong>!
-                            "Uygulama Şifresi" oluşturmalısınız.
+                            Gmail&apos;de 2 adımlı doğrulama <strong>açıksa</strong>, normal şifreniz <strong>çalışmaz</strong>!
+                            &quot;Uygulama Şifresi&quot; oluşturmalısınız.
                           </p>
                           <a
                             href="https://myaccount.google.com/apppasswords"
@@ -1088,7 +1088,7 @@ export default function SettingsProfessional() {
                   </div>
 
                   <p className="text-gray-400 text-sm mt-4">
-                    Sipariş detay sayfalarında "Faturala" butonu ile yasal e-fatura/e-arşiv oluşturabilirsiniz.
+                    Sipariş detay sayfalarında &quot;Faturala&quot; butonu ile yasal e-fatura/e-arşiv oluşturabilirsiniz.
                   </p>
                 </div>
 
@@ -1197,7 +1197,7 @@ export default function SettingsProfessional() {
                           <option value="PRODUCTION">Canlı Ortam</option>
                         </select>
                         <p className="text-xs text-gray-400 mt-1">
-                          Önce TEST ortamında deneyip, sonra PRODUCTION'a geçin
+                          Önce TEST ortamında deneyip, sonra PRODUCTION&apos;a geçin
                         </p>
                       </div>
                     </div>
@@ -1424,7 +1424,7 @@ export default function SettingsProfessional() {
                 <FileSpreadsheet className="w-12 h-12 text-green-400 mb-4" />
                 <h3 className="text-xl font-bold text-white mb-2">Siparişleri CSV Olarak İndir</h3>
                 <p className="text-gray-300 text-sm mb-4">
-                  Siparişlerinizi Excel'de açabileceğiniz CSV formatında indirin
+                  Siparişlerinizi Excel&apos;de açabileceğiniz CSV formatında indirin
                 </p>
                 <Button
                   onClick={handleExportCSV}
@@ -1479,7 +1479,7 @@ export default function SettingsProfessional() {
 
             <div className="mt-6 p-4 bg-blue-500/10 border-2 border-blue-500/30 rounded-xl">
               <p className="text-sm text-blue-200">
-                <strong>💡 Not:</strong> Dışa aktarılan veriler bilgisayarınızın "Belgeler" klasörüne kaydedilir.
+                <strong>💡 Not:</strong> Dışa aktarılan veriler bilgisayarınızın &quot;Belgeler&quot; klasörüne kaydedilir.
                 Verilerinizi düzenli olarak yedeklemenizi öneririz.
               </p>
             </div>
@@ -1640,7 +1640,7 @@ export default function SettingsProfessional() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white">WhatsApp & Uyumsoft Test Modu</h3>
-                  <p className="text-sm text-gray-400">UI'ı test etmek için özellikleri gerçek API olmadan aktifleştirin</p>
+                  <p className="text-sm text-gray-400">UI&apos;ı test etmek için özellikleri gerçek API olmadan aktifleştirin</p>
                 </div>
               </div>
               
@@ -1659,10 +1659,10 @@ export default function SettingsProfessional() {
               <div className="mb-4 p-4 bg-gray-800/50 rounded-lg">
                 <p className="text-sm text-gray-300 mb-2">✅ Test modunda neler aktifleşir:</p>
                 <ul className="text-sm text-gray-400 space-y-1 ml-4">
-                  <li>• WhatsApp "Mesaj Gönder" butonları</li>
-                  <li>• Uyumsoft "Faturala" butonları</li>
+                  <li>• WhatsApp &quot;Mesaj Gönder&quot; butonları</li>
+                  <li>• Uyumsoft &quot;Faturala&quot; butonları</li>
                   <li>• Ayarlar sayfasında test bilgileri</li>
-                  <li>• Tüm modal ve form UI'ları</li>
+                  <li>• Tüm modal ve form UI&apos;ları</li>
                 </ul>
                 <p className="text-sm text-yellow-300 mt-3">⚠️ API çağrıları başarısız olur (test verisi)</p>
               </div>

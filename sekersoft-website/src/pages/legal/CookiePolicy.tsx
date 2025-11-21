@@ -148,7 +148,7 @@ const CookiePolicy = () => {
             <section>
               <h2 className="text-2xl font-bold text-white mb-4">7. Çerez Politikası Değişiklikleri</h2>
               <p className="leading-relaxed">
-                Bu Çerez Politikası'nı zaman zaman güncelleyebiliriz. Önemli değişiklikler web sitesinde 
+                Bu Çerez Politikası&apos;nı zaman zaman güncelleyebiliriz. Önemli değişiklikler web sitesinde 
                 duyurulacaktır. Politikayı düzenli olarak gözden geçirmenizi öneririz.
               </p>
             </section>

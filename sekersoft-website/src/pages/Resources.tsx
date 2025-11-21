@@ -153,7 +153,7 @@ const Resources = () => {
             Kaynaklar ve <span className="gradient-text">Dokümantasyon</span>
           </h1>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Sekersoft'u etkili kullanmanız için gereken tüm kaynaklar. Kılavuzlar, 
+            Sekersoft&apos;u etkili kullanmanız için gereken tüm kaynaklar. Kılavuzlar, 
             video eğitimler ve indirilebilir dosyalar.
           </p>
         </motion.div>

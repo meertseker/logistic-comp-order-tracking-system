@@ -209,7 +209,9 @@ const createTables = () => {
       // Hata olsa bile devam et, backup tablosunu sil
       try {
         db.exec(`DROP TABLE IF EXISTS trailers_backup`)
-      } catch {}
+      } catch {
+        // Ignore error if table doesn't exist
+      }
     }
   }
   

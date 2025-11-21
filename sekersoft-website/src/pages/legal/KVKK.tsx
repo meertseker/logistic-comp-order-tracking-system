@@ -24,7 +24,7 @@ const KVKK = () => {
             <section>
               <h2 className="text-2xl font-bold text-white mb-4">1. Veri Sorumlusu</h2>
               <p className="leading-relaxed">
-                6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, kişisel verileriniz; 
+                6698 sayılı Kişisel Verilerin Korunması Kanunu (&quot;KVKK&quot;) uyarınca, kişisel verileriniz; 
                 veri sorumlusu olarak Sekersoft Yazılım A.Ş. tarafından aşağıda açıklanan kapsamda 
                 işlenebilecektir.
               </p>
@@ -62,7 +62,7 @@ const KVKK = () => {
 
             <section>
               <h2 className="text-2xl font-bold text-white mb-4">4. İşleme Hukuki Sebepleri</h2>
-              <p className="leading-relaxed mb-3">Kişisel verileriniz KVKK'nın 5. ve 6. maddelerinde belirtilen:</p>
+              <p className="leading-relaxed mb-3">Kişisel verileriniz KVKK&apos;nın 5. ve 6. maddelerinde belirtilen:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Sözleşmenin kurulması veya ifasıyla doğrudan doğruya ilgili olması</li>
                 <li>Veri sorumlusunun hukuki yükümlülüğünü yerine getirebilmesi için zorunlu olması</li>
@@ -79,7 +79,7 @@ const KVKK = () => {
               <p className="leading-relaxed">
                 Kişisel verileriniz, yukarıda belirtilen amaçların gerçekleştirilmesi doğrultusunda, 
                 iş ortaklarımıza, tedarikçilerimize, hissedarlarımıza, kanunen yetkili kamu kurumları 
-                ve özel kişilere KVKK'nın 8. ve 9. maddelerinde belirtilen şartlara uygun olarak aktarılabilecektir.
+                ve özel kişilere KVKK&apos;nın 8. ve 9. maddelerinde belirtilen şartlara uygun olarak aktarılabilecektir.
               </p>
             </section>
 
@@ -93,14 +93,14 @@ const KVKK = () => {
 
             <section>
               <h2 className="text-2xl font-bold text-white mb-4">7. İlgili Kişi Hakları</h2>
-              <p className="leading-relaxed mb-3">KVKK'nın 11. maddesi uyarınca sahip olduğunuz haklar:</p>
+              <p className="leading-relaxed mb-3">KVKK&apos;nın 11. maddesi uyarınca sahip olduğunuz haklar:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
                 <li>İşlenmişse buna ilişkin bilgi talep etme</li>
                 <li>İşlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme</li>
                 <li>Yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme</li>
                 <li>Eksik veya yanlış işlenmiş olması hâlinde düzeltilmesini isteme</li>
-                <li>KVKK'nın 7. maddesinde öngörülen şartlar çerçevesinde silinmesini veya yok edilmesini isteme</li>
+                <li>KVKK&apos;nın 7. maddesinde öngörülen şartlar çerçevesinde silinmesini veya yok edilmesini isteme</li>
                 <li>Düzeltme, silme ve yok edilme işlemlerinin aktarıldığı üçüncü kişilere bildirilmesini isteme</li>
                 <li>Münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme</li>
                 <li>Kanuna aykırı olarak işlenmesi sebebiyle zarara uğramanız hâlinde zararın giderilmesini talep etme</li>

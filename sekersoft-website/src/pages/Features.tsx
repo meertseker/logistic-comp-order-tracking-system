@@ -332,7 +332,7 @@ const Features = () => {
           className="text-center"
         >
           <h2 className="text-3xl font-bold mb-6">
-            Sekersoft'u denemeye hazır mısınız?
+            Sekersoft&apos;u denemeye hazır mısınız?
           </h2>
           <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
             Demo talep edin, tüm özellikleri keşfedin ve işletmenizi dijitalleştirmeye başlayın.

@@ -330,9 +330,9 @@ const Solutions = () => {
                 Gerçek <span className="gradient-text">Başarı Hikayesi</span>
               </h2>
               <p className="text-gray-400 mb-6 italic">
-                "3 aracım var. Önceden hangi araçla hangi işi yapsam diye düşünürdüm ama tam bilmiyordum. 
+                &quot;3 aracım var. Önceden hangi araçla hangi işi yapsam diye düşünürdüm ama tam bilmiyordum. 
                 Sekersoft ile her aracın maliyetini girdim. Şimdi hangi araç ne kadar karlı hemen görüyorum. 
-                Artık en karlı atamayı yapabiliyorum. Aylık kazancım %20 arttı."
+                Artık en karlı atamayı yapabiliyorum. Aylık kazancım %20 arttı.&quot;
               </p>
               <div className="mb-6">
                 <p className="font-semibold text-lg">Mehmet Bey</p>
@@ -378,7 +378,7 @@ const Solutions = () => {
               Siz De <span className="gradient-text">Başlayın</span>
             </h2>
             <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
-              Demo talep edin, Sekersoft'u keşfedin ve işletmenizi dijitalleştirmeye başlayın.
+              Demo talep edin, Sekersoft&apos;u keşfedin ve işletmenizi dijitalleştirmeye başlayın.
               Tüm sorularınızı yanıtlayalım.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -45,6 +45,16 @@ jobs:
 
       - name: List release files
         run: ls -lah release/ || echo "No release files found"
+        
+      - name: Verify latest-mac.yml exists
+        run: |
+          if [ -f "release/latest-mac.yml" ]; then
+            echo "✅ latest-mac.yml file found"
+            cat "release/latest-mac.yml"
+          else
+            echo "⚠️ latest-mac.yml file not found in release directory"
+            echo "This file should be uploaded to GitHub release automatically by electron-builder"
+          fi
 
       - name: Upload as Artifact
         uses: actions/upload-artifact@v4
@@ -86,6 +96,16 @@ jobs:
 
       - name: List release files
         run: dir release || echo "No release files found"
+        
+      - name: Verify latest.yml exists
+        run: |
+          if (Test-Path "release\latest.yml") {
+            Write-Host "✅ latest.yml file found"
+            Get-Content "release\latest.yml"
+          } else {
+            Write-Host "⚠️ latest.yml file not found in release directory"
+            Write-Host "This file should be uploaded to GitHub release automatically by electron-builder"
+          }
 
       - name: Upload as Artifact
         uses: actions/upload-artifact@v4

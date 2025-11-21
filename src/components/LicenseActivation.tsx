@@ -124,7 +124,7 @@ const LicenseActivation: React.FC<LicenseActivationProps> = ({ onActivated }) =>
               <p className="font-medium mb-1">Önemli Bilgi</p>
               <p>
                 Bu yazılım lisanslıdır ve yalnızca yetkili kullanıcılar tarafından kullanılabilir.
-                Lisansınızı almak için lütfen aşağıdaki <strong>Makine ID</strong>'nizi satıcınıza iletin.
+                Lisansınızı almak için lütfen aşağıdaki <strong>Makine ID</strong>&apos;nizi satıcınıza iletin.
               </p>
             </div>
           </div>
@@ -152,7 +152,7 @@ const LicenseActivation: React.FC<LicenseActivationProps> = ({ onActivated }) =>
               </Button>
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              Bu ID'yi lisans sağlayıcınıza göndererek size özel bir lisans anahtarı alın.
+              Bu ID&apos;yi lisans sağlayıcınıza göndererek size özel bir lisans anahtarı alın.
             </p>
           </div>
 

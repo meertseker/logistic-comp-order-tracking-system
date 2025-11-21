@@ -293,7 +293,7 @@ describe('Database Logic - KRİTİK TESTLER', () => {
 
   describe('Transaction Logic', () => {
     it('transaction ile multiple operations yapılmalı', () => {
-      const executeTransaction = (operations: Function[]) => {
+      const executeTransaction = (operations: (() => void)[]) => {
         const transaction = {
           operations: [] as string[],
           rollback: false,
@@ -517,7 +517,7 @@ describe('Database Logic - KRİTİK TESTLER', () => {
     })
 
     it('retry logic maksimum deneme sayısını aşmamalı', () => {
-      const retryOperation = async (operation: Function, maxRetries: number = 3) => {
+      const retryOperation = async (operation: () => Promise<void>, maxRetries: number = 3) => {
         let attempts = 0
         let lastError: Error | null = null
         
@@ -538,7 +538,7 @@ describe('Database Logic - KRİTİK TESTLER', () => {
       }
       
       // Test edilebilir versiyonu (async olmadan)
-      const retrySync = (operation: Function, maxRetries: number = 3) => {
+      const retrySync = (operation: () => void, maxRetries: number = 3) => {
         let attempts = 0
         
         while (attempts < maxRetries) {

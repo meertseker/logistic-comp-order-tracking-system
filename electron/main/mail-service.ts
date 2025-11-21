@@ -2,7 +2,6 @@ import nodemailer from 'nodemailer'
 import { getDB } from './database'
 import path from 'path'
 import fs from 'fs'
-import { app } from 'electron'
 import { generateEmailByStatus, type EmailTemplateData } from './mail-templates-professional'
 
 export interface MailSettings {

@@ -39,7 +39,7 @@ function cleanupTestDataDir(testDir: string) {
  * Electron uygulamasını başlat
  */
 export const test = base.extend<TestFixtures>({
-  testDataDir: async ({}, use) => {
+  testDataDir: async (_unused, use) => {
     const testDir = createTestDataDir()
     await use(testDir)
     cleanupTestDataDir(testDir)
