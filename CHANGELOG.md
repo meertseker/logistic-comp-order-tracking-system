@@ -11,8 +11,120 @@ Format [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standardına day
 - Çoklu kullanıcı desteği
 - OCR ile fatura okuma
 - Excel export özelliği
-- WhatsApp bildirimleri
 - Gelişmiş grafik ve charts
+
+## [1.1.0] - 2025-01-21
+
+### ✨ Added (New Features)
+
+#### UI/UX Enhancements
+- **Figma Design System Integration**
+  - Complete Figma design tokens export system
+  - Component specifications documentation
+  - Design token JSON export functionality
+  - Component guide for Figma integration
+  - Automated token extraction scripts
+
+- **New Components**
+  - `CostCalculator` component for route cost analysis
+  - `VehicleSelectCompact` for compact vehicle selection
+  - `DesignComponents` showcase page for component library
+  - Enhanced `Modal` component with improved animations
+  - Improved `RoutePicker` with better UX
+
+- **Screenshot System**
+  - Advanced screenshot capture system
+  - Component-level screenshot generation
+  - Full-page screenshot capabilities
+  - Automated screenshot pipeline
+  - Screenshot organization and indexing
+
+#### Backend Improvements
+- **Enhanced Electron Main Process**
+  - Improved IPC communication handlers
+  - Better error handling and logging
+  - Optimized database operations
+  - Enhanced mail service integration
+  - Improved WhatsApp service stability
+
+- **Database Utilities**
+  - Database clearing script for testing
+  - Enhanced seed data scripts
+  - Improved test feature enabling
+
+#### Documentation
+- **New Documentation Files**
+  - Figma Component Guide
+  - Figma Design Tokens documentation
+  - Video pipeline documentation
+  - Enhanced test documentation
+  - Code signing guide updates
+  - Legacy Mac support documentation
+
+### 🔄 Changed (Improvements)
+
+#### UI Components
+- **Layout Component**
+  - Major refactoring for better performance
+  - Improved responsive design
+  - Enhanced navigation structure
+  - Better mobile support
+
+- **Create Order Page**
+  - Improved form validation
+  - Better error handling
+  - Enhanced user experience
+  - Optimized component structure
+
+- **Order Detail Page**
+  - Enhanced display of order information
+  - Improved expense tracking UI
+  - Better invoice management interface
+
+- **Route Picker Component**
+  - Enhanced route selection UI
+  - Better route data management
+  - Improved validation and error handling
+
+- **Vehicle Select Component**
+  - Improved vehicle selection interface
+  - Better filtering and search
+  - Enhanced display of vehicle information
+
+#### Website Updates
+- **Sekersoft Website**
+  - Updated screenshot data
+  - Enhanced About page
+  - Improved Blog page
+  - Updated Testimonials page
+
+#### CI/CD
+- **GitHub Actions**
+  - Updated macOS legacy build workflow
+  - Improved build configurations
+  - Enhanced artifact management
+
+### 🐛 Fixed (Bug Fixes)
+- Fixed line ending issues in various files
+- Improved error handling in mail service
+- Fixed WhatsApp service integration issues
+- Enhanced Uyumsoft integration stability
+- Fixed modal component rendering issues
+- Improved route picker validation
+
+### 📚 Documentation Updates
+- Updated test documentation
+- Enhanced quick start guides
+- Improved WhatsApp integration docs
+- Updated security documentation
+- Enhanced setup guides
+
+### 🔧 Technical Improvements
+- Updated dependencies
+- Improved build scripts
+- Enhanced development utilities
+- Better code organization
+- Improved TypeScript types
 
 ## [1.0.0] - 2025-01-20
 
@@ -169,6 +281,7 @@ Güvenlik yamalarında olan açıklar için
 - GitHub Issues: https://github.com/meertseker/logistic-comp-order-tracking-system/issues
 - E-posta: support@seymentransport.com
 
-[Unreleased]: https://github.com/meertseker/logistic-comp-order-tracking-system/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/meertseker/logistic-comp-order-tracking-system/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/meertseker/logistic-comp-order-tracking-system/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/meertseker/logistic-comp-order-tracking-system/releases/tag/v1.0.0
 

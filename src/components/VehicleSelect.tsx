@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { ChevronDown, ChevronUp, TrendingUp } from 'lucide-react'
 import Input from './Input'
 import Card from './Card'
 
@@ -19,6 +20,7 @@ interface Vehicle {
   mtv_yillik?: number
   muayene_yillik?: number
   hedef_toplam_km?: number
+  orderCount?: number
 }
 
 interface VehicleSelectProps {
@@ -30,14 +32,35 @@ interface VehicleSelectProps {
 
 export default function VehicleSelect({ vehicles, value, onChange, disabled }: VehicleSelectProps) {
   const [query, setQuery] = useState('')
-  // Backend breakdown is not used for Toplam artık; Araçlar sayfasıyla birebir tutarlılık için
-  // kart toplamını doğrudan araç parametrelerinden hesaplıyoruz.
+  const [expanded, setExpanded] = useState(false)
+  const INITIAL_SHOW_COUNT = 6
+
+  // Araçları sipariş sayısına göre sırala (en çok kullanılanlar önce)
+  const sortedVehicles = useMemo(() => {
+    return [...vehicles].sort((a, b) => {
+      const aCount = a.orderCount || 0
+      const bCount = b.orderCount || 0
+      if (bCount !== aCount) {
+        return bCount - aCount // En çok kullanılanlar önce
+      }
+      // Sipariş sayısı aynıysa plakaya göre sırala
+      return a.plaka.localeCompare(b.plaka, 'tr')
+    })
+  }, [vehicles])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return vehicles
-    return vehicles.filter(v => v.plaka.toLowerCase().includes(q))
-  }, [vehicles, query])
+    if (!q) return sortedVehicles
+    return sortedVehicles.filter(v => v.plaka.toLowerCase().includes(q))
+  }, [sortedVehicles, query])
+
+  // Gösterilecek araçlar
+  const displayedVehicles = useMemo(() => {
+    if (expanded || query) return filtered
+    return filtered.slice(0, INITIAL_SHOW_COUNT)
+  }, [filtered, expanded, query])
+
+  const hasMore = !expanded && !query && filtered.length > INITIAL_SHOW_COUNT
 
   const costPerKm = (v: Vehicle): number => {
     const fuel = ((v.yakit_tuketimi || 25) * (v.yakit_fiyati || 40)) / 100
@@ -66,12 +89,24 @@ export default function VehicleSelect({ vehicles, value, onChange, disabled }: V
         label="Araç ara (plaka)"
         placeholder="34 ABC 123"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value)
+          if (e.target.value) setExpanded(true) // Arama yapıldığında genişlet
+        }}
         disabled={disabled}
       />
 
+      {!query && filtered.length > 0 && (
+        <div className="flex items-center gap-2 px-1">
+          <TrendingUp className="w-4 h-4" style={{ color: 'rgba(10, 132, 255, 0.6)' }} />
+          <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>
+            En çok kullanılan araçlar önce gösteriliyor
+          </p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {filtered.map((v) => {
+        {displayedVehicles.map((v) => {
           const selected = value === v.plaka
           return (
             <button
@@ -88,8 +123,16 @@ export default function VehicleSelect({ vehicles, value, onChange, disabled }: V
               }}
             >
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Plaka</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Plaka</p>
+                    {v.orderCount !== undefined && v.orderCount > 0 && (
+                      <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium" 
+                        style={{ backgroundColor: 'rgba(10, 132, 255, 0.15)', color: '#0A84FF' }}>
+                        {v.orderCount} sipariş
+                      </span>
+                    )}
+                  </div>
                   <p className="text-lg font-semibold mt-0.5" style={{ color: '#FFFFFF' }}>{v.plaka}</p>
                 </div>
                 {selected && (
@@ -155,6 +198,44 @@ export default function VehicleSelect({ vehicles, value, onChange, disabled }: V
           </div>
         )}
       </div>
+
+      {hasMore && (
+        <div className="flex justify-center pt-2">
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-200 hover:scale-105"
+            style={{
+              borderColor: 'rgba(10, 132, 255, 0.3)',
+              backgroundColor: 'rgba(10, 132, 255, 0.1)',
+              color: '#0A84FF',
+            }}
+          >
+            <ChevronDown className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {filtered.length - INITIAL_SHOW_COUNT} araç daha göster
+            </span>
+          </button>
+        </div>
+      )}
+
+      {expanded && !query && filtered.length > INITIAL_SHOW_COUNT && (
+        <div className="flex justify-center pt-2">
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-200 hover:scale-105"
+            style={{
+              borderColor: 'rgba(84, 84, 88, 0.5)',
+              backgroundColor: 'rgba(28, 28, 30, 0.5)',
+              color: 'rgba(235, 235, 245, 0.7)',
+            }}
+          >
+            <ChevronUp className="w-4 h-4" />
+            <span className="text-sm font-medium">Daha az göster</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

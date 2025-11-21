@@ -1951,17 +1951,12 @@ export default function OrderDetail() {
         title="💬 WhatsApp Mesajı Gönder"
       >
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Alıcı Telefon Numarası
-            </label>
-            <Input
-              value={recipientPhone}
-              onChange={(e) => setRecipientPhone(e.target.value)}
-              placeholder="+90 555 123 4567"
-            />
-            <p className="text-xs text-gray-400 mt-1">
-              Başında +90 ile yazın
+          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+            <p className="text-sm text-gray-300 font-medium mb-1">
+              📱 Alıcı: {order?.musteri || 'Müşteri'}
+            </p>
+            <p className="text-xs text-gray-400">
+              Telefon numarası sipariş bilgilerinden otomatik olarak alınacak: <span className="font-mono text-green-400">{order?.telefon || 'Numara bulunamadı'}</span>
             </p>
           </div>
 

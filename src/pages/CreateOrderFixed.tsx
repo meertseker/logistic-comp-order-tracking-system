@@ -14,7 +14,9 @@ import {
   CheckCircle,
   Activity,
   Zap,
-  Plus
+  Plus,
+  Users,
+  Package
 } from 'lucide-react'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -369,53 +371,71 @@ export default function CreateOrderFixed() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Form - Sol taraf */}
-        <div className="lg:col-span-2">
-          <Card>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              
-              {/* Taşeron Toggle */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'rgba(255, 159, 10, 0.12)', border: '0.5px solid rgba(255, 159, 10, 0.3)' }}>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(255, 159, 10, 0.2)' }}>
-                      <Truck className="w-5 h-5" style={{ color: '#FF9F0A' }} />
-                    </div>
-                    <div>
-                      <p className="font-semibold" style={{ color: '#FFFFFF' }}>Taşeron Firma</p>
-                      <p className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                        Bu sipariş başka bir firmaya mı verilecek?
-                      </p>
-                    </div>
+        <div className="lg:col-span-2 space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* Taşeron Toggle - Modern Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card rounded-xl p-4 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-20 h-20 rounded-full blur-2xl opacity-20" style={{ backgroundColor: '#FF9F0A' }} />
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(255, 159, 10, 0.15)' }}>
+                    <Truck className="w-5 h-5" style={{ color: '#FF9F0A' }} />
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={isSubcontractor}
-                      onChange={(e) => {
-                        setIsSubcontractor(e.target.checked)
-                        if (e.target.checked) {
-                          setFormData(prev => ({ ...prev, plaka: '' }))
-                        } else {
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            subcontractorCompany: '',
-                            subcontractorVehicle: '',
-                            subcontractorCost: ''
-                          }))
-                        }
-                      }}
-                    />
-                    <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
-                  </label>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>Taşeron Firma</p>
+                    <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                      Bu sipariş başka bir firmaya mı verilecek?
+                    </p>
+                  </div>
                 </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={isSubcontractor}
+                    onChange={(e) => {
+                      setIsSubcontractor(e.target.checked)
+                      if (e.target.checked) {
+                        setFormData(prev => ({ ...prev, plaka: '' }))
+                      } else {
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          subcontractorCompany: '',
+                          subcontractorVehicle: '',
+                          subcontractorCost: ''
+                        }))
+                      }
+                    }}
+                  />
+                  <div className="w-11 h-6 rounded-full transition-all duration-200 peer-checked:bg-[#FF9F0A] peer-focus:ring-4 peer-focus:ring-[#FF9F0A]/20" style={{ backgroundColor: isSubcontractor ? '#FF9F0A' : 'rgba(84, 84, 88, 0.65)' }}>
+                    <div className={`absolute top-[2px] left-[2px] h-5 w-5 bg-white rounded-full transition-transform duration-200 ${isSubcontractor ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </div>
+                </label>
               </div>
+            </motion.div>
 
-              {/* Araç Seçimi veya Taşeron Bilgileri */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">
-                  {isSubcontractor ? '1️⃣ Taşeron Firma Bilgileri' : '1️⃣ Araç Bilgileri'}
-                </h3>
+            {/* Araç Seçimi veya Taşeron Bilgileri */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="glass-card rounded-xl p-5 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-20" style={{ backgroundColor: '#0A84FF' }} />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.15)' }}>
+                    <Truck className="w-4 h-4" style={{ color: '#0A84FF' }} />
+                  </div>
+                  <h3 className="text-base font-semibold" style={{ color: '#FFFFFF' }}>
+                    {isSubcontractor ? 'Taşeron Firma Bilgileri' : 'Araç Bilgileri'}
+                  </h3>
+                </div>
                 
                 {isSubcontractor ? (
                   <div className="space-y-4">
@@ -524,10 +544,23 @@ export default function CreateOrderFixed() {
                   </div>
                 )}
               </div>
+            </motion.div>
 
-              {/* Müşteri Bilgileri */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">2️⃣ Müşteri Bilgileri</h3>
+            {/* Müşteri Bilgileri */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="glass-card rounded-xl p-5 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-20" style={{ backgroundColor: '#30D158' }} />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(48, 209, 88, 0.15)' }}>
+                    <Users className="w-4 h-4" style={{ color: '#30D158' }} />
+                  </div>
+                  <h3 className="text-base font-semibold" style={{ color: '#FFFFFF' }}>Müşteri Bilgileri</h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label="Müşteri Adı"
@@ -562,39 +595,74 @@ export default function CreateOrderFixed() {
                   />
                 </div>
               </div>
+            </motion.div>
 
-              {/* Güzergah */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">3️⃣ Güzergah ve Mesafe</h3>
+            {/* Güzergah */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="glass-card rounded-xl p-5 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-20" style={{ backgroundColor: '#BF5AF2' }} />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(191, 90, 242, 0.15)' }}>
+                    <MapPin className="w-4 h-4" style={{ color: '#BF5AF2' }} />
+                  </div>
+                  <h3 className="text-base font-semibold" style={{ color: '#FFFFFF' }}>Güzergah ve Mesafe</h3>
+                </div>
                 
-                {/* Sefer Tipi */}
+                {/* Sefer Tipi - Modern Buttons */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sefer Tipi</label>
-                  <div className="flex space-x-4">
-                    <button
+                  <label className="block text-xs font-medium mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Sefer Tipi</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <motion.button
                       type="button"
                       onClick={() => setTripType('oneway')}
-                      className="flex-1 px-4 py-3 rounded-lg border-2 transition-all font-semibold"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="px-4 py-2.5 rounded-lg border transition-all font-medium text-sm"
                       style={
                         tripType === 'oneway'
-                          ? { backgroundColor: 'rgba(10, 132, 255, 0.15)', borderColor: 'rgba(10, 132, 255, 0.5)', color: '#0A84FF' }
-                          : { borderColor: 'rgba(84, 84, 88, 0.35)', color: 'rgba(235, 235, 245, 0.7)' }
+                          ? { 
+                              backgroundColor: 'rgba(10, 132, 255, 0.15)', 
+                              borderColor: 'rgba(10, 132, 255, 0.5)', 
+                              color: '#0A84FF',
+                              boxShadow: '0 0 0 1px rgba(10, 132, 255, 0.2)'
+                            }
+                          : { 
+                              borderColor: 'rgba(84, 84, 88, 0.35)', 
+                              color: 'rgba(235, 235, 245, 0.7)',
+                              backgroundColor: 'transparent'
+                            }
                       }
                     >
                       🔜 Tek Yön
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                       type="button"
                       onClick={() => setTripType('roundtrip')}
-                      className="flex-1 px-4 py-3 rounded-lg border-2 transition-all font-semibold"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="px-4 py-2.5 rounded-lg border transition-all font-medium text-sm"
                       style={
                         tripType === 'roundtrip'
-                          ? { backgroundColor: 'rgba(10, 132, 255, 0.15)', borderColor: 'rgba(10, 132, 255, 0.5)', color: '#0A84FF' }
-                          : { borderColor: 'rgba(84, 84, 88, 0.35)', color: 'rgba(235, 235, 245, 0.7)' }
+                          ? { 
+                              backgroundColor: 'rgba(10, 132, 255, 0.15)', 
+                              borderColor: 'rgba(10, 132, 255, 0.5)', 
+                              color: '#0A84FF',
+                              boxShadow: '0 0 0 1px rgba(10, 132, 255, 0.2)'
+                            }
+                          : { 
+                              borderColor: 'rgba(84, 84, 88, 0.35)', 
+                              color: 'rgba(235, 235, 245, 0.7)',
+                              backgroundColor: 'transparent'
+                            }
                       }
                     >
                       🔄 Gidiş-Dönüş
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
 
@@ -652,10 +720,23 @@ export default function CreateOrderFixed() {
                   />
                 </div>
               </div>
+            </motion.div>
 
-              {/* Yük Açıklaması */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">4️⃣ Yük Detayları</h3>
+            {/* Yük Açıklaması */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="glass-card rounded-xl p-5 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-20" style={{ backgroundColor: '#FF9F0A' }} />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(255, 159, 10, 0.15)' }}>
+                    <Package className="w-4 h-4" style={{ color: '#FF9F0A' }} />
+                  </div>
+                  <h3 className="text-base font-semibold" style={{ color: '#FFFFFF' }}>Yük Detayları</h3>
+                </div>
                 <TextArea
                   label="Yük Açıklaması"
                   name="yukAciklamasi"
@@ -666,32 +747,47 @@ export default function CreateOrderFixed() {
                   disabled={vehicles.length === 0}
                 />
               </div>
+            </motion.div>
 
-              {/* Fiyat */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">5️⃣ Fiyatlandırma</h3>
-                
-                {/* Otomatik Fiyat Toggle - Sadece kendi araçlar için */}
-                {!isSubcontractor && (
-                  <div className="flex items-center justify-between mb-3 p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Otomatik Fiyat</p>
-                      <p className="text-xs text-gray-600">Sistem önerilen fiyatı otomatik uygular</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setAutoPrice(!autoPrice)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        autoPrice ? 'bg-primary-600' : 'bg-gray-200'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          autoPrice ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
+            {/* Fiyat */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="glass-card rounded-xl p-5 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-20" style={{ backgroundColor: '#30D158' }} />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(48, 209, 88, 0.15)' }}>
+                    <DollarSign className="w-4 h-4" style={{ color: '#30D158' }} />
                   </div>
+                  <h3 className="text-base font-semibold" style={{ color: '#FFFFFF' }}>Fiyatlandırma</h3>
+                </div>
+                
+                {/* Otomatik Fiyat Toggle - Modern */}
+                {!isSubcontractor && (
+                  <motion.div 
+                    whileHover={{ scale: 1.01 }}
+                    className="flex items-center justify-between mb-4 p-3 rounded-lg" 
+                    style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)', border: '0.5px solid rgba(10, 132, 255, 0.2)' }}
+                  >
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: '#FFFFFF' }}>Otomatik Fiyat</p>
+                      <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Sistem önerilen fiyatı otomatik uygular</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={autoPrice}
+                        onChange={() => setAutoPrice(!autoPrice)}
+                      />
+                      <div className="w-11 h-6 rounded-full transition-all duration-200 peer-checked:bg-[#0A84FF] peer-focus:ring-4 peer-focus:ring-[#0A84FF]/20" style={{ backgroundColor: autoPrice ? '#0A84FF' : 'rgba(84, 84, 88, 0.65)' }}>
+                        <div className={`absolute top-[2px] left-[2px] h-5 w-5 bg-white rounded-full transition-transform duration-200 ${autoPrice ? 'translate-x-5' : 'translate-x-0'}`} />
+                      </div>
+                    </label>
+                  </motion.div>
                 )}
 
                 <Input
@@ -713,10 +809,15 @@ export default function CreateOrderFixed() {
                 />
 
                 {analysis && !autoPrice && (
-                  <div className="mt-2 flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-3 flex items-center justify-between p-3 rounded-lg" 
+                    style={{ backgroundColor: 'rgba(48, 209, 88, 0.15)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}
+                  >
                     <div>
-                      <p className="text-xs text-gray-600">Sistem Önerisi:</p>
-                      <p className="text-lg font-bold text-green-600">{formatCurrency(analysis.fiyatKdvli)}</p>
+                      <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Sistem Önerisi:</p>
+                      <p className="text-lg font-bold" style={{ color: '#30D158' }}>{formatCurrency(analysis.fiyatKdvli)}</p>
                     </div>
                     <Button
                       type="button"
@@ -725,24 +826,30 @@ export default function CreateOrderFixed() {
                     >
                       Uygula
                     </Button>
-                  </div>
+                  </motion.div>
                 )}
               </div>
+            </motion.div>
 
-              {/* Modern Actions */}
-              <div className="flex items-center justify-between pt-6" style={{ borderTop: '0.5px solid rgba(84, 84, 88, 0.35)' }}>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            {/* Modern Actions */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex items-center justify-between pt-4"
+            >
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => navigate('/orders')}
                   disabled={loading}
                 >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Geri
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Geri
                 </Button>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button 
                   type="submit" 
                   disabled={loading || analyzing || (!isSubcontractor && vehicles.length === 0)}
@@ -753,120 +860,53 @@ export default function CreateOrderFixed() {
                       Oluşturuluyor...
                     </>
                   ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Sipariş Oluştur
-                      </>
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Sipariş Oluştur
+                    </>
                   )}
                 </Button>
-                </motion.div>
-              </div>
-            </form>
-          </Card>
+              </motion.div>
+            </motion.div>
+          </form>
         </div>
 
-        {/* Modern Analiz Panel - Sağ taraf */}
-        <div className="space-y-4">
-          {/* Taşeron Kar/Zarar Özeti */}
-          {isSubcontractor && formData.baslangicFiyati && formData.subcontractorCost && (() => {
-            const gelir = Number(formData.baslangicFiyati) || 0
-            const maliyet = Number(formData.subcontractorCost) || 0
-            const kar = gelir - maliyet
-            const karYuzde = gelir > 0 ? (kar / gelir) * 100 : 0
-            return (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="glass-card rounded-xl p-6 relative overflow-hidden"
-                style={{ 
-                  background: kar > 0 ? 'rgba(48, 209, 88, 0.15)' : kar < 0 ? 'rgba(255, 69, 58, 0.15)' : 'rgba(255, 214, 10, 0.15)',
-                  border: kar > 0 ? '0.5px solid rgba(48, 209, 88, 0.3)' : kar < 0 ? '0.5px solid rgba(255, 69, 58, 0.3)' : '0.5px solid rgba(255, 214, 10, 0.3)',
-                }}
-              >
-                <div 
-                  className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30"
-                  style={{ backgroundColor: kar > 0 ? '#30D158' : kar < 0 ? '#FF453A' : '#FFD60A' }}
-                />
-                <div className="relative text-center">
-                  <div className="mb-3">
-                    <span className="text-4xl">{kar > 0 ? '🎉' : kar < 0 ? '⚠️' : '➡️'}</span>
-                  </div>
-                  <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                    Taşeron Kar Marjı
-                  </p>
-                  <p className="text-5xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
-                    {karYuzde > 0 ? '+' : ''}{karYuzde.toFixed(1)}%
-                  </p>
-                  <div className="mt-4 p-3 rounded-xl" style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Net Kar:</span>
-                      <span className="text-lg font-bold" style={{ color: '#FFFFFF' }}>{formatCurrency(kar)}</span>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Müşteriden Alınan:</span>
-                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(gelir)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Taşerona Ödenen:</span>
-                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(maliyet)}</span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )
-          })()}
-          
-          {/* Kar/Zarar Özeti */}
+        {/* Modern Analiz Panel - Sağ taraf - iOS 26 Style */}
+        <div className="space-y-4 lg:sticky lg:top-4 lg:self-start">
+          {/* Kar/Zarar Özeti - Kompakt StatCard */}
           {!isSubcontractor && analysis && formData.baslangicFiyati && (() => {
             const entered = Number(formData.baslangicFiyati) || 0
             const breakEven = analysis.onerilenMinFiyat || 0
             const delta = entered - breakEven
             const pct = entered > 0 ? (delta / entered) * 100 : 0
             const profitStatus = getProfitStatus(delta)
+            const color = delta > 100 ? '#30D158' : delta < -100 ? '#FF453A' : '#FFD60A'
             return (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="glass-card rounded-xl p-6 relative overflow-hidden"
-                style={{ 
-                  background: delta > 100 ? 'rgba(48, 209, 88, 0.15)' : delta < -100 ? 'rgba(255, 69, 58, 0.15)' : 'rgba(255, 214, 10, 0.15)',
-                  border: delta > 100 ? '0.5px solid rgba(48, 209, 88, 0.3)' : delta < -100 ? '0.5px solid rgba(255, 69, 58, 0.3)' : '0.5px solid rgba(255, 214, 10, 0.3)',
-                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.02 }}
+                className="glass-card rounded-xl p-5 relative overflow-hidden"
               >
-                <div 
-                  className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-30"
-                  style={{ backgroundColor: delta > 100 ? '#30D158' : delta < -100 ? '#FF453A' : '#FFD60A' }}
-                />
-                <div className="relative text-center">
-                  <div className="mb-3">
-                    <span className="text-4xl">{profitStatus.icon}</span>
-                  </div>
-                  <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                    {profitStatus.text}
-                  </p>
-                  <p className="text-5xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
-                    {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
-                  </p>
-                  <div className="mt-4 p-3 rounded-xl" style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Başabaş Farkı:</span>
-                      <span className="text-lg font-bold" style={{ color: '#FFFFFF' }}>{formatCurrency(delta)}</span>
+                <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl opacity-20" style={{ backgroundColor: color }} />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="p-2 rounded-lg" style={{ background: `${color}20` }}>
+                      <TrendingUp className="w-5 h-5" style={{ color }} />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Kar/Zarar</p>
+                      <p className="text-2xl font-bold" style={{ color }}>{pct > 0 ? '+' : ''}{pct.toFixed(1)}%</p>
                     </div>
                   </div>
-                  <div className="mt-4 space-y-2 text-xs">
+                  <div className="space-y-1.5 text-xs">
                     <div className="flex justify-between">
-                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Girilen Fiyat:</span>
+                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Fark:</span>
+                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(delta)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Fiyat:</span>
                       <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(entered)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Başabaş Noktası:</span>
-                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(breakEven)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Toplam Maliyet:</span>
-                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(analysis.toplamMaliyet)}</span>
                     </div>
                   </div>
                 </div>
@@ -874,144 +914,136 @@ export default function CreateOrderFixed() {
             )
           })()}
 
-          {/* Modern Maliyet Detayı */}
+          {/* Taşeron Kar/Zarar - Kompakt */}
+          {isSubcontractor && formData.baslangicFiyati && formData.subcontractorCost && (() => {
+            const gelir = Number(formData.baslangicFiyati) || 0
+            const maliyet = Number(formData.subcontractorCost) || 0
+            const kar = gelir - maliyet
+            const karYuzde = gelir > 0 ? (kar / gelir) * 100 : 0
+            const color = kar > 0 ? '#30D158' : kar < 0 ? '#FF453A' : '#FFD60A'
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.02 }}
+                className="glass-card rounded-xl p-5 relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl opacity-20" style={{ backgroundColor: color }} />
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="p-2 rounded-lg" style={{ background: `${color}20` }}>
+                      <DollarSign className="w-5 h-5" style={{ color }} />
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Kar Marjı</p>
+                      <p className="text-2xl font-bold" style={{ color }}>{karYuzde > 0 ? '+' : ''}{karYuzde.toFixed(1)}%</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex justify-between">
+                      <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Net Kar:</span>
+                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>{formatCurrency(kar)}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )
+          })()}
+
+          {/* Maliyet Analizi - Kompakt Grid */}
           {!isSubcontractor && analysis && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="glass-card rounded-xl p-6"
+              transition={{ delay: 0.1 }}
+              className="glass-card rounded-xl p-5 relative overflow-hidden"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-xl" style={{ backgroundColor: 'rgba(10, 132, 255, 0.15)' }}>
-                  <Calculator className="w-5 h-5" style={{ color: '#0A84FF' }} />
+              <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl opacity-20" style={{ backgroundColor: '#0A84FF' }} />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-2 rounded-lg" style={{ background: '#0A84FF20' }}>
+                    <Calculator className="w-5 h-5" style={{ color: '#0A84FF' }} />
+                  </div>
+                  <h3 className="text-base font-semibold" style={{ color: '#FFFFFF' }}>Maliyet Analizi</h3>
                 </div>
-                <h3 className="text-lg font-semibold" style={{ color: '#FFFFFF' }}>
-                  Maliyet Analizi
-                </h3>
-              </div>
 
-              <div className="space-y-3">
-                {/* Etkin Mesafe */}
-                <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)' }}>
-                  <div className="flex items-center justify-between">
+                <div className="space-y-3">
+                  {/* Etkin Mesafe - Kompakt */}
+                  <div className="flex items-center justify-between p-2.5 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)' }}>
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" style={{ color: '#0A84FF' }} />
-                      <span className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Etkin Mesafe:</span>
+                      <MapPin className="w-3.5 h-3.5" style={{ color: '#0A84FF' }} />
+                      <span className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Mesafe</span>
                     </div>
-                    <span className="font-bold text-lg" style={{ color: '#FFFFFF' }}>
-                      {analysis.etkinKm.toFixed(0)} km
-                    </span>
+                    <span className="text-sm font-bold" style={{ color: '#FFFFFF' }}>{analysis.etkinKm.toFixed(0)} km</span>
                   </div>
-                </div>
-                
-                {/* Maliyet Kalemleri */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                      <Zap className="w-3.5 h-3.5" style={{ color: '#FFD60A' }} />
-                      Yakıt ({analysis.costBreakdown.yakitLitre?.toFixed(1)} lt):
-                    </span>
-                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
-                      {formatCurrency(analysis.costBreakdown.yakitMaliyet)}
-                    </span>
+                  
+                  {/* Maliyet Kalemleri - Kompakt Grid */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2.5 rounded-lg" style={{ backgroundColor: 'rgba(255, 214, 10, 0.1)' }}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Zap className="w-3 h-3" style={{ color: '#FFD60A' }} />
+                        <span className="text-[10px] font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Yakıt</span>
+                      </div>
+                      <p className="text-xs font-bold" style={{ color: '#FFFFFF' }}>{formatCurrency(analysis.costBreakdown.yakitMaliyet)}</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)' }}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Activity className="w-3 h-3" style={{ color: '#0A84FF' }} />
+                        <span className="text-[10px] font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Sürücü</span>
+                      </div>
+                      <p className="text-xs font-bold" style={{ color: '#FFFFFF' }}>{formatCurrency(analysis.costBreakdown.surucuMaliyet)}</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg" style={{ backgroundColor: 'rgba(255, 159, 10, 0.1)' }}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-[10px]">🍽️</span>
+                        <span className="text-[10px] font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Yemek</span>
+                      </div>
+                      <p className="text-xs font-bold" style={{ color: '#FFFFFF' }}>{formatCurrency(analysis.costBreakdown.yemekMaliyet)}</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg" style={{ backgroundColor: 'rgba(99, 102, 241, 0.1)' }}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-[10px]">🔧</span>
+                        <span className="text-[10px] font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Bakım</span>
+                      </div>
+                      <p className="text-xs font-bold" style={{ color: '#FFFFFF' }}>{formatCurrency(analysis.costBreakdown.toplamBakimMaliyet)}</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                      <Activity className="w-3.5 h-3.5" style={{ color: '#0A84FF' }} />
-                      Sürücü ({analysis.costBreakdown.surucuGun} gün):
-                    </span>
-                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
-                      {formatCurrency(analysis.costBreakdown.surucuMaliyet)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                      🍽️ Yemek:
-                    </span>
-                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
-                      {formatCurrency(analysis.costBreakdown.yemekMaliyet)}
-                    </span>
-                  </div>
+
                   {analysis.costBreakdown.hgsMaliyet > 0 && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                        🛣️ HGS/Köprü (Güzergah):
-                      </span>
-                      <span className="font-semibold" style={{ color: '#FFFFFF' }}>
-                        {formatCurrency(analysis.costBreakdown.hgsMaliyet)}
-                      </span>
+                    <div className="p-2.5 rounded-lg" style={{ backgroundColor: 'rgba(191, 90, 242, 0.1)' }}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px]">🛣️</span>
+                          <span className="text-xs font-medium" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>HGS/Köprü</span>
+                        </div>
+                        <span className="text-xs font-bold" style={{ color: '#FFFFFF' }}>{formatCurrency(analysis.costBreakdown.hgsMaliyet)}</span>
+                      </div>
                     </div>
                   )}
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                      🔧 Bakım:
-                    </span>
-                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
-                      {formatCurrency(analysis.costBreakdown.toplamBakimMaliyet)}
-                    </span>
+                  
+                  {/* Toplam Maliyet */}
+                  <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(255, 69, 58, 0.15)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-semibold" style={{ color: '#FF453A' }}>Toplam</span>
+                      <span className="text-base font-bold" style={{ color: '#FFFFFF' }}>{formatCurrency(analysis.toplamMaliyet)}</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm flex items-center gap-2" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                      🏛️ Sigorta/MTV/Muayene:
-                    </span>
-                    <span className="font-semibold" style={{ color: '#FFFFFF' }}>
-                      {formatCurrency(analysis.costBreakdown.sigortaMaliyet + analysis.costBreakdown.mtvMaliyet + analysis.costBreakdown.muayeneMaliyet)}
-                    </span>
+                  
+                  {/* Önerilen Fiyat & Başabaş - Yan Yana */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2.5 rounded-lg" style={{ backgroundColor: 'rgba(48, 209, 88, 0.15)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}>
+                      <p className="text-[10px] mb-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Önerilen</p>
+                      <p className="text-sm font-bold" style={{ color: '#30D158' }}>{formatCurrency(analysis.fiyatKdvli)}</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg" style={{ backgroundColor: 'rgba(255, 214, 10, 0.15)', border: '0.5px solid rgba(255, 214, 10, 0.3)' }}>
+                      <p className="text-[10px] mb-1" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Başabaş</p>
+                      <p className="text-sm font-bold" style={{ color: '#FFD60A' }}>{formatCurrency(analysis.onerilenMinFiyat)}</p>
+                    </div>
                   </div>
-                </div>
-                
-                {/* Toplam Maliyet */}
-                <div className="mt-4 p-3 rounded-xl" style={{ backgroundColor: 'rgba(255, 69, 58, 0.15)', border: '0.5px solid rgba(255, 69, 58, 0.3)' }}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-semibold" style={{ color: '#FF453A' }}>Toplam Maliyet:</span>
-                    <span className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
-                      {formatCurrency(analysis.toplamMaliyet)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <span style={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                      ({analysis.etkinKm.toFixed(0)} km × {formatCurrency(analysis.toplamMaliyet / analysis.etkinKm)}/km)
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Önerilen Fiyat */}
-                <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(48, 209, 88, 0.15)', border: '0.5px solid rgba(48, 209, 88, 0.3)' }}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Önerilen Fiyat:</span>
-                    <span className="text-lg font-bold" style={{ color: '#30D158' }}>
-                      {formatCurrency(analysis.fiyatKdvli)}
-                    </span>
-                  </div>
-                  <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>(+%45 kar +%20 KDV)</p>
-                </div>
-
-                {/* Başabaş */}
-                <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255, 214, 10, 0.15)', border: '0.5px solid rgba(255, 214, 10, 0.3)' }}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm" style={{ color: 'rgba(235, 235, 245, 0.6)' }}>Başabaş Noktası:</span>
-                    <span className="text-lg font-bold" style={{ color: '#FFD60A' }}>
-                      {formatCurrency(analysis.onerilenMinFiyat)}
-                    </span>
-                  </div>
-                  <p className="text-xs" style={{ color: 'rgba(235, 235, 245, 0.5)' }}>(Sadece +%20 KDV)</p>
                 </div>
               </div>
             </motion.div>
           )}
-
-          {/* Bilgi Kartı */}
-          <Card className="bg-blue-50">
-            <div className="space-y-2 text-xs text-blue-800">
-              <p><strong>💡 İpuçları:</strong></p>
-              <p>• Fiyat otomatik hesaplanır (araç parametreleri + güzergah maliyetleri)</p>
-              <p>• HGS/Köprü maliyetleri güzergah bilgisinden otomatik eklenir</p>
-              <p>• İstersen manuel fiyat değiştirebilirsin</p>
-              <p>• Kâr/zarar anlık güncellenir</p>
-              <p>• Dönüşte yük bulursan maliyet düşer (%50 verimlilik)</p>
-            </div>
-          </Card>
         </div>
       </div>
     </div>

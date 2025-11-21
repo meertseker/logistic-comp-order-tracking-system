@@ -12,3 +12,5 @@ export const screenshotPaths = {
   orderDetail: '/screenshots/99-order-detail.png',
 }
 
+
+

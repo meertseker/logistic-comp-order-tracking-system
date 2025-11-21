@@ -1,0 +1,58 @@
+{
+  "button": {
+    "variants": [
+      "primary",
+      "secondary",
+      "danger",
+      "success"
+    ],
+    "sizes": [
+      "sm",
+      "md",
+      "lg"
+    ],
+    "states": [
+      "default",
+      "hover",
+      "active",
+      "disabled"
+    ]
+  },
+  "input": {
+    "states": [
+      "default",
+      "focus",
+      "error"
+    ],
+    "features": [
+      "label",
+      "helperText",
+      "errorMessage"
+    ]
+  },
+  "card": {
+    "features": [
+      "title",
+      "actions",
+      "hover"
+    ]
+  },
+  "modal": {
+    "sizes": [
+      "sm",
+      "md",
+      "lg",
+      "xl"
+    ]
+  },
+  "statCard": {
+    "colors": [
+      "blue",
+      "green",
+      "red",
+      "yellow",
+      "purple",
+      "orange"
+    ]
+  }
+}

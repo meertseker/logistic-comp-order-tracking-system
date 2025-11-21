@@ -1,0 +1,252 @@
+{
+  "colors": {
+    "primary/blue": {
+      "value": "#0A84FF",
+      "type": "color"
+    },
+    "primary/blueLight": {
+      "value": "#64D2FF",
+      "type": "color"
+    },
+    "primary/blueDark": {
+      "value": "#007AFF",
+      "type": "color"
+    },
+    "system/success": {
+      "value": "#30D158",
+      "type": "color"
+    },
+    "system/warning": {
+      "value": "#FF9F0A",
+      "type": "color"
+    },
+    "system/error": {
+      "value": "#FF453A",
+      "type": "color"
+    },
+    "system/info": {
+      "value": "#64D2FF",
+      "type": "color"
+    },
+    "background/primary": {
+      "value": "#000000",
+      "type": "color"
+    },
+    "background/secondary": {
+      "value": "#1C1C1E",
+      "type": "color"
+    },
+    "background/tertiary": {
+      "value": "#2C2C2E",
+      "type": "color"
+    },
+    "background/elevated": {
+      "value": "#3A3A3C",
+      "type": "color"
+    },
+    "background/glassCard": {
+      "value": "rgba(28, 28, 30, 0.68)",
+      "type": "color"
+    },
+    "background/glassStrong": {
+      "value": "rgba(28, 28, 30, 0.85)",
+      "type": "color"
+    },
+    "text/primary": {
+      "value": "#FFFFFF",
+      "type": "color"
+    },
+    "text/secondary": {
+      "value": "rgba(235, 235, 245, 0.6)",
+      "type": "color"
+    },
+    "text/tertiary": {
+      "value": "rgba(235, 235, 245, 0.3)",
+      "type": "color"
+    },
+    "text/quaternary": {
+      "value": "rgba(235, 235, 245, 0.18)",
+      "type": "color"
+    },
+    "border/default": {
+      "value": "rgba(84, 84, 88, 0.35)",
+      "type": "color"
+    },
+    "border/focus": {
+      "value": "rgba(10, 132, 255, 0.5)",
+      "type": "color"
+    },
+    "border/error": {
+      "value": "rgba(255, 69, 58, 0.5)",
+      "type": "color"
+    },
+    "border/separator": {
+      "value": "rgba(84, 84, 88, 0.65)",
+      "type": "color"
+    },
+    "status/blue": {
+      "value": "#0A84FF",
+      "type": "color"
+    },
+    "status/blue/bg": {
+      "value": "rgba(10, 132, 255, 0.15)",
+      "type": "color"
+    },
+    "status/green": {
+      "value": "#30D158",
+      "type": "color"
+    },
+    "status/green/bg": {
+      "value": "rgba(48, 209, 88, 0.15)",
+      "type": "color"
+    },
+    "status/red": {
+      "value": "#FF453A",
+      "type": "color"
+    },
+    "status/red/bg": {
+      "value": "rgba(255, 69, 58, 0.15)",
+      "type": "color"
+    },
+    "status/yellow": {
+      "value": "#FFD60A",
+      "type": "color"
+    },
+    "status/yellow/bg": {
+      "value": "rgba(255, 214, 10, 0.15)",
+      "type": "color"
+    },
+    "status/purple": {
+      "value": "#BF5AF2",
+      "type": "color"
+    },
+    "status/purple/bg": {
+      "value": "rgba(191, 90, 242, 0.15)",
+      "type": "color"
+    },
+    "status/orange": {
+      "value": "#FF9F0A",
+      "type": "color"
+    },
+    "status/orange/bg": {
+      "value": "rgba(255, 159, 10, 0.15)",
+      "type": "color"
+    }
+  },
+  "typography": {
+    "fontSize/xs": {
+      "value": "11px",
+      "type": "dimension"
+    },
+    "fontSize/sm": {
+      "value": "14px",
+      "type": "dimension"
+    },
+    "fontSize/base": {
+      "value": "16px",
+      "type": "dimension"
+    },
+    "fontSize/lg": {
+      "value": "18px",
+      "type": "dimension"
+    },
+    "fontSize/xl": {
+      "value": "20px",
+      "type": "dimension"
+    },
+    "fontSize/2xl": {
+      "value": "24px",
+      "type": "dimension"
+    },
+    "fontSize/3xl": {
+      "value": "30px",
+      "type": "dimension"
+    },
+    "fontWeight/regular": {
+      "value": "400",
+      "type": "number"
+    },
+    "fontWeight/medium": {
+      "value": "500",
+      "type": "number"
+    },
+    "fontWeight/semibold": {
+      "value": "600",
+      "type": "number"
+    },
+    "fontWeight/bold": {
+      "value": "700",
+      "type": "number"
+    }
+  },
+  "spacing": {
+    "2": {
+      "value": "8px",
+      "type": "dimension"
+    },
+    "3": {
+      "value": "12px",
+      "type": "dimension"
+    },
+    "4": {
+      "value": "16px",
+      "type": "dimension"
+    },
+    "5": {
+      "value": "20px",
+      "type": "dimension"
+    },
+    "6": {
+      "value": "24px",
+      "type": "dimension"
+    },
+    "8": {
+      "value": "32px",
+      "type": "dimension"
+    }
+  },
+  "borderRadius": {
+    "sm": {
+      "value": "8px",
+      "type": "dimension"
+    },
+    "base": {
+      "value": "12px",
+      "type": "dimension"
+    },
+    "lg": {
+      "value": "16px",
+      "type": "dimension"
+    },
+    "xl": {
+      "value": "20px",
+      "type": "dimension"
+    },
+    "2xl": {
+      "value": "24px",
+      "type": "dimension"
+    },
+    "3xl": {
+      "value": "32px",
+      "type": "dimension"
+    }
+  },
+  "shadows": {
+    "glassCard": {
+      "value": "0 4px 16px 0 rgba(0, 0, 0, 0.25)",
+      "type": "shadow"
+    },
+    "glassHover": {
+      "value": "0 8px 24px 0 rgba(0, 0, 0, 0.35)",
+      "type": "shadow"
+    },
+    "buttonPrimary": {
+      "value": "0 4px 14px 0 rgba(10, 132, 255, 0.4)",
+      "type": "shadow"
+    },
+    "buttonHover": {
+      "value": "0 6px 20px 0 rgba(10, 132, 255, 0.5)",
+      "type": "shadow"
+    }
+  }
+}

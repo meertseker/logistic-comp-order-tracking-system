@@ -1,6 +1,6 @@
 {
   "name": "sekersoft",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Offline Desktop Transportation Management System",
   "main": "dist-electron/main/index.cjs",
   "type": "module",
@@ -18,6 +18,7 @@
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && node scripts/watch-electron.js\"",
     "rebuild": "electron-rebuild -f -w better-sqlite3",
     "migrate": "node scripts/migrate-database.js",
+    "db:clear": "node scripts/clear-database-data.js",
     "enable-test-features": "node scripts/enable-test-features.js",
     "license:generate": "node scripts/generate-license.js",
     "license:advanced": "node scripts/generate-license-advanced.js",
@@ -34,7 +35,8 @@
     "test:verbose": "jest --verbose",
     "test:all": "npm run test && npm run test:e2e",
     "security:audit": "npm audit --audit-level=moderate && npx snyk test",
-    "screenshots": "node scripts/take-screenshots.js",
+    "screenshots": "node scripts/take-screenshots-advanced.js",
+    "screenshots:old": "node scripts/take-screenshots.js",
     "validate:ci": "node scripts/validate-ci-setup.js"
   },
   "keywords": [
@@ -55,6 +57,7 @@
     "electron-updater": "^6.1.8",
     "framer-motion": "^12.23.24",
     "html-to-text": "^9.0.5",
+    "html2canvas": "^1.4.1",
     "jspdf": "^2.5.0",
     "jspdf-autotable": "^3.8.0",
     "lucide-react": "^0.548.0",

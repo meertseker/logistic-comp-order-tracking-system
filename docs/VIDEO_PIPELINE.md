@@ -54,3 +54,5 @@ This document outlines the technology stack and workflow used to generate high-q
 - **Automated Stitching**: Integrate FFmpeg calls directly into `scripts/take-screenshots.js`.
 
 
+
+

@@ -14,6 +14,7 @@ import VehiclePerformance from '../components/VehiclePerformance'
 import StatusOverview from '../components/StatusOverview'
 import UpcomingDeliveries from '../components/UpcomingDeliveries'
 import QuickActions from '../components/QuickActions'
+import CostCalculator from '../components/CostCalculator'
 import { formatCurrency } from '../utils/formatters'
 
 interface DashboardStats {
@@ -324,6 +325,12 @@ export default function Dashboard() {
         <div>
           <StatusOverview data={stats?.statusDistribution || []} />
         </div>
+      </div>
+
+      {/* Masraf Hesaplama ve Aktif Teslimatlar - Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <CostCalculator />
+        <UpcomingDeliveries orders={stats?.upcomingDeliveries || []} />
       </div>
 
       {/* Bottom Section - Vehicle Performance & Upcoming Deliveries */}

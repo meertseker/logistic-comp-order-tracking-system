@@ -230,3 +230,5 @@ Gerçek API'leri bağladığınızda, tüm sistem çalışmaya hazır!
 
 **Sorular?** README.md dosyasına bakın veya issue açın.
 
+
+

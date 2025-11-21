@@ -43,3 +43,5 @@ WHERE id = 1;
 SELECT 'WhatsApp Enabled:', enabled FROM whatsapp_settings WHERE id = 1;
 SELECT 'Uyumsoft Enabled:', enabled FROM uyumsoft_settings WHERE id = 1;
 
+
+
