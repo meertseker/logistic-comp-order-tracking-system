@@ -95,13 +95,113 @@ export class AdvancedLicenseManager {
   /**
    * Lisans anahtarı oluştur
    */
-  generateLicenseKey(hwFingerprint: string): string {
+  generateLicenseKey(hwFingerprint: string, durationDays?: number): string {
+    // Süre bilgisini anahtara gömme (duration-embedded key)
+    const durationString = durationDays ? `-DAYS${durationDays}` : ''
+    
     const hash = crypto
       .createHash('sha256')
-      .update(`${hwFingerprint}-sekersoft-pro-license-2025`)
+      .update(`${hwFingerprint}-sekersoft-pro-license-2025${durationString}`)
       .digest('hex')
     
     return `${hash.substring(0, 4)}-${hash.substring(4, 8)}-${hash.substring(8, 12)}-${hash.substring(12, 16)}`.toUpperCase()
+  }
+
+  /**
+   * Lisans anahtarından süreyi çıkar (brute-force ile deneme)
+   * NOT: Bu güvenlik için değil, kolaylık için
+   */
+  private extractDurationFromKey(licenseKey: string, hwFingerprint: string): number | null | undefined {
+    // Önce süresiz lisans kontrolü
+    const perpetualKey = this.generateLicenseKey(hwFingerprint)
+    if (licenseKey === perpetualKey) {
+      return null // Perpetual
+    }
+
+    // 1-365 gün arası tüm değerleri dene (brute force)
+    for (let days = 1; days <= 365; days++) {
+      const testKey = this.generateLicenseKey(hwFingerprint, days)
+      if (licenseKey === testKey) {
+        return days
+      }
+    }
+
+    // 1 yıldan uzun süreleri de dene (366-730 gün, 2 yıl)
+    for (let days = 366; days <= 730; days += 30) {
+      const testKey = this.generateLicenseKey(hwFingerprint, days)
+      if (licenseKey === testKey) {
+        return days
+      }
+    }
+
+    // Bulunamazsa undefined (geçersiz anahtar)
+    return undefined
+  }
+
+  /**
+   * Demo lisans oluştur (süre sınırlı)
+   */
+  generateDemoLicense(hwFingerprint: string, companyName: string, email: string, durationDays: number = 60): Omit<AdvancedLicense, 'checksum'> {
+    const now = new Date()
+    const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000)
+    
+    return {
+      key: this.generateLicenseKey(hwFingerprint),
+      hwFingerprint: hwFingerprint,
+      activatedAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+      companyName: companyName,
+      email: email
+    }
+  }
+
+  /**
+   * Kalan gün sayısını hesapla
+   */
+  getDaysRemaining(license?: AdvancedLicense): number | null {
+    const lic = license || this.loadLicense()
+    if (!lic || !lic.expiresAt) return null
+    
+    const now = new Date()
+    const expiresAt = new Date(lic.expiresAt)
+    const diffMs = expiresAt.getTime() - now.getTime()
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+    
+    return diffDays
+  }
+
+  /**
+   * Lisansın süresi dolmuş mu kontrol et
+   */
+  isExpired(license?: AdvancedLicense): boolean {
+    const lic = license || this.loadLicense()
+    if (!lic || !lic.expiresAt) return false
+    
+    const now = new Date()
+    const expiresAt = new Date(lic.expiresAt)
+    
+    return now > expiresAt
+  }
+
+  /**
+   * Demo/Trial lisans mı kontrol et
+   */
+  isDemoLicense(license?: AdvancedLicense): boolean {
+    const lic = license || this.loadLicense()
+    if (!lic) return false
+    
+    // Eğer expiresAt varsa demo/trial lisanstır
+    return !!lic.expiresAt
+  }
+
+  /**
+   * Lisans tipini döndür
+   */
+  getLicenseType(license?: AdvancedLicense): 'demo' | 'full' | null {
+    const lic = license || this.loadLicense()
+    if (!lic) return null
+    
+    return lic.expiresAt ? 'demo' : 'full'
   }
 
   /**
@@ -265,7 +365,11 @@ export class AdvancedLicenseManager {
   async validateLicense(): Promise<{ 
     valid: boolean; 
     reason?: string; 
-    license?: AdvancedLicense 
+    license?: AdvancedLicense;
+    daysRemaining?: number | null;
+    isExpired?: boolean;
+    isDemoLicense?: boolean;
+    expiresAt?: string | null;
   }> {
     try {
       // Hardware fingerprint hazır mı?
@@ -298,6 +402,10 @@ export class AdvancedLicenseManager {
       }
 
       // Süre kontrolü
+      const isExpired = this.isExpired(license)
+      const daysRemaining = this.getDaysRemaining(license)
+      const isDemoLicense = this.isDemoLicense(license)
+      
       if (license.expiresAt) {
         const expiresAt = new Date(license.expiresAt)
         const now = new Date()
@@ -305,15 +413,29 @@ export class AdvancedLicenseManager {
         if (now > expiresAt) {
           return { 
             valid: false, 
-            reason: `Lisans ${expiresAt.toLocaleDateString('tr-TR')} tarihinde sona erdi` 
+            reason: `Lisans ${expiresAt.toLocaleDateString('tr-TR')} tarihinde sona erdi`,
+            isExpired: true,
+            daysRemaining: daysRemaining,
+            isDemoLicense: isDemoLicense,
+            expiresAt: license.expiresAt
           }
         }
       }
 
-      // Key kontrolü
-      const expectedKey = this.generateLicenseKey(license.hwFingerprint)
-      if (license.key !== expectedKey) {
+      // Key kontrolü - anahtardan süreyi çıkar ve validate et
+      const extractedDuration = this.extractDurationFromKey(license.key, license.hwFingerprint)
+      
+      if (extractedDuration === undefined) {
         return { valid: false, reason: 'Lisans anahtarı geçersiz' }
+      }
+
+      // Süre uyumsuzluğu kontrolü
+      if (extractedDuration !== null && !license.expiresAt) {
+        // Anahtar süreli ama lisans dosyasında süre yok - uyumsuzluk
+        console.warn('⚠️ License key has duration but no expiration in license file')
+      } else if (extractedDuration === null && license.expiresAt) {
+        // Anahtar süresiz ama lisans dosyasında süre var - uyumsuzluk
+        console.warn('⚠️ License key is perpetual but license file has expiration')
       }
 
       // VM detection (opsiyonel - istersen kapatabilirsin)
@@ -328,7 +450,14 @@ export class AdvancedLicenseManager {
       license.lastVerified = new Date().toISOString()
       await this.saveLicense(license)
 
-      return { valid: true, license }
+      return { 
+        valid: true, 
+        license,
+        daysRemaining: daysRemaining,
+        isExpired: false,
+        isDemoLicense: isDemoLicense,
+        expiresAt: license.expiresAt || null
+      }
     } catch (error) {
       console.error('Lisans doğrulama hatası:', error)
       return { valid: false, reason: 'Lisans doğrulama hatası' }
@@ -341,8 +470,9 @@ export class AdvancedLicenseManager {
   async activateLicense(
     licenseKey: string, 
     companyName: string, 
-    email: string
-  ): Promise<{ success: boolean; message: string }> {
+    email: string,
+    durationDays?: number // Optional: for demo licenses
+  ): Promise<{ success: boolean; message: string; isDemoLicense?: boolean; expiresAt?: string }> {
     try {
       // Hardware fingerprint hazır mı?
       if (!this.hwFingerprint) {
@@ -355,32 +485,51 @@ export class AdvancedLicenseManager {
         return { success: false, message: 'Geçersiz lisans anahtarı formatı' }
       }
 
-      // Beklenen key'i oluştur
-      const expectedKey = this.generateLicenseKey(this.hwFingerprint)
+      // Anahtardan süreyi çıkarmaya çalış
+      const extractedDuration = this.extractDurationFromKey(licenseKey.toUpperCase(), this.hwFingerprint)
       
-      if (licenseKey.toUpperCase() !== expectedKey) {
+      if (extractedDuration === undefined) {
         return { 
           success: false, 
           message: 'Bu lisans anahtarı bu sistem için geçerli değil' 
         }
       }
 
+      // Çıkarılan süreyi kullan (eğer parametre verilmediyse)
+      const finalDuration = durationDays !== undefined ? durationDays : extractedDuration
+
       // Lisansı oluştur
+      const now = new Date()
       const license: Omit<AdvancedLicense, 'checksum'> = {
         key: licenseKey.toUpperCase(),
         hwFingerprint: this.hwFingerprint,
-        activatedAt: new Date().toISOString(),
+        activatedAt: now.toISOString(),
         companyName: companyName,
         email: email
+      }
+
+      // Eğer süre varsa, expiresAt ekle
+      if (finalDuration && finalDuration > 0) {
+        const expiresAt = new Date(now.getTime() + finalDuration * 24 * 60 * 60 * 1000)
+        license.expiresAt = expiresAt.toISOString()
       }
 
       if (await this.saveLicense(license)) {
         // Periyodik doğrulama başlat
         this.startPeriodicVerification()
         
+        const isDemoLicense = !!license.expiresAt
+        let message = 'Lisans başarıyla aktive edildi'
+        
+        if (isDemoLicense && finalDuration) {
+          message = `Demo lisans başarıyla aktive edildi (${finalDuration} gün)`
+        }
+        
         return { 
           success: true, 
-          message: 'Lisans başarıyla aktive edildi' 
+          message: message,
+          isDemoLicense: isDemoLicense,
+          expiresAt: license.expiresAt
         }
       } else {
         return { 

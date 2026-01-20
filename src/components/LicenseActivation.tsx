@@ -17,9 +17,12 @@ const LicenseActivation: React.FC<LicenseActivationProps> = ({ onActivated }) =>
   const [error, setError] = useState<string>('')
   const [success, setSuccess] = useState<string>('')
   const [copied, setCopied] = useState(false)
+  const [isExpiredDemo, setIsExpiredDemo] = useState(false)
+  const [expiredLicenseInfo, setExpiredLicenseInfo] = useState<any>(null)
 
   useEffect(() => {
     loadMachineId()
+    checkExpiredLicense()
   }, [])
 
   const loadMachineId = async () => {
@@ -30,6 +33,21 @@ const LicenseActivation: React.FC<LicenseActivationProps> = ({ onActivated }) =>
       }
     } catch (err) {
       console.error('Makine ID alınamadı:', err)
+    }
+  }
+
+  const checkExpiredLicense = async () => {
+    try {
+      const validation = await window.electronAPI.license.validate()
+      if (!validation.valid && validation.isExpired && validation.isDemoLicense) {
+        setIsExpiredDemo(true)
+        setExpiredLicenseInfo({
+          expiresAt: validation.expiresAt,
+          reason: validation.reason
+        })
+      }
+    } catch (err) {
+      console.error('Lisans kontrolü hatası:', err)
     }
   }
 
@@ -117,17 +135,57 @@ const LicenseActivation: React.FC<LicenseActivationProps> = ({ onActivated }) =>
 
         {/* Content */}
         <div className="p-8">
-          {/* Uyarı */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-yellow-800">
-              <p className="font-medium mb-1">Önemli Bilgi</p>
-              <p>
-                Bu yazılım lisanslıdır ve yalnızca yetkili kullanıcılar tarafından kullanılabilir.
-                Lisansınızı almak için lütfen aşağıdaki <strong>Makine ID</strong>&apos;nizi satıcınıza iletin.
-              </p>
+          {/* Expired Demo Warning */}
+          {isExpiredDemo && expiredLicenseInfo && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-red-800">
+                  <p className="font-medium mb-1">Demo Lisansınızın Süresi Doldu</p>
+                  <p className="mb-2">
+                    {expiredLicenseInfo.expiresAt && (
+                      <>
+                        Lisansınızın süresi{' '}
+                        <strong>
+                          {new Date(expiredLicenseInfo.expiresAt).toLocaleDateString('tr-TR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </strong>{' '}
+                        tarihinde sona erdi.
+                      </>
+                    )}
+                  </p>
+                  <p className="mb-3">
+                    Yazılımı kullanmaya devam etmek için yeni bir aktivasyon anahtarı girin veya 
+                    tam lisans için satıcınızla iletişime geçin.
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={() => window.open('https://sekersoft.com/contact', '_blank')}
+                    className="mt-2"
+                  >
+                    Tam Lisans İçin İletişime Geç
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Uyarı */}
+          {!isExpiredDemo && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-yellow-800">
+                <p className="font-medium mb-1">Önemli Bilgi</p>
+                <p>
+                  Bu yazılım lisanslıdır ve yalnızca yetkili kullanıcılar tarafından kullanılabilir.
+                  Lisansınızı almak için lütfen aşağıdaki <strong>Makine ID</strong>&apos;nizi satıcınıza iletin.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Makine ID */}
           <div className="bg-gray-50 rounded-lg p-4 mb-6">

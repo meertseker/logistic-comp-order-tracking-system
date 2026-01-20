@@ -238,8 +238,8 @@ export default function SettingsProfessional() {
       setSystemInfo(sysInfo)
       
       // Lisans bilgilerini yükle
-      const licInfo = await window.electronAPI.license.getInfo()
-      setLicenseInfo(licInfo)
+      const licStatus = await window.electronAPI.license.getStatus()
+      setLicenseInfo(licStatus)
       
       // Mail settings'te company name yoksa license'dan al
       if (settings && !settings.company_name && companyName) {
@@ -1516,20 +1516,28 @@ export default function SettingsProfessional() {
       )}
 
       {/* License Tab */}
-      {activeTab === 'license' && licenseInfo && (
+      {activeTab === 'license' && licenseInfo && licenseInfo.valid && (
         <div className="space-y-6">
           <Card title="🔐 Lisans Bilgileri" subtitle="Ürün lisans durumunuz">
             <div className="space-y-4">
               <div className="p-6 bg-gray-800/50 rounded-xl border-2 border-gray-700/50">
                 <div className="flex items-center gap-3 mb-4">
-                  <Shield className="w-8 h-8 text-green-400" />
+                  <Shield className={`w-8 h-8 ${licenseInfo.isDemoLicense ? 'text-yellow-400' : 'text-green-400'}`} />
                   <div>
                     <h3 className="text-xl font-bold text-white">Lisans Durumu</h3>
-                    <p className="text-sm text-green-400">Aktif ve Geçerli</p>
+                    <p className={`text-sm ${licenseInfo.isDemoLicense ? 'text-yellow-400' : 'text-green-400'}`}>
+                      {licenseInfo.isDemoLicense ? 'Demo Lisans - Aktif' : 'Tam Lisans - Aktif'}
+                    </p>
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <p className="text-sm text-gray-400">Lisans Tipi</p>
+                    <p className="text-white font-medium">
+                      {licenseInfo.licenseType === 'demo' ? 'Demo Lisans (Süreli)' : 'Tam Lisans (Süresiz)'}
+                    </p>
+                  </div>
                   <div>
                     <p className="text-sm text-gray-400">Şirket Adı</p>
                     <p className="text-white font-medium">{licenseInfo.companyName || 'Belirtilmemiş'}</p>
@@ -1541,17 +1549,70 @@ export default function SettingsProfessional() {
                   <div>
                     <p className="text-sm text-gray-400">Aktivasyon Tarihi</p>
                     <p className="text-white font-medium">
-                      {licenseInfo.activatedAt ? new Date(licenseInfo.activatedAt).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
+                      {licenseInfo.activatedAt ? new Date(licenseInfo.activatedAt).toLocaleDateString('tr-TR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      }) : 'Belirtilmemiş'}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Son Kontrol</p>
-                    <p className="text-white font-medium">
-                      {licenseInfo.lastChecked ? new Date(licenseInfo.lastChecked).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
-                    </p>
-                  </div>
+                  
+                  {licenseInfo.isDemoLicense && licenseInfo.expiresAt && (
+                    <>
+                      <div>
+                        <p className="text-sm text-gray-400">Son Kullanım Tarihi</p>
+                        <p className="text-white font-medium">
+                          {new Date(licenseInfo.expiresAt).toLocaleDateString('tr-TR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-400">Kalan Süre</p>
+                        <p className={`font-medium ${
+                          licenseInfo.daysRemaining !== null && licenseInfo.daysRemaining < 7 
+                            ? 'text-red-400' 
+                            : licenseInfo.daysRemaining !== null && licenseInfo.daysRemaining < 30
+                            ? 'text-yellow-400'
+                            : 'text-green-400'
+                        }`}>
+                          {licenseInfo.daysRemaining !== null 
+                            ? `${licenseInfo.daysRemaining} gün` 
+                            : 'Hesaplanamadı'}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
+
+              {licenseInfo.isDemoLicense && licenseInfo.daysRemaining !== null && licenseInfo.daysRemaining < 7 && (
+                <div className="p-4 bg-yellow-500/10 border-2 border-yellow-500/30 rounded-xl">
+                  <div className="flex items-start justify-between gap-4">
+                    <p className="text-sm text-yellow-200 flex-1">
+                      <strong>⚠️ Dikkat:</strong> Demo lisansınızın süresi {licenseInfo.daysRemaining} gün içinde dolacak.
+                      Tam lisansa geçmek için lütfen satıcınızla iletişime geçin.
+                    </p>
+                    <Button
+                      onClick={() => window.open('https://sekersoft.com/contact', '_blank')}
+                      size="sm"
+                      className="flex-shrink-0"
+                    >
+                      İletişime Geç
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {!licenseInfo.isDemoLicense && (
+                <div className="p-4 bg-green-500/10 border-2 border-green-500/30 rounded-xl">
+                  <p className="text-sm text-green-200">
+                    <strong>✓ Tam Lisans:</strong> Süresiz kullanım hakkınız bulunmaktadır.
+                  </p>
+                </div>
+              )}
 
               <div className="p-4 bg-blue-500/10 border-2 border-blue-500/30 rounded-xl">
                 <p className="text-sm text-blue-200">

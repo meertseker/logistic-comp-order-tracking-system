@@ -18,11 +18,14 @@ import DesignComponents from './pages/DesignComponents'
 import { ToastProvider } from './context/ToastContext'
 import LicenseActivation from './components/LicenseActivation'
 import UpdateNotification from './components/UpdateNotification'
+import ExpirationWarningBanner from './components/ExpirationWarningBanner'
 
 function App() {
   const location = useLocation()
   const [isLicensed, setIsLicensed] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
+  const [licenseStatus, setLicenseStatus] = useState<any>(null)
+  const [showExpirationWarning, setShowExpirationWarning] = useState(false)
 
   // Design components sayfası lisans kontrolü olmadan erişilebilir
   const isDesignComponentsPage = location.pathname === '/design-components'
@@ -40,6 +43,17 @@ function App() {
     try {
       const validation = await window.electronAPI.license.validate()
       setIsLicensed(validation.valid)
+      
+      // Get detailed license status
+      if (validation.valid) {
+        const status = await window.electronAPI.license.getStatus()
+        setLicenseStatus(status)
+        
+        // Show warning banner if demo license with < 7 days remaining
+        if (status.isDemoLicense && status.daysRemaining !== null && status.daysRemaining < 7) {
+          setShowExpirationWarning(true)
+        }
+      }
     } catch (error) {
       console.error('Lisans kontrolü hatası:', error)
       setIsLicensed(false)
@@ -81,6 +95,21 @@ function App() {
   return (
     <ToastProvider>
       <Layout>
+        {/* Expiration Warning Banner */}
+        {showExpirationWarning && licenseStatus && licenseStatus.isDemoLicense && licenseStatus.daysRemaining !== null && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <ExpirationWarningBanner
+              daysRemaining={licenseStatus.daysRemaining}
+              expiresAt={licenseStatus.expiresAt}
+              onClose={() => setShowExpirationWarning(false)}
+              onUpgrade={() => {
+                // Contact sayfası zaten ExpirationWarningBanner'da açılıyor
+                // İsteğe bağlı: Burada ek işlemler yapılabilir
+              }}
+            />
+          </div>
+        )}
+        
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/orders" element={<Orders />} />

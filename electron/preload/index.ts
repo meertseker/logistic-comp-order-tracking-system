@@ -87,6 +87,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('license:activate', licenseKey, companyName, email),
     getInfo: () => ipcRenderer.invoke('license:getInfo'),
     deactivate: () => ipcRenderer.invoke('license:deactivate'),
+    getStatus: () => ipcRenderer.invoke('license:getStatus'),
+    getDaysRemaining: () => ipcRenderer.invoke('license:getDaysRemaining'),
+    isDemo: () => ipcRenderer.invoke('license:isDemo'),
   },
   
   // Mail operations

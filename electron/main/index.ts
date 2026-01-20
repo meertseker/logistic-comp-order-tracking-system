@@ -1465,6 +1465,84 @@ ipcMain.handle('license:validate', async () => {
   }
 })
 
+// Detaylı lisans durumu al
+ipcMain.handle('license:getStatus', async () => {
+  try {
+    // Screenshot modunda mock status döndür
+    if (process.env.SCREENSHOT_MODE === 'true') {
+      return { 
+        valid: true, 
+        licenseType: 'full',
+        daysRemaining: null,
+        isExpired: false,
+        isDemoLicense: false,
+        expiresAt: null
+      }
+    }
+    
+    const licenseManager = await getAdvancedLicenseManager()
+    const validation = await licenseManager.validateLicense()
+    
+    if (!validation.valid) {
+      return {
+        valid: false,
+        reason: validation.reason,
+        isExpired: validation.isExpired || false,
+        isDemoLicense: validation.isDemoLicense || false,
+        expiresAt: validation.expiresAt || null
+      }
+    }
+    
+    const license = validation.license!
+    const licenseType = licenseManager.getLicenseType(license)
+    
+    return {
+      valid: true,
+      licenseType: licenseType,
+      daysRemaining: validation.daysRemaining,
+      isExpired: validation.isExpired,
+      isDemoLicense: validation.isDemoLicense,
+      expiresAt: validation.expiresAt,
+      activatedAt: license.activatedAt,
+      companyName: license.companyName,
+      email: license.email
+    }
+  } catch (error) {
+    console.error('Error getting license status:', error)
+    return { valid: false, reason: 'Lisans durumu alınamadı' }
+  }
+})
+
+// Kalan gün sayısını al
+ipcMain.handle('license:getDaysRemaining', async () => {
+  try {
+    if (process.env.SCREENSHOT_MODE === 'true') {
+      return null
+    }
+    
+    const licenseManager = await getAdvancedLicenseManager()
+    return licenseManager.getDaysRemaining()
+  } catch (error) {
+    console.error('Error getting days remaining:', error)
+    return null
+  }
+})
+
+// Demo lisans mı kontrol et
+ipcMain.handle('license:isDemo', async () => {
+  try {
+    if (process.env.SCREENSHOT_MODE === 'true') {
+      return false
+    }
+    
+    const licenseManager = await getAdvancedLicenseManager()
+    return licenseManager.isDemoLicense()
+  } catch (error) {
+    console.error('Error checking demo license:', error)
+    return false
+  }
+})
+
 // Lisansı aktive et (Gelişmiş)
 ipcMain.handle('license:activate', async (_, licenseKey: string, companyName: string, email: string) => {
   try {
