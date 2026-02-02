@@ -110,10 +110,11 @@ export default function Layout({ children, whiteBackground = false }: LayoutProp
                     border: '0.5px solid rgba(10, 132, 255, 0.2)'
                   }}
                 >
-                  <Truck className="w-5 h-5" style={{ 
-                    color: '#0A84FF',
-                    strokeWidth: 2
-                  }} />
+                  <img 
+                    src="/logo.png" 
+                    alt="Sekersoft Logo" 
+                    className="w-6 h-6 object-contain"
+                  />
                 </div>
                 
                 <div className="flex-1 min-w-0">

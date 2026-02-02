@@ -35,6 +35,7 @@ const createWindow = () => {
     },
     titleBarStyle: 'hiddenInset',
     show: false,
+    icon: path.join(__dirname, '../../public/logo.png'),
   })
 
   // Load the app
